@@ -283,17 +283,17 @@ class DecisionAttentionModel(DecisionModel):
         self.final_layer = torch.nn.Linear(hidden_layers[-1],len(Const.decisions)*2)
         self.activation = torch.nn.ReLU()
     
-    def get_embedding(self,xbase,xdlt,xpd,xnd,xcc,xmod,position=0):
+    def get_embedding(self,xbase,xdlt1,xdlt2,xpd,xnd,xcc,xmod,position=0):
         xbase = self.normalize(xbase)
-        x = torch.cat([xbase,xdlt,xpd,xnd,xcc,xmod],dim=1)
+        x = torch.cat([xbase,xdlt1,xdlt2,xpd,xnd,xcc,xmod],dim=1)
         x = self.add_position_token(x,position)
         x = self.activation(self.resize_layer(x))
         for attention,layer,norm in zip(self.attentions,self.layers,self.norms):
             x2, attention_weights = attention(x,x,x)
             x2 = norm(x2+x)
-            x3 = layer(x2)
-            x3 = norm(x3+x2)
-            x = self.activation(x3)
+            x2 = self.activation(x2)
+            x = layer(x2)
+            x = self.activation(x)
         return x
     
     def forward(self,xbase,xdlt1,xdlt2,xpd,xnd,xcc,xmod,position=0):

@@ -1,5 +1,0 @@
-class Const:
-    data_dir = '../data'
-    twin_data = data_dir + 'digital_twin_data.csv'
-    twin_ln_data = data_dir + 'digital_twin_ln_data.csv'
-    

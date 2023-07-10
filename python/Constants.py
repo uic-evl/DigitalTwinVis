@@ -2,7 +2,8 @@ class Const:
     data_dir = '../data'
     twin_data = data_dir + 'digital_twin_data.csv'
     twin_ln_data = data_dir + 'digital_twin_ln_data.csv'
-    
+    model_dir = data_dir + '/models/'
+    print(model_dir)
     rename_dict = {
         'Dummy ID': 'id',
         'Age at Diagnosis (Calculated)': 'age',
@@ -88,17 +89,22 @@ class Const:
     nodal_disease_states2 = [t + ' 2' for t in nodal_disease_states]
     dlt2 = [d + ' 2' for d in dlt1]
     
-    model_dir = data_dir + '/models/'
 
     tuned_transition_models = [
-        'final_transition1_model_state1_input63_dims500,500_dropout0.25,0.5.pt',
-        'final_transition2_model_state2_input85_dims100_dropout0.25,0.pt',
-        'final_outcome_model_state1_input83_dims1000_dropout0,0.pt'
+        'final_transition1_model_state1_input63_dims500_dropout0.25,0.95.pt',
+        'final_transition2_model_state2_input85_dims500,500_dropout0.25,0.9.pt',
+        'final_outcome_model_state1_input83_dims500_dropout0.5,0.95.pt'
     ]
-    tuned_transition_models = [model_dir + f for f in tuned_transition_models]
+#     tuned_transition_models = [model_dir + f for f in tuned_transition_models]
     
-    tuned_decision_model = model_dir + 'final_decision_model_statedecisions_input132_dims100,100_dropout0.1,0.7.pt'
+    tuned_decision_model = 'final_decision_model_statedecisions_input132_dims100,100_dropout0.45,0.9.pt'
     
+    optimized_model_parameters = {
+        'transition1': {'hidden_layers': [500], 'attention_heads': [5], 'embed_size': 800, 'dropout': 0.95, 'input_dropout': 0.5},
+        'transition2': {'hidden_layers': [500, 500], 'attention_heads': [5, 5], 'embed_size': 800, 'dropout': 0.95, 'input_dropout': 0.5},
+        'outcomes': {'hidden_layers': [500], 'attention_heads': [5], 'embed_size': 800, 'dropout': 0.95, 'input_dropout': 0.5},
+        'decision': {'hidden_layers': [100, 100], 'attention_heads': [1, 1], 'embed_size': 200, 'dropout': 0.95, 'input_dropout': 0.55, 'shufflecol_chance': 0.9},
+    }
     ccs = list(cc_types.values())
     state3 = ccs + primary_disease_states2 + nodal_disease_states2 + dlt2
     name_dict = {
@@ -108,8 +114,11 @@ class Const:
         'chemo_state2': ccs,
         'pd_state2': primary_disease_states2,
         'pd_state2': nodal_disease_states2,
+        
     }
     
+    
+ 
     stratified_train_ids = [
         5,6,8,11,13,14,15,16,17,18,21,23,24,26,27,28,32,33,37,38,39,40,
         41,42,48,49,50,51,53,55,56,57,60,64,65,67,69,71,74,75,78,79,80,
