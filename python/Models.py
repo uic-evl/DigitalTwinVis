@@ -67,7 +67,7 @@ class SimulatorBase(torch.nn.Module):
             base = tuple([torch.zeros(xx.shape) for xx in x])
         attributions = ig.attribute(x,base,target=target)
         return attributions
-    
+
 class SimulatorAttentionBase(SimulatorBase):
     
     def __init__(self,input_size,
@@ -103,7 +103,7 @@ class SimulatorAttentionBase(SimulatorBase):
         self.norms = torch.nn.ModuleList(norms)
         self.final_layer = torch.nn.Linear(hidden_layers[-1],len(Const.decisions))
         self.activation = torch.nn.ReLU()
-    
+
 class OutcomeSimulator(SimulatorBase):
     
     def __init__(self,
@@ -148,7 +148,7 @@ class OutcomeSimulator(SimulatorBase):
         #dlts are array of nbatch x n_dlts x predictions
         x_dlts = torch.cat([self.sigmoid(xx) for xx in x_dlts],axis=1)
         return [x_pd, x_nd, x_mod, x_dlts]
-    
+
 class EndpointSimulator(SimulatorBase):
     
     def __init__(self,
@@ -234,7 +234,8 @@ class DecisionModel(SimulatorBase):
         x = self.final_layer(x)
         x = self.sigmoid(x)
         return x
-    
+
+# +
 class DecisionAttentionModel(DecisionModel):
     
     def __init__(self,
@@ -250,7 +251,16 @@ class DecisionAttentionModel(DecisionModel):
         #input will be all states up until treatment 3
         input_size = baseline_input_size  + 2*len(Const.dlt1) + len(Const.primary_disease_states)  + len(Const.nodal_disease_states)  + len(Const.ccs)  + len(Const.modifications) + 2
         
- 
+        self.baseline_input_size= baseline_input_size
+        self.input_sizes = {
+            'baseline': baseline_input_size,
+            'dlt': len(Const.dlt1),
+            'pd': len(Const.primary_disease_states),
+            'nd': len(Const.nodal_disease_states),
+            'cc': len(Const.ccs),
+            'modifications': len(Const.modifications),
+        }
+        
         super().__init__(input_size,hidden_layers=hidden_layers,dropout=dropout,input_dropout=input_dropout,eps=eps,state='decisions')
         
         #to make the input to attention divisible by the initial layer size
@@ -296,11 +306,26 @@ class DecisionAttentionModel(DecisionModel):
             x = self.activation(x)
         return x
     
-    def forward(self,xbase,xdlt1,xdlt2,xpd,xnd,xcc,xmod,position=0):
+    def get_attributions(self,x,output=-1,target=0,position=0):
+        if output == -1:
+            model = lambda x: self.forward(x,position=position)
+        else:
+            model = lambda x: self.forward(x,position=position)[output]
+        ig = IntegratedGradients(model)
+        if isinstance(x,torch.Tensor):
+            base = torch.zeros(x.shape)
+        else:
+            base = tuple([torch.zeros(xx.shape) for xx in x])
+        attributions = ig.attribute(x,base,target=target)
+        return attributions
+    
+    def forward(self,x,position=0):
         #position is 0-2
 #         [xbase, xdlt, xpd, xnd, xcc,xmod] = x
+        xbase = x[:,0:self.baseline_input_size]
+        xx = x[:,self.baseline_input_size:]
         xbase = self.normalize(xbase)
-        x = torch.cat([xbase,xdlt1,xdlt2,xpd,xnd,xcc,xmod],dim=1)
+        x = torch.cat([xbase,xx],dim=1)
         x = self.input_dropout(x)
         x = self.add_position_token(x,position)
         x = self.activation(self.resize_layer(x))
@@ -314,7 +339,29 @@ class DecisionAttentionModel(DecisionModel):
         x = self.final_layer(x)
         x = self.sigmoid(x)
         return x
-    
+
+#     def forward(self,xbase,xdlt1,xdlt2,xpd,xnd,xcc,xmod,position=0):
+#         #position is 0-2
+# #         [xbase, xdlt, xpd, xnd, xcc,xmod] = x
+#         xbase = self.normalize(xbase)
+#         x = torch.cat([xbase,xdlt1,xdlt2,xpd,xnd,xcc,xmod],dim=1)
+#         x = self.input_dropout(x)
+#         x = self.add_position_token(x,position)
+#         x = self.activation(self.resize_layer(x))
+#         for attention,layer,norm in zip(self.attentions,self.layers,self.norms):
+#             x2, attention_weights = attention(x,x,x)
+#             x2 = norm(x2+x)
+#             x2 = self.activation(x2)
+#             x = layer(x2)
+#             x = self.activation(x)
+#         x = self.dropout(x)
+#         x = self.final_layer(x)
+#         x = self.sigmoid(x)
+#         return x
+
+
+# -
+
 class OutcomeAttentionSimulator(SimulatorAttentionBase):
     
     def __init__(self,
@@ -342,7 +389,8 @@ class OutcomeAttentionSimulator(SimulatorAttentionBase):
             #we only have dlt yes or no for the second state?
 #             self.dlt_layers = torch.nn.ModuleList([torch.nn.Linear(hidden_layers[-1],2) for i in Const.dlt2])
             self.treatment_layer = torch.nn.Linear(hidden_layers[-1],len(Const.ccs))
-   
+
+        
     def forward(self,x):
         x = self.normalize(x)
         x = self.input_dropout(x)
@@ -365,7 +413,7 @@ class OutcomeAttentionSimulator(SimulatorAttentionBase):
         #dlts are array of nbatch x n_dlts x predictions
         x_dlts = torch.cat([self.sigmoid(xx) for xx in x_dlts],axis=1)
         return [x_pd, x_nd, x_mod, x_dlts]
-    
+
 class EndpointAttentionSimulator(SimulatorAttentionBase):
     
     def __init__(self,

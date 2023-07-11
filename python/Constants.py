@@ -97,7 +97,7 @@ class Const:
     ]
 #     tuned_transition_models = [model_dir + f for f in tuned_transition_models]
     
-    tuned_decision_model = 'final_decision_model_statedecisions_input132_dims100,100_dropout0.45,0.9.pt'
+    tuned_decision_model = 'final_decision_model_statedecisions_input132_dims600_dropout0.5,0.9.pt'
     
     optimized_model_parameters = {
         'transition1': {'hidden_layers': [500], 'attention_heads': [5], 'embed_size': 800, 'dropout': 0.95, 'input_dropout': 0.5},

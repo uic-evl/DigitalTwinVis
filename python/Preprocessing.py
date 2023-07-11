@@ -135,12 +135,12 @@ def preprocess_dt_data(df,extra_to_keep=None):
         2: 'cc_cetuximab',
         3: 'cc_others',
     }
-    
+
 #     races_shortened = ['White/Caucasian','Hispanic/Latino','African American/Black']
 #     for race in races_shortened:
 #         df[race] = df['Race'].apply(lambda x: x.strip() == race)
 #         to_keep.append(race)
-    
+
     for k,v in Const.cc_types.items():
         df[v] = df['CC Regimen(0= none, 1= platinum based, 2= cetuximab based, 3= others, 9=unknown)'].apply(lambda x: int(Const.cc_types.get(int(x),0) == v))
         to_keep.append(v)
