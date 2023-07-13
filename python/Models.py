@@ -292,27 +292,51 @@ class DecisionAttentionModel(DecisionModel):
         self.norms = torch.nn.ModuleList(norms)
         self.final_layer = torch.nn.Linear(hidden_layers[-1],len(Const.decisions)*2)
         self.activation = torch.nn.ReLU()
+        self.register_buffer('memory',None)
     
-    def get_embedding(self,x,position=0):
+    def get_embedding(self,x,position=0,memory=None,use_saved_memory=False):
         xbase = x[:,0:self.baseline_input_size]
         xx = x[:,self.baseline_input_size:]
         xbase = self.normalize(xbase)
         x = torch.cat([xbase,xx],dim=1)
+        x = self.input_dropout(x)
         x = self.add_position_token(x,position)
         x = self.activation(self.resize_layer(x))
+        if use_saved_memory:
+            memory = self.memory
+            #if I use mutliple stages it will be the first axis
+            if memory is not None and memory.ndim > 2:
+                memory = memory[position]
+            if memory is None:
+                print('passed saved to decision model but no memory has been saved')
+       
+        if memory is not None:
+            m1 = memory[:,0:self.baseline_input_size]
+            m2 = memory[:,self.baseline_input_size:]
+            m1 = self.normalize(m1)
+            memory = torch.cat([m1,m2],dim=1)
+            memory = self.add_position_token(memory,position)
+            memory = self.activation(self.resize_layer(memory))
         for attention,layer,norm in zip(self.attentions,self.layers,self.norms):
-            x2, attention_weights = attention(x,x,x)
-            x2 = norm(x2+x)
+            if memory is not None:
+                x2, attention_weights = attention(x,memory,memory)
+                x2 = norm(x2 + x)
+            else:
+                x2, attention_weights = attention(x,x,x)
+                x2 = norm(x2+x)
             x2 = self.activation(x2)
             x = layer(x2)
             x = self.activation(x)
         return x
     
-    def get_attributions(self,x,output=-1,target=0,position=0):
+    def save_memory(self,newmemory):
+        self.memory= newmemory
+    
+    def get_attributions(self,x,output=-1,target=0,**kwargs):
         if output == -1:
-            model = lambda x: self.forward(x,position=position)
+            model = lambda x: self.forward(x,**kwargs)
         else:
-            model = lambda x: self.forward(x,position=position)[output]
+            model = lambda x: self.forward(x,**kwargs)[output]
         ig = IntegratedGradients(model)
         if isinstance(x,torch.Tensor):
             base = torch.zeros(x.shape)
@@ -321,22 +345,9 @@ class DecisionAttentionModel(DecisionModel):
         attributions = ig.attribute(x,base,target=target)
         return attributions
     
-    def forward(self,x,position=0):
+    def forward(self,x,position=0,memory=None,use_saved_memory=False):
         #position is 0-2
-#         [xbase, xdlt, xpd, xnd, xcc,xmod] = x
-        xbase = x[:,0:self.baseline_input_size]
-        xx = x[:,self.baseline_input_size:]
-        xbase = self.normalize(xbase)
-        x = torch.cat([xbase,xx],dim=1)
-        x = self.input_dropout(x)
-        x = self.add_position_token(x,position)
-        x = self.activation(self.resize_layer(x))
-        for attention,layer,norm in zip(self.attentions,self.layers,self.norms):
-            x2, attention_weights = attention(x,x,x)
-            x2 = norm(x2+x)
-            x2 = self.activation(x2)
-            x = layer(x2)
-            x = self.activation(x)
+        x = self.get_embedding(x,position=position,memory=memory,use_saved_memory=use_saved_memory)
         x = self.dropout(x)
         x = self.final_layer(x)
         x = self.sigmoid(x)
