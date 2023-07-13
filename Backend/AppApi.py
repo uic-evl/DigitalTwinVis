@@ -1,12 +1,12 @@
-import pickle
 import simplejson
 import numpy as np
 import pandas as pd
 import datetime
-import glob
+import re
 import torch
 from Preprocessing import DTDataset
 from sklearn.decomposition import PCA
+from scipy.spatial.distance import cdist
 
 def load_dataset():
     data = DTDataset()
@@ -186,7 +186,6 @@ def get_neighbors_and_embedding(pdata,dataset,decisionmodel,embedding_df=None,st
     
     inputs = dict_to_model_input(dataset,pdata,state=state)
     
-    embedding_inputs = np.stack(embedding_df['inputs'+str(state)].values)
     
     embedding = decisionmodel.get_embedding(inputs,position=state,use_saved_memory=True)[0].view(1,-1).detach().numpy()
 
@@ -221,12 +220,12 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     decisionmodel.eval()
     results = {}
     
-    size_dict = decision_model.input_sizes
+    size_dict = decisionmodel.input_sizes
     
     #baseline, dlt1, dlt2, pd, nd, cc, mod
     input_keys = get_inputkey_order(data)
     def get_attention(xx, position, offset):
-        attention = decision_model.get_attributions(xx,target=position+offset, position=1)[0].detach().numpy()
+        attention = decisionmodel.get_attributions(xx,target=position+offset, position=1)[0].detach().numpy()
         attention_dict = {
             'step': position,
             'model': 'optimal' if offset == 0 else 'imitation',
@@ -274,7 +273,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
             d2 = torch.tensor([[decision2]]).type(torch.FloatTensor)
             d2_attention=0
         else:
-            d2 = decision_model(cat(oinput2),position=1)[0,1+modifier].view(1,-1)
+            d2 = decisionmodel(cat(oinput2),position=1)[0,1+modifier].view(1,-1)
             d2_attention = get_attention(cat(oinput2),1,modifier)
         
         #transition 2 modle uses baseline + pd1 + nd1 + modification + dlt1 + decision 1 + deicsion 2
@@ -294,7 +293,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
             d3 = torch.tensor([[decision3]]).type(torch.FloatTensor)
             d3_attention=0
         else:
-            d3 = decision_model(cat(oinput3),position = 2)[0,2+modifier].view(1,-1)
+            d3 = decisionmodel(cat(oinput3),position = 2)[0,2+modifier].view(1,-1)
             d3_attention = get_attention(cat(oinput3),2,modifier)
         
         #outcomes uses baseline + pd2 + nd2 + cc type + dlt2 + decision 1,2,3

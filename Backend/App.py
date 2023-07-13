@@ -1,7 +1,6 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import simplejson
-import pickle
 from AppApi import *
 
 app = Flask(__name__)
@@ -69,7 +68,7 @@ def get_patient_neighbors():
         state = 2
     n = request.get('n_neighbors')
     if n is None:
-        n = 10
+        n = 100
     print('_new patient neibhors request_')
     print(patient_dict)
     print('---')
