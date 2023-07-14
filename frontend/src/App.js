@@ -8,6 +8,8 @@ import { ChakraProvider,Grid,GridItem, Select,Box ,InputGroup} from '@chakra-ui/
 import DataService from './modules/DataService';
 import Utils from './modules/Utils';
 
+import ScatterPlotD3 from './components/ScatterPlotD3';
+
 function App() {
 
   const defaultPatient = {
@@ -28,6 +30,7 @@ function App() {
   const [cohortEmbeddings, setCohortEmbeddings] = useState();
   const [cohortLoaded,setCohortLoaded] = useState(false);
 
+  const [currState, setCurrState] = useState(2);//0-2
 
   function getUpdatedPatient(features){
     let p = Object.assign({},patientFeatures);
@@ -104,8 +107,33 @@ function App() {
   },[patientFeatures])
 
   return (
-    <div className="App">
-    </div>
+    <ChakraProvider>
+      <Grid
+        h='100%'
+        w='100%'
+        templateRows='2em repeat(4,1fr)'
+        templateColumns='calc(55vw + 1em) repeat(2,1fr)'
+        gap={1}
+      >
+        <GridItem rowSpan={1} colSpan={3} >
+          {'1'}
+        </GridItem>
+        <GridItem rowSpan={4} className={'shadow scroll'} colSpan={1}>
+          {'2'}
+        </GridItem>
+        <GridItem rowSpan={2} colSpan={2} className={'shadow'}>
+          <ScatterPlotD3
+            cohortData={cohortData}
+            cohortEmbeddings={cohortEmbeddings}
+            currState={currState}
+            setCurrState={setCurrState}
+          />
+        </GridItem>
+        <GridItem rowSpan={2} colSpan={2} className={'shadow'}>
+          {'5'}
+        </GridItem>
+      </Grid>
+    </ChakraProvider>
   );
 }
 

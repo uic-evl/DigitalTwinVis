@@ -37,13 +37,6 @@ export default class Utils {
         return PCA.transpose(result.formattedAdjustedData);
     }
     
-    static circlePath(r){
-        //draw a circle for an svg path with radius R, centered on 0,0
-        let path = 'M ' + (-r) + ', 0 '
-            + 'a ' + r + ',' + r + ' 0 1,0 ' + (2*r) + ',0 '
-            + 'a ' + r + ',' + r + ' 0 1,0 ' + (-2*r) + ',0';
-        return path;
-    }
     
     static Pca2D(array){
       //helper function to do pca for proejction on an array of arrays shape NxD -> Nx2
@@ -344,69 +337,6 @@ export default class Utils {
         return false
     }
 
-    static truncateOrganNames(organ_name){
-        let name = organ_name.replace('Lt_','')
-                        .replace('Rt_','')
-                        .replace("Sternocleidomastoid_M",'SCM')
-                        .replace('Gland','Glnd')
-                        .replace('Upper','Up')
-                        .replace('Lower','Lw')
-                        .replace('Submandibular','sbmnd')
-                        // .replace('_M','')
-                        .replace('_Muscle','')
-                        .replace('_Bone','')
-                        .replace('Lateral','Lat')
-                        .replace('Medial','Med')
-                        .replace('Anterior','Ant')
-                        .replace('Extended_','')
-                        .replace('id_M','id')
-                        .replace('ter_M','ter')
-                        .replace('ic_M','ic')
-                        .replace('sus_M','sus');//amogus
-                        // .replace('o','')
-                        // .replace('u','')
-                        // .replace('i','');
-        return this.getVarDisplayName(name);
-    }
 
-    static adjustOrganSpacing(organ, entry){
-        if(organ.includes("Submandibular")){
-            entry.y += .8
-        } else if(organ.includes('Digastric')){
-            entry.y -= 1.1;
-        }if(organ.includes("Submandibular")){
-            entry.y += .4;
-        } else if(organ.includes('Digastric')){
-            entry.y -= 1;
-        } else if(organ.includes('Genioglossus')){
-            entry.y -= .5;
-        } else if(organ.includes('Masseter')){
-            entry.y += .3;
-        } else if(organ.includes('Hard')){
-            entry.y += .3;
-            entry.x += 1;
-        } else if(organ.includes('Soft')){
-            entry.y -= .5;
-            entry.x -= 1;
-        } else if(organ.includes("Larynx")){
-            entry.y += 1.5;
-        } else if(organ.toLowerCase() === 'ipc'){
-            entry.y -= 1.5;
-            entry.x -= 3;
-        } else if(organ.includes('Lip')){
-            entry.x += 1.5;
-        } else if(organ.includes("Spinal_")){
-            entry.x -= 3;
-            entry.y -= 3;
-        } else if(organ.toLowerCase().includes('lateral_pterygoid')){
-            entry.y += 1;
-        }
-        if(organ.includes('Lt_')){
-            entry.x += 1;
-        } else if(organ.includes("Rt_")){
-            entry.x -= 1
-        }
-        return entry;
-    }
 
 }
