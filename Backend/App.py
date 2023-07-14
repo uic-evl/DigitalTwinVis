@@ -11,9 +11,9 @@ decision_model,transition_model1,transition_model2,outcome_model = load_models()
 embedding_df = get_embedding_df(DATA,decision_model)
 print('stuff loaded')
 
-def responsify(dictionary):
+def responsify(dictionary,convert=True):
     # djson = nested_responsify(dictionary) #simplejson.dumps(dictionary,default=np_converter,ignore_nan=True)
-    if isinstance(dictionary,str):
+    if isinstance(dictionary,str) or (not convert):
         djson = dictionary
     else:
         djson = simplejson.dumps(dictionary,default=np_converter,ignore_nan=True)
@@ -35,7 +35,7 @@ def get_patient_data():
     patients = request.args.getlist('patientIds')
     fields = request.args.getlist('fields')
     return_vals = get_dataset_jsons(DATA,ids=patients,fields=fields)
-    print('return patient data',return_vals)
+    # print('return patient data',return_vals)
     data = responsify(return_vals)
     return data
 
@@ -45,7 +45,7 @@ def get_patient_embeddings():
     patients = request.args.getlist('patientIds')
     fields = request.args.getlist('fields')
     return_vals = get_embedding_json(DATA,decision_model,ids=patients,fields=fields)
-    print('return patient embeddings',return_vals)
+    # print('return patient embeddings',return_vals)
     data = responsify(return_vals)
     return data
 
@@ -56,19 +56,21 @@ def get_newpatient_stuff():
     print(patient_dict)
     print('---')
     return_vals = get_stuff_for_patient(patient_dict,DATA,transition_model1,transition_model2,outcome_model,decision_model)
-    print(return_vals)
+    # print(return_vals)
     print('-------')
     return responsify(return_vals)
 
 @app.route('/neighbors',methods=['POST'])
 def get_patient_neighbors():
     patient_dict = request.get_json(force=True)
-    state = request.get('state')
-    if state is None:
-        state = 2
-    n = request.get('n_neighbors')
-    if n is None:
-        n = 100
+    state=2
+    n = 100
+    # state = request.get('state')
+    # if state is None:
+    #     state = 2
+    # n = request.get('n_neighbors')
+    # if n is None:
+    #     n = 100
     print('_new patient neibhors request_')
     print(patient_dict)
     print('---')
@@ -77,12 +79,6 @@ def get_patient_neighbors():
         'neighbors': neighbors.astype(int).tolist(),
         'similarities': similarities.tolist()
     }
-    print(return_vals)
+    # print(return_vals)
     print('-------')
     return responsify(return_vals)
-
-# @app.route('/mdasi')
-# def get_mdasi():
-#     data = load_mdasi_data()
-#     response = responsify(data)
-#     return response

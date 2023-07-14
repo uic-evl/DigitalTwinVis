@@ -32,6 +32,8 @@ def np_converter(obj):
     #converts stuff to vanilla python  for json since it gives an error with np.int64 and arrays
     if isinstance(obj, np.integer):
         return int(obj)
+    elif isinstance(obj, np.float32):
+        return np.round(float(obj),3)
     elif isinstance(obj, float):
         return round(float(obj),3)
     elif isinstance(obj, np.ndarray):
@@ -42,7 +44,6 @@ def np_converter(obj):
         return obj.__str__()
     print('np_converter cant encode obj of type', obj,type(obj))
     return obj
-
 def jsonify_np_dict(d):
     return simplejson.dumps(d,default=np_converter)
 
