@@ -33,9 +33,9 @@ def np_converter(obj):
     if isinstance(obj, np.integer):
         return int(obj)
     elif isinstance(obj, np.float32):
-        return np.round(float(obj),3)
+        return np.round(float(obj),5)
     elif isinstance(obj, float):
-        return round(float(obj),3)
+        return round(float(obj),5)
     elif isinstance(obj, np.ndarray):
         return obj.tolist()
     elif isinstance(obj, np.bool_):
@@ -61,6 +61,8 @@ def get_dataset_jsons(dataset,ids=None,fields=None):
 def get_embedding_json(dataset,decisionmodel,embed_df = None,precision=4,ids=None,fields=None):
     if embed_df is None:
         embed_df = get_embedding_df(dataset,decisionmodel)
+    else:
+        embed_df=embed_df.copy()
     if ids is not None and len(ids) > 0:
         embed_df = embed_df.loc[ids]
         
@@ -131,7 +133,13 @@ def get_embeddings(dataset,dm,states=[0,1,2],use_saved_memory=True,decimals=2):
         embeddings.append(embedding)
     return embeddings,np.array(decisions_optimal).reshape(len(states),-1).T, np.array(decisions_imitation).reshape(len(states),-1).T, inputs
 
-def get_embedding_df(dataset,dm,states=[0,1,2],**kwargs):
+def get_embedding_pcas(dataset,decision_model,embeddings=None,components=2):
+    if embeddings is None:
+        embeddings, _, _, _ = get_embeddings(dataset,decision_model,states=[0,1,2])
+    pcas = [PCA(components,whiten=True).fit(e) for e in embeddings]
+    return pcas
+
+def get_embedding_df(dataset,dm,states=[0,1,2],pcas=None,**kwargs):
     embeddings, decisions_opt, decisions_im, embedding_inputs = get_embeddings(dataset,dm,
                                                                                       states=states,**kwargs)
     values = {'embeddings_state'+str(i): [np.array(ee) for ee in e] for i,e in zip(states,embeddings)}
@@ -142,6 +150,12 @@ def get_embedding_df(dataset,dm,states=[0,1,2],**kwargs):
         newdf['decision'+str(ii)+"_optimal"] = opt
         newdf['decision'+str(ii)+'_imitation'] = im
         newdf['inputs'+str(ii)] = [np.array(ee) for ee in embedding_inputs[ii]]
+    
+    if pcas is None:
+        pcas = get_embedding_pcas(dataset,dm,embeddings=embeddings)
+    reductions = [ipca.fit_transform(e) for ipca,e in zip(pcas,embeddings)]
+    for state,r in enumerate(reductions):
+        newdf['pca_state'+str(state)] = [np.array(rr) for rr in r]
     return newdf
 
 def get_default_input(dataset,state=0,ids=None):
@@ -177,7 +191,7 @@ def dict_to_model_input(dataset,fdict,state=0,ttype=torch.FloatTensor,concat=Tru
     #currently at this line its baseline, dlt1, dlt2, pd, nd, cc, modifications
     return inputs
 
-def get_neighbors_and_embedding(pdata,dataset,decisionmodel,embedding_df=None,state=2,max_neighbors=10):
+def get_neighbors_and_embedding(pdata,dataset,decisionmodel,embedding_df=None,state=2,max_neighbors=10,pcas=None):
     decisionmodel.eval()
     if embedding_df is None:
         embedding_df = get_embedding_df(dataset,decisionmodel)
@@ -198,7 +212,10 @@ def get_neighbors_and_embedding(pdata,dataset,decisionmodel,embedding_df=None,st
     min_dists = dists[min_positions]
     similarities = 1/(1+min_dists)
     similarities /= similarities.max() #adjust for rounding errors, self sim should be the max
-    return neighbor_ids, similarities
+    if pcas is not None:
+        pPca = pcas[state].transform(embedding)[0]
+        return neighbor_ids, similarities,embedding[0],pPca
+    return neighbor_ids, similarities, embedding[0]
 
 def dictify(keys,values):
     return {k:v for k,v in zip(keys,values)}

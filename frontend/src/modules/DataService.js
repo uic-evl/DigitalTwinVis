@@ -33,7 +33,7 @@ export default class DataService {
             }
             let qstring = '/patientdata';
             qstring += this.getParamList(params);
-            console.log('patientdata qstring',qstring);
+            // console.log('patientdata qstring',qstring);
             const response = await this.api.get(qstring);
             return response.data;
         } catch(error){
@@ -94,7 +94,7 @@ export default class DataService {
             'state': state,
         }
         let qstring = '/neighbors' + this.getParamList(params);
-        console.log('neighborquery',qstring);
+        // console.log('neighborquery',qstring);
         try{
             var response = await this.api.post(qstring,goodPostData);
             response.postData = goodPostData;

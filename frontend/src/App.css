@@ -1,38 +1,104 @@
-.App {
+#root {
   text-align: center;
+  height: 100vh!important;
+  width: 100vw;
 }
 
-.App-logo {
-  height: 40vmin;
-  pointer-events: none;
+.tooltip {	
+  position: absolute;
+  z-index: 10;
+  opacity: 1!important;			
+  text-align: center;			
+  width: auto;		
+  max-width: 50vw;			
+  height: auto;					
+  padding: 10px;				
+  font: 12px sans-serif;		
+  background: rgb(172, 173, 173);	
+  border: 0px;		
+  border-radius: 8px;			
+  pointer-events: none;	
+  font-size: .7em!important;		
 }
 
-@media (prefers-reduced-motion: no-preference) {
-  .App-logo {
-    animation: App-logo-spin infinite 20s linear;
-  }
+.chakra-select, option{
+  /* width: !important; */
+  height: auto!important;
+  font-size: 1em!important;
+  /* padding: .1em!important;
+  margin: .5em!important; */
 }
 
-.App-header {
-  background-color: #282c34;
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  font-size: calc(10px + 2vmin);
-  color: white;
+.d3-component{
+  height: 100%!important;
+  width: 100%!important;
+  margin: 0px!important;
+  margin-top: 2px;
+  padding: 0px;
+  background-color: white;
+  transform-origin: 0, 0;
+  overflow-y: visible!important;
 }
 
-.App-link {
-  color: #61dafb;
+.chakra-button{
+  height: 1.5em!important;
+  font-size: 1em!important;
 }
 
-@keyframes App-logo-spin {
-  from {
-    transform: rotate(0deg);
-  }
-  to {
-    transform: rotate(360deg);
-  }
+
+.spinner{
+  height: min(50%,50px)!important;
+  width: min(50%,50px)!important;
+  margin-left: calc(50% - 25px)!important;
+}
+
+.fillSpace{
+  height: 100%!important;
+  width: 100%!important;
+}
+
+.fillHeight{
+  height: 100%;
+}
+
+.fillWidth{
+  width: 100%;
+}
+
+.centerText{
+  justify-content: center!important;
+  text-align: center!important;
+  width: 100% !important;
+
+}
+
+.lightGutter {
+  margin: .2em!important;
+  padding: .1em!important;
+}
+.noGutter, .noGutter > *{
+  margin: 0px!important;
+  padding: 0px!important;
+}
+
+.scroll{
+  overflow-y: scroll;
+}
+
+.shadow{
+  box-shadow: 2px 2px 10px 1px rgba(0, 0, 0, 0.25);
+}
+
+.rounded, .shadow, .shadow >* {
+  border-radius: 1em!important;
+}
+
+.legendText{
+  font-size: 1em!important;
+  font-family: georgia!important;
+}
+
+.autoSize{
+  height: auto!important;
+  width: auto!important;
 }

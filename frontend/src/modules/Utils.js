@@ -147,6 +147,15 @@ export default class Utils {
         return true;
     }
 
+    static allValid(array){ 
+        for(let obj of array){
+            if(!this.validData(obj)){
+                return false;
+            }
+        }
+        return true;
+    }
+
     static itemInArray(item, targetArray){
         for(let target of targetArray){
             if(item === target){
