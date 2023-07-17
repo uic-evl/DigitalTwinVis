@@ -65,7 +65,7 @@ def get_newpatient_stuff():
 def get_patient_neighbors():
     patient_dict = request.get_json(force=True)
     state=2
-    n = 100
+    n = 300
     # state = request.get('state')
     # if state is None:
     #     state = 2

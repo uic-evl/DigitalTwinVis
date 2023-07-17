@@ -5,23 +5,25 @@ import PCA from './PCA.js';
 export default class Utils {
 
     static nameDict = {
-        test: 'fomratTest'
+        test: 'fomratTest',
+        'Aspiration rate Post-therapy': 'AS Post',
+        'Aspiration rate Pre-therapy': 'AS Pre',
+        'N-category': 'N-cat',
+        'T-category': 'T-cat',
+        'Pathological_grade':'Path.</br>Grade',
+        'Overall Survival (4 Years)': 'OS'
     }
 
-    static getRoiInterpolator(roi){
-        roi = roi.toLowerCase();
-        if(roi.includes('gtvn')){
-          return d3.interpolateOrRd;
-        } else if(roi.includes('gtv')){
-          return d3.interpolateReds;
-        } else if(roi  === 'ptv'){
-            return d3.interpolatePurples;
-        } else if(roi === 'ctv'){
-            return d3.interpolateBlues;
+
+    static getFeatureDisplayName(text){
+        if(constants.DECISIONS.indexOf(text) > -1){
+            return 'decision ' + (constants.DECISIONS.indexOf(text) + 1)
         }
-        else{
-          return d3.interpolateOranges;
+        let newText = this.nameDict[text];
+        if(newText === undefined){
+            return this.getVarDisplayName(text.replace('subsite_',''));
         }
+        return newText
     }
 
     static radToCartesian(angle,scale=1){

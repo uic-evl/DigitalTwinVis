@@ -28,10 +28,14 @@ function App() {
   const [currEmbeddings,setCurrEmbeddings] = useState();
   const [cohortData,setCohortData] = useState();
   const [cohortEmbeddings, setCohortEmbeddings] = useState();
-  const [cohortLoaded,setCohortLoaded] = useState(false);
-  const [modelOutput,setModelOutpt] = useState('imitation');
 
+  const [modelOutput,setModelOutpt] = useState('imitation');
   const [currState, setCurrState] = useState(0);//0-2
+
+  const [cohortLoading,setCohortLoading] = useState(false);
+  const [cohortEmbeddingsLoading,setCohortEmbeddingsLoading] = useState(false);
+  const [patientSimLoading,setPatientSimLoading]= useState(false);
+  const [patientEmbeddingLoading,setPatientEmbeddingLoading] = useState(false);
 
   function getUpdatedPatient(features){
     let p = Object.assign({},patientFeatures);
@@ -60,11 +64,16 @@ function App() {
 
   async function fetchCohort(){
     if(cohortData !== undefined){ return }
+    if(!cohortLoading){
+      setCohortLoading(true);
+    } else{
+      return;
+    }
     const pData = await api.getPatientData();
     console.log('patient data loaded');
     if(pData !== undefined){
       setCohortData(pData);
-      setCohortLoaded(true);
+      setCohortLoading(false);
     } else{
       console.log('error setting cohort data');
     }
@@ -72,32 +81,44 @@ function App() {
 
   async function fetchCohortEmbeddings(){
     if(cohortEmbeddings !== undefined){ return }
+    if(!cohortEmbeddingsLoading){
+      setCohortEmbeddingsLoading(true);
+    } else{
+      return;
+    }
     const pData = await api.getPatientEmbeddings();
     console.log('patient embeddings loaded',pData);
     if(pData!== undefined){
       setCohortEmbeddings(pData);
+      setCohortEmbeddingsLoading(false);
     } else{
       console.log('error setting cohort embeddings');
     }
   }
 
   async function fetchPatientSimulation(){
+    if(patientSimLoading){ return }
+    setPatientSimLoading(true);
     const sim = await api.getPatientSimulation(patientFeatures);
     setSimulation(undefined);
     if(sim.data !== undefined){
       console.log('patient simulation',sim);
       setSimulation(sim.data);
+      setPatientSimLoading(false);
     } else{
       console.log('error setting patient simulation');
     }
   }
 
   async function fetchPatientNeighbors(){
+    if(patientEmbeddingLoading){ return }
+    setPatientEmbeddingLoading(true);
     const embed = await api.getPatientNeighbors(patientFeatures);
     setCurrEmbeddings(undefined);
     if(embed.data !== undefined){
       console.log('patient embedding and neighbors',embed.data);
       setCurrEmbeddings(embed.data);
+      setPatientEmbeddingLoading(false);
     } else{
       console.log('error setting patient embedding and neighbors');
     }
@@ -110,6 +131,7 @@ function App() {
   },[]);
 
   useEffect(() => {
+
     fetchPatientNeighbors();
     fetchPatientSimulation();
   },[patientFeatures])
@@ -181,7 +203,11 @@ function App() {
               currEmbeddings={currEmbeddings}
               modelOutput={modelOutput}
               simulation={simulation}
-              
+
+              patientEmbeddingLoading={patientEmbeddingLoading}
+              patientSimLoading={patientSimLoading}
+              cohortLoading={cohortLoading}
+              cohortEmbeddingsLoading={cohortEmbeddingsLoading}
           />
         </GridItem>
       </Grid>
@@ -224,6 +250,11 @@ function App() {
               modelOutput={modelOutput}
               currState={currState}
               updatePatient={updatePatient}
+
+              patientEmbeddingLoading={patientEmbeddingLoading}
+              patientSimLoading={patientSimLoading}
+              cohortLoading={cohortLoading}
+              cohortEmbeddingsLoading={cohortEmbeddingsLoading}
           ></PatientEditor>
           </div>
         </GridItem>

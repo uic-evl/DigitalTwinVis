@@ -13,9 +13,11 @@ export default function PatientEditor(props){
 
     const [varScales,setVarScales] = useState();
     const [meanVals,setMeanVals]= useState();
-    const maxNeighbors = 10;
+    const [encodedCohort,setEncodedCohort] = useState();
+    const maxNeighbors = 5;
     const topMargin = 20;
-    const bottomMargin = 40;
+    const bottomMargin = Math.min(height*.5,90);
+    const textHeight = 10;
     const xMargin = 40;
     const onlyCounterfactuals = props.onlyCounterfactuals === undefined? false:  props.onlyCounterfactuals;
     const ordinalVars = {
@@ -38,7 +40,13 @@ export default function PatientEditor(props){
         'hpv',
         // 'contra_spread',//missing ?
         'total_dose','dose_fraction','packs_per_year']
-    const allVars = Object.keys(ordinalVars).concat(continuousVars).concat(booleanVars);
+    const allVars = Object.keys(ordinalVars)
+    .concat(continuousVars)
+    .concat(booleanVars)
+    .concat(['placeholder'])
+    .concat(constants.DECISIONS)
+    .concat(['placeholder2'])
+    .concat(constants.OUTCOMES);
     
     const xScale = d3.scaleLinear()
             .domain([0,allVars.length])
@@ -68,7 +76,7 @@ export default function PatientEditor(props){
                 .range(range);
             means[key] = d3.median(vals);
         }
-        for(const key of booleanVars){
+        for(const key of booleanVars.concat(constants.DECISIONS).concat(constants.OUTCOMES)){
             scales[key] = d3.scaleLinear()
                 .domain([0,1])
                 .range([range[0]-topMargin,range[1]+topMargin]);
@@ -87,11 +95,10 @@ export default function PatientEditor(props){
                 break;
             }
         }
-        // if(isMissing){ console.log('no correct value for ',key,p,values) }
         return val
     }
 
-    function encodePatient(p){
+    function encodePatient(p,isSimulated=false){
         let values = {}
         for(const [key,v] of Object.entries(ordinalVars)){
             values[key] = encodeOrdinal(p,key,v);
@@ -104,19 +111,38 @@ export default function PatientEditor(props){
             let val = p[key] === undefined? 0:p[key];
             values[key] = val;
         }
+        for(let key of constants.DECISIONS){
+            if(isSimulated){
+                let loc = constants.DECISIONS.indexOf(key);
+                let decision = props.simulation[props.modelOutput]['decision'+(loc+1)];
+                values[key] = decision;
+            } else{
+                let val = p[key] === undefined? 0:p[key] > .5;
+                values[key] = val;
+            }
+        }
+        for(let key of constants.OUTCOMES){
+            if(isSimulated){
+                let loc = constants.OUTCOMES.indexOf(key);
+                let outcome = props.simulation[props.modelOutput]['outcomes'][loc]
+                values[key] = outcome;
+            } else{
+                let val = p[key] === undefined? 0:p[key];
+                values[key] = val;
+            }
+        }
         return values;
     }
 
     function makePanel(){
         //pass
         
-        let mainPatient = encodePatient(props.patientFeatures);
+        let mainPatient = encodePatient(props.patientFeatures,true);
         
 
         const simResults = props.simulation[props.modelOutput];
         const decision = simResults['decision'+(props.currState+1)];
         const attention = simResults['decision'+(props.currState+1)+'_attention'];
-
 
         const attentionScale = d3.scaleDiverging()
             .domain([attention.range[0], 0, attention.range[1]])
@@ -146,95 +172,168 @@ export default function PatientEditor(props){
 
         let pData = [];
 
-        // console.log(props.cohortData,props.currEmbeddings)
-        let neighbors = props.currEmbeddings['neighbors'];
-        let nPaths = [];
-        let decisionName = constants.DECISIONS[props.currState];
-        const mainDecisionProbability = props.simulation[props.modelOutput]['decision'+(props.currState+1)];
-        const mainDecision = (mainDecisionProbability > .5) + 0;
-        for(let i=0; i < neighbors.length; i += 1){
-            let id = neighbors[i];
-            let similarity = props.currEmbeddings['similarities'][i];
-            let entry = props.cohortData[id+''];
-            let decision = entry[decisionName];
-
-            if(onlyCounterfactuals & (decision +0 === mainDecision+0)){
-                continue;
-            }
-
-            entry = encodePatient(entry);
-            let pathEntry = {}
-            let pathPoints = []
-            for(let key of allVars){
-                let val = entry[key];
-                let x = getX(key);
-                let y = getY(val,key);
-                pathPoints.push([x,y]);
-                pData.push({
-                    'x': x,
-                    'y': y,
-                    'name': key,
-                    'value': val,
-                    'id': id,
-                    'class': 'patientMarker',
-                    'fill': '',
-                    'attention': 0,
-                })
-            }
-            let path = d3.line()(pathPoints)
-            nPaths.push({
-                'path': path,
-                'similarity': similarity,
-                'decision': decision,
-                'id': id,
-            })
-            if(nPaths.length > maxNeighbors){
-                break
-            }
-            // console.log(encodePatient(entry),entry);
-        }
-
         for(let key of allVars){
+            if(key.includes('placeholder')){continue}
             let val = mainPatient[key];
             val = val === undefined? 0: val;
             let x = getX(key);
             let y = getY(val,key);
             let attentionV = getAttention(key);
+            let className = 'patientMarker mainPatient';
+            if(constants.OUTCOMES.concat(constants.DECISIONS).indexOf(key) < 0){
+                className += ' moveable'
+            }
             pData.push({
                 'x': x,
                 'y': y,
                 'name':key,
                 'value': val,
                 'id': -1,
-                'class': 'patientMarker mainPatient',
+                'class': className,
                 'fill': attentionScale(attentionV),
                 'attention': attentionV,
             })
         }
 
+        let nPaths = [];
+        let decisionName = constants.DECISIONS[props.currState];
+        const mainDecisionProbability = props.simulation[props.modelOutput]['decision'+(props.currState+1)];
+        const mainDecision = (mainDecisionProbability > .5) + 0;
+
+        const isCf = entry => parseInt(entry[decisionName] + 0) === parseInt(mainDecision + 0);
+        const neighbors = props.currEmbeddings['neighbors'].map(d=>!d.isCf).slice(0,maxNeighbors);
+        const counterfactuals = props.currEmbeddings['neighbors'].map(d=>d.isCf).slice(0,maxNeighbors);
+
+        const objKeys = Object.keys(encodedCohort[0]);
+        function makeTemplate(){
+            let obj = {}
+            for(let key of objKeys){
+                obj[key] = [];
+            }
+            return obj
+        }
+
+        let neighborMeans = makeTemplate();
+        let cfMeans = makeTemplate();
+        let allMeans = makeTemplate();
+        let neighborEntries = [];
+        let cfEntries = [];
+        for(let entry of encodedCohort){
+            let isNeighbor = neighbors.indexOf(entry.id) > -1;
+            let isCounterFact = counterfactuals.indexOf(entry.id) > -1;
+            if(isNeighbor){
+                neighborEntries.push(entry);
+            } else if(isCounterFact){
+                cfEntries.push(entry);
+            }
+            for(let [key,val] of Object.entries(entry)){
+                if(key === 'id'){continue}
+                allMeans[key] = allMeans[key].concat(val);
+                if(isCf){
+                    cfMeans[key] = cfMeans[key].concat(val);
+                } else if(isNeighbor){
+                    neighborMeans[key] = neighborMeans[key].concat(val);
+                }
+            }
+        }
+
+
+        function meanitize(entry){
+            let obj = {};
+            for(let key of objKeys){
+                let vals = entry[key];
+                let mean = 0;
+                if(vals.length > 0){
+                    for(let v of vals){
+                        mean += v+0;
+                    }
+                    mean /= vals.length;
+                }
+                obj[key] = mean;
+            }
+            return obj
+        }
+        // console.log('neighbors',neighborEntries.map(f=>f[constants.OUTCOMES[0]]))
+        neighborMeans = meanitize(neighborMeans);
+        cfMeans = meanitize(cfMeans);
+        allMeans = meanitize(allMeans);
+
+        function formatPath(entry,id,className,
+            lineColor='black',
+            opacity=.001,similarity=0){
+
+            let pathPoints = [];
+            let markerPoints = [];
+            let decision = entry[decisionName];
+            for(let key of allVars){
+                if(key.includes('placeholder')){continue}
+                let val = entry[key];
+                let x = getX(key);
+                let y = getY(val,key);
+                pathPoints.push([x,y]);
+                markerPoints.push({
+                    'x': x,
+                    'y': y,
+                    'name': key,
+                    'value': val,
+                    'id': id,
+                    'class': className,
+                    'fill': lineColor,
+                    'attention': 0,
+                })
+            }
+            let path = d3.line()(pathPoints);
+            let pathEntry = {
+                'path': path,
+                'similarity': similarity,
+                'decision': decision,
+                'id': id,
+                'opacity': opacity,
+                'stroke': lineColor,
+                'data': entry,
+            }
+            return [pathEntry, markerPoints]
+        }
+
+        const [allPath, allDots] = formatPath(allMeans,
+            'cohort avg','patientMarker meanMarker','black',.5,'');
+        
+        //want decision = yes to be blue
+        const cfColor = mainDecision > 0? 'blue': 'red';
+        const nColor = mainDecision > 0? 'red':'blue'
+        const [nPath, nDots] = formatPath(neighborMeans,
+            'neighbors','patientMarker meanMarker',nColor,.5,'');
+        const [cfPath, cfDots] = formatPath(cfMeans,
+            'counterfactuals','patientMarker meanMarker',cfColor,.5,'');
+        nPaths.push(allPath);
+        nPaths.push(nPath);
+        nPaths.push(cfPath);
+        pData = pData.concat(allDots).concat(nDots).concat(cfDots);
+
+        //if I bring this back do also cf entries
+        // for(let nEntry of neighborEntries){
+        //     let nPos = neighbors.indexOf(nEntry.id);
+        //     let sim = 0;
+        //     if(nPos > -1){ sim =  props.currEmbeddings['similarities'][nPos]; }
+        //     nPaths.push( formatPath(nEntry,nEntry.id,'patientMarker','grey',.01,sim)[0] );
+        // }
+        
         var getRadius = (d)=>{
             if(d.id === -1){
                 return 10;
             }
-            return 1;
+            return 7;
         }
 
-        var getFill = (d)=>{
-            if(d.id === -1){
-                return d.fill;
-            }
-            return 'gray';
-        }
+        var getFill = (d)=>{return d.fill;}
 
-        var getPathColor= (d)=>{
-            return d.decision + 0 === mainDecision + 0? 'blue': 'red';
-        }
+        var getPathColor= (d)=>{ return d.stroke; }
 
         function getOpacity(d){
             if(d.id === -1){
                 return 1;
             }
-            return .5;
+            return .7;
         }
 
         svg.selectAll('.patientLines').remove();
@@ -242,25 +341,39 @@ export default function PatientEditor(props){
             .data(nPaths).enter()
             .append("path").attr('class','patientLines')
             .attr('d',d=>d.path)
-            .attr('opacity',1/Math.sqrt(maxNeighbors/2))
+            .attr('opacity',d=>d.opacity)
             .attr('fill','none')
             .attr('stroke-width',3)
-            .attr('stroke',getPathColor);
+            .attr('stroke',getPathColor)
+            .on('mouseover',function(e,d){
+                let string = d.id + '</br>';
+                for(let [key,value] of Object.entries(d.data)){
+                    if(key === 'id'){continue}
+                    string += key + ': ' + value.toFixed(2) + '</br>'
+                }
+                tTip.html(string);
+            }).on('mousemove', function(e){
+                Utils.moveTTipEvent(tTip,e);
+            }).on('mouseout', function(e){
+                Utils.hideTTip(tTip);
+            });
         
-            
+        // console.log('pdata',pData)
         svg.selectAll('.patientMarker').remove();
         let pCircles = svg.selectAll('.patientMarker')
             .data(pData).enter()
-            .append('circle').attr('class','patientMarker')//d=>d.className)
+            .append('circle').attr('class',d=>d.class)
             .attr('cx',d=>d.x)
             .attr('cy',d=>d.y)
             .attr('r',getRadius)
             .attr('fill',getFill)
             .attr('opacity',getOpacity)
             .attr('stroke','black')
+            .attr('cursor',d=> d.class.includes('moveable')? 'pointer':'')
             .attr('stroke-width',1);
 
         svg.selectAll('.patientMarker').raise()
+        svg.selectAll('.mainPatient').raise();
         updateSliderCallbacks();
          
     }
@@ -303,26 +416,24 @@ export default function PatientEditor(props){
                     for(let val of ordinalVars[d.name]){
                         fQue[d.name+'_'+val] = (val == newVal) + 0;
                     }
-                    // console.log('fque ordinal',fQue)
                 }else{
                     let oldVal = d.value;
                     if(Math.abs(oldVal - newVal) > .00001){
                         fQue[d.name] = newVal;
-                        // console.log('fque',fQue);
                     }
                 }
                 d3.select(this)
                     .attr('cy',newY)
-                // props.updatePatient(fQue);
                 props.setFeatureQue(fQue);
         });
 
-        let mP = svg.selectAll('.patientMarker');
+        let mP = svg.selectAll('.patientMarker').filter('.moveable');
         if(!mP.empty()){
             mP.on('mouseover',function(e,d){
+                let attention = d.attention === undefined? 'NA': d.attention.toFixed(3);
                 let string = d.id + '</br>'
                     + d.name + ': ' + d.value + '</br>'
-                    + 'attribution: ' + d.attention.toFixed(3);
+                    + 'attribution: ' + attention;
                 tTip.html(string);
             }).on('mousemove', function(e){
                 Utils.moveTTipEvent(tTip,e);
@@ -331,6 +442,17 @@ export default function PatientEditor(props){
             }).call(dragHandler);
         }
     }
+
+    useEffect(function processCohort(){
+        if(props.cohortData === undefined){return}
+        let patients = [];
+        for(let [id,entry] of Object.entries(props.cohortData)){
+            let pEntry = encodePatient(entry);
+            pEntry['id'] = parseInt(id);
+            patients.push(pEntry);
+        }
+        setEncodedCohort(patients);
+    },[props.cohortData])
 
     useEffect(()=>{
         if(svg === undefined){ return;}
@@ -351,6 +473,7 @@ export default function PatientEditor(props){
             
             const axes = [];
             const markers = [];
+            const labels = [];
             for(const [key,scale] of Object.entries(s)){
                 let x = getX(key);
                 let y0 = height-bottomMargin//scale.range()[0];
@@ -360,6 +483,8 @@ export default function PatientEditor(props){
                     'path': line,
                     'name': key,
                     'domain': scale.domain(),
+                    'xText':x,
+                    'yText': y0 + 20 + textHeight,
                 })
                 for(let y of [topMargin,height-bottomMargin]){
                     markers.push({
@@ -382,25 +507,38 @@ export default function PatientEditor(props){
             svg.selectAll('.axesTick').remove();
             svg.selectAll('.axesTick')
                 .data(markers).enter()
-                .append('circle').attr('class','.axesTick')
+                .append('circle').attr('class','axesTick')
                 .attr('cx',d=>d.x)
                 .attr('cy',d=>d.y)
                 .attr('r',2)
                 .attr('fill','white')
                 .attr('stroke','gray')
-                .attr('stroke-width',2)
+                .attr('stroke-width',2);
+
+            svg.selectAll('.axesText').remove();
+            svg.selectAll('.axesText')
+                .data(axes).enter()
+                .append('text').attr('class','axesText')
+                .attr('font-size',textHeight)
+                .attr('x',0).attr('y',0)
+                .attr('transform',d=> 'translate('+d.xText+','+d.yText+')rotate(-40)')
+                .attr('text-anchor','middle')
+                .attr('alignment-baseline','middle')
+                .text(d=>Utils.getFeatureDisplayName(d.name))
         }
     },[props.cohortData,svg]) 
 
     useEffect(()=>{
         if(!Utils.allValid([svg,props.patientFeatures,
-            props.cohortData,props.currEmbeddings,
+            encodedCohort,
+            props.currEmbeddings,
             props.simulation,
             varScales])){return}
         makePanel()
     },[props.patientFeatures,
-        props.cohortData,svg,
+        svg,
         props.simulation,
+        encodedCohort,
         props.currState,props.modelOutput,
         props.currEmbeddings,varScales])
 
