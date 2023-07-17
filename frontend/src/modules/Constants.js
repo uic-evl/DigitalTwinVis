@@ -3,5 +3,11 @@ export const API_URL = 'http://127.0.0.1:8000/';//this is a bad way to do this. 
 
 export const OUTCOMES = ['Overall Survival (4 Years)','FT','Aspiration rate Post-therapy']
 export const DECISIONS = [
-        'Decision 1 (Induction Chemo) Y/N','Decision 2 (CC / RT alone)','Decision 3 Neck Dissection (Y/N)'
+        'Decision 1 (Induction Chemo) Y/N',
+        'Decision 2 (CC / RT alone)',
+        'Decision 3 Neck Dissection (Y/N)'
 ]
+
+export const noColor = '#af8dc3';
+export const yesColor = '#7fbf7b';
+export const divergingAttributionColors = ['#91bfdb','white','#fc8d59'];

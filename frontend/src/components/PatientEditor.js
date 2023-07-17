@@ -114,7 +114,7 @@ export default function PatientEditor(props){
         for(let key of constants.DECISIONS){
             if(isSimulated){
                 let loc = constants.DECISIONS.indexOf(key);
-                let decision = props.simulation[props.modelOutput]['decision'+(loc+1)];
+                let decision = props.getSimulation()['decision'+(loc+1)];
                 values[key] = decision;
             } else{
                 let val = p[key] === undefined? 0:p[key] > .5;
@@ -124,7 +124,7 @@ export default function PatientEditor(props){
         for(let key of constants.OUTCOMES){
             if(isSimulated){
                 let loc = constants.OUTCOMES.indexOf(key);
-                let outcome = props.simulation[props.modelOutput]['outcomes'][loc]
+                let outcome = props.getSimulation()['outcomes'][loc];
                 values[key] = outcome;
             } else{
                 let val = p[key] === undefined? 0:p[key];
@@ -146,7 +146,7 @@ export default function PatientEditor(props){
 
         const attentionScale = d3.scaleDiverging()
             .domain([attention.range[0], 0, attention.range[1]])
-            .range(['blue','white','yellow']);
+            .range(constants.divergingAttributionColors);
 
 
         function getAttention(key){
@@ -197,12 +197,16 @@ export default function PatientEditor(props){
 
         let nPaths = [];
         let decisionName = constants.DECISIONS[props.currState];
-        const mainDecisionProbability = props.simulation[props.modelOutput]['decision'+(props.currState+1)];
+        const mainDecisionProbability = props.getSimulation();
+        //props.simulation[props.modelOutput]['decision'+(props.currState+1)];
         const mainDecision = (mainDecisionProbability > .5) + 0;
 
-        const isCf = entry => parseInt(entry[decisionName] + 0) === parseInt(mainDecision + 0);
-        const neighbors = props.currEmbeddings['neighbors'].map(d=>!d.isCf).slice(0,maxNeighbors);
-        const counterfactuals = props.currEmbeddings['neighbors'].map(d=>d.isCf).slice(0,maxNeighbors);
+        const isCf = id => {
+            let val = props.cohortData[id+''];
+            return parseInt(val[decisionName] + 0) !== parseInt(mainDecision + 0)
+        }
+        const neighbors = props.currEmbeddings['neighbors'].filter(d=>!isCf(d)).slice(0,maxNeighbors);
+        const counterfactuals = props.currEmbeddings['neighbors'].filter(d=>isCf(d)).slice(0,maxNeighbors);
 
         const objKeys = Object.keys(encodedCohort[0]);
         function makeTemplate(){
@@ -226,37 +230,27 @@ export default function PatientEditor(props){
             } else if(isCounterFact){
                 cfEntries.push(entry);
             }
-            for(let [key,val] of Object.entries(entry)){
-                if(key === 'id'){continue}
-                allMeans[key] = allMeans[key].concat(val);
-                if(isCf){
-                    cfMeans[key] = cfMeans[key].concat(val);
-                } else if(isNeighbor){
-                    neighborMeans[key] = neighborMeans[key].concat(val);
-                }
-            }
         }
 
+        
 
-        function meanitize(entry){
+        function meanitize(entryList){
+            const keys = Object.keys(entryList[0]);
             let obj = {};
-            for(let key of objKeys){
-                let vals = entry[key];
-                let mean = 0;
-                if(vals.length > 0){
-                    for(let v of vals){
-                        mean += v+0;
-                    }
-                    mean /= vals.length;
+            for(let key of keys){
+                let vals = entryList.map(d=>d[key]);
+                let sum = 0;
+                for(let v of vals){
+                    sum += v;
                 }
-                obj[key] = mean;
+                obj[key] = sum/vals.length
             }
             return obj
         }
-        // console.log('neighbors',neighborEntries.map(f=>f[constants.OUTCOMES[0]]))
-        neighborMeans = meanitize(neighborMeans);
-        cfMeans = meanitize(cfMeans);
-        allMeans = meanitize(allMeans);
+        neighborMeans = meanitize(neighborEntries);
+        cfMeans = meanitize(cfEntries);
+        allMeans = meanitize(encodedCohort);
+
 
         function formatPath(entry,id,className,
             lineColor='black',
@@ -299,8 +293,8 @@ export default function PatientEditor(props){
             'cohort avg','patientMarker meanMarker','black',.5,'');
         
         //want decision = yes to be blue
-        const cfColor = mainDecision > 0? 'blue': 'red';
-        const nColor = mainDecision > 0? 'red':'blue'
+        const cfColor = mainDecision > 0? constants.noColor: constants.yesColor;
+        const nColor = mainDecision > 0? constants.yesColor:constants.noColor;
         const [nPath, nDots] = formatPath(neighborMeans,
             'neighbors','patientMarker meanMarker',nColor,.5,'');
         const [cfPath, cfDots] = formatPath(cfMeans,
@@ -358,7 +352,6 @@ export default function PatientEditor(props){
                 Utils.hideTTip(tTip);
             });
         
-        // console.log('pdata',pData)
         svg.selectAll('.patientMarker').remove();
         let pCircles = svg.selectAll('.patientMarker')
             .data(pData).enter()
@@ -427,7 +420,7 @@ export default function PatientEditor(props){
                 props.setFeatureQue(fQue);
         });
 
-        let mP = svg.selectAll('.patientMarker').filter('.moveable');
+        let mP = svg.selectAll('.patientMarker');
         if(!mP.empty()){
             mP.on('mouseover',function(e,d){
                 let attention = d.attention === undefined? 'NA': d.attention.toFixed(3);
@@ -439,7 +432,8 @@ export default function PatientEditor(props){
                 Utils.moveTTipEvent(tTip,e);
             }).on('mouseout', function(e){
                 Utils.hideTTip(tTip);
-            }).call(dragHandler);
+            })
+            mP.filter('.moveable').call(dragHandler);
         }
     }
 
@@ -538,6 +532,7 @@ export default function PatientEditor(props){
     },[props.patientFeatures,
         svg,
         props.simulation,
+        props.getSimulation,
         encodedCohort,
         props.currState,props.modelOutput,
         props.currEmbeddings,varScales])
