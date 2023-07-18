@@ -14,38 +14,43 @@ export default function LNVisD3(props){
         .domain([-1,0,1])
         .range(['#bdbdbd','white','#dd1c77']);
 
+    const getColor = d => {
+        if(d.name === 'outline'){ return 'none';}
+        if(d.queVal > -1){
+            return colorScale(d.queVal);
+        }
+        return colorScale(d.value);
+    }
+
+    const getStrokeWidth = (d)=>{
+        if(d.name === 'outline'){ return 3;}
+        //nochange or que is empt for this node
+        if(d.value === d.queVal | d.queVal < 0){ return .1; }
+        return 2;
+    }
+
     useEffect(()=>{
         if(Utils.allValid([svg,props.lnSvgPaths,props.data])){
             let pathData = [];
             const data = props.data;
             for(const [name,path] of Object.entries(props.lnSvgPaths)){
-                let idx = name.replace('_contra','').replace('_ipsi','');
-                let val = data[idx];
-                if(val === undefined){
-                    val = -1
-                } else if(name.includes('contra')){
-                    val = Math.max(val - 1,0);
-                } else{
-                    val = Math.min(val,1);
-                }
+                let val = data[name];
+                let queVal = props.featureQue === undefined? -1:props.featureQue[name];
+                queVal = queVal === undefined? -1: queVal;
+                val = val === undefined? -1: val;
                 let entry = {
                     'name': name,
                     'path': path,
                     'value': val,
-                    'key': idx,
+                    'queVal': queVal,
                     'isContra': name.includes('contra'),
                 }
                 pathData.push(entry)
             }
-            console.log('ln vis', props.data)
             svg.selectAll('.lnOutline').remove();
             svg.selectAll('.lnGroup').remove();
 
-            const getColor = d => {
-                if(d.name === 'outline'){ return 'none';}
-                return colorScale(d.value*.8);
-            }
-            console.log('pat data',pathData)
+            console.log(props.featureQue)
             let outlineGroup = svg.append('g').attr('class','lnGroup');
             outlineGroup.selectAll('.lnOutline')
                 .data(pathData).enter()
@@ -53,6 +58,7 @@ export default function LNVisD3(props){
                 .attr('d',d=>d.path)
                 .attr('stroke','black')
                 .attr('opacity',1)
+                .attr('stroke-width',getStrokeWidth)
                 .attr('fill',getColor);
 
             let box = svg.node().getBBox();
@@ -62,29 +68,27 @@ export default function LNVisD3(props){
             svg.selectAll('g').attr('transform',transform);
 
         }
-    },[svg,props.lnSvgPaths,props.data]);
+    },[svg,props.lnSvgPaths,props.data,props.featureQue]);
 
     //so I need to work some stuff out with the actual model and how I encode stuff but this kinda works for now
     //doesn't let you have contralateral invovlement without main invovlement
+    //also todo: make this a cue update instead of directly updating features
     useEffect(()=>{
         if(Utils.allValid([svg,props.patientFeatures])){
             let selection = svg.selectAll('.lnOutline')
             if(!selection.empty()){
-                selection.on('dblclick',(e,d)=>{
+                selection
+                .on('dblclick',(e,d)=>{
                     if(d.name === 'outline'){ return; }
-                    let val;
-                    if(d.isContra){
-                        val = d.value > 0? 1: 2;
-                    } else{
-                        val = d.value > 0? 0: 1;
-                    }
-                    let pFeatures = Object.assign({},props.patientFeatures);
-                    pFeatures[d.key] = val;
-                    props.setPatientFeatures(pFeatures)
+                    let val = d.queVal === -1? d.value: d.queVal;
+                    let newVal = val < 1? 1: 0;
+                    let pFeatures = Object.assign({},props.featureQue);
+                    pFeatures[d.name] = newVal;
+                    props.setFeatureQue(pFeatures)
                 })
             }
         }
-    },[svg,props.isMainPatient,props.patientFeatures])
+    },[svg,props.isMainPatient,props.patientFeatures,props.featureQue])
 
     return (
         <div

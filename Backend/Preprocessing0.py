@@ -109,8 +109,7 @@ def merge_editions(row,basecol='AJCC 8th edition',fallback='AJCC 7th edition'):
 def preprocess_dt_data(df,extra_to_keep=None):
     
     to_keep = ['id','hpv','age','packs_per_year','smoking_status','gender','Aspiration rate Pre-therapy','total_dose','dose_fraction'] 
-    to_onehot = ['T-category','N-category','AJCC','Pathological Grade','subsite','treatment','laterality','ln_cluster']
-    to_onehot = [c for c in to_onehot if c in df.columns]
+    to_onehot = ['T-category','N-category','AJCC','Pathological Grade','subsite','treatment','laterality']
     if extra_to_keep is not None:
         to_keep = to_keep + [c for c in extra_to_keep if c not in to_keep and c not in to_onehot]
     
@@ -184,6 +183,45 @@ def preprocess_dt_data(df,extra_to_keep=None):
 def load_digital_twin(file='../data/digital_twin_data.csv'):
     df = pd.read_csv(file)
     return df.rename(columns = Const.rename_dict)
+
+
+def get_side(row):
+    side = 'R'
+    if row['laterality_L'] > 0:
+        side= 'L'
+    elif row['laterality_R'] > 0:
+        side = 'R'
+    else:
+        lsum = 0
+        rsum = 0
+        for name in row.index:
+            if len(name) < 5:
+                if name[0] == 'L':
+                    lsum += row[name]
+                if name[0] == 'R':
+                    rsum += row[name]
+        if lsum > rsum:
+            side = 'L'
+    return side
+
+def get_ipsi(row,ln):
+    side = get_side(row)
+    return row[side+ln]
+
+def get_contra(row,ln):
+    side = get_side(row)
+    side = 'L' if side == 'R' else 'R'
+    return row[side+ln]
+
+def fix_laterality(df,lncols=None):
+    df = df.copy()
+    if lncols is None:
+        lncols = [c[1:] for c in df.columns if (c[0] == 'L' and len(c) < 4) or c == 'LRPLN']
+    for col in lncols:
+        df[col+'_ipsi'] = df.apply(lambda x: get_ipsi(x,col),axis=1)
+        df[col+'_contra'] = df.apply(lambda x: get_contra(x,col),axis=1)      
+    to_drop = ['L' + c for c in lncols] + ['R' + c for c in lncols]
+    return df.drop(to_drop,axis=1)
 
 def smoteify(df,ycols,**kwargs):
     subdf = df.copy().fillna(0)
@@ -265,7 +303,6 @@ class DTDataset():
             unsmote_df = None
             max_index = smote_df.index.max()
             if smote_ids is not None:
-                print('here')
                 smote_df = smote_df.loc[smote_ids]
                 unsmote_df = self.processed_df.drop(smote_df.index,axis=0).copy()
             smote_df = smoteify(smote_df,smote_columns,**smote_kwargs)

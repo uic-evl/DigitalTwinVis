@@ -14,6 +14,8 @@ export default function PatientEditor(props){
     const [varScales,setVarScales] = useState();
     const [meanVals,setMeanVals]= useState();
     const [encodedCohort,setEncodedCohort] = useState();
+    const showNeighbors = props.showNeighbors === undefined? true:props.showNeighbors;
+    const showAverage = props.showAverage === undefined? false:props.showAverage;
     const maxNeighbors = 5;
     const topMargin = 20;
     const bottomMargin = Math.min(height*.5,90);
@@ -21,10 +23,9 @@ export default function PatientEditor(props){
     const xMargin = 40;
     const onlyCounterfactuals = props.onlyCounterfactuals === undefined? false:  props.onlyCounterfactuals;
     const ordinalVars = {
-        'AJCC': [1,2,3,4],
+        // 'AJCC': [1,2,3,4],
         'N-category': [0,1,2,3],
         'T-category': [1,2,3,4],
-        'ln_cluster': [1,2,3,4],
         'Pathological Grade': [0,1,2,3,4],
         // 'hpv': [-1,0,1]
     }
@@ -36,9 +37,8 @@ export default function PatientEditor(props){
 
     ]
     const continuousVars = [
-        'age','ips_spread',
+        'age',
         'hpv',
-        // 'contra_spread',//missing ?
         'total_dose','dose_fraction','packs_per_year']
     const allVars = Object.keys(ordinalVars)
     .concat(continuousVars)
@@ -51,6 +51,28 @@ export default function PatientEditor(props){
     const xScale = d3.scaleLinear()
             .domain([0,allVars.length])
             .range([xMargin,width-xMargin]);
+
+    function getSim(){
+        //get simulation but inside call so it doesn't break the drag stuff
+            if(!Utils.allValid([props.simulation,props.modelOutput,props.fixedDecisions])){return undefined}
+            let key = props.modelOutput;
+            let allFixed = true;
+            for(let i in props.fixedDecisions){
+                let d = props.fixedDecisions[i];
+                let di = parseInt(i) + 1
+                if(d >= 0){
+                let suffix = '_decision'+(di)+'-'+d;
+                key += suffix;
+                } else{
+                    allFixed = false;
+                }
+            }
+            //I only saved 'optimal' if all are fixed to avoid repitition for when all decisions are fixed since its the same
+            if(allFixed){
+                key = key.replace('imitation','optimal')
+            }
+            return props.simulation[key]
+        }
 
     function getX(key){
         let pos = allVars.indexOf(key);
@@ -114,7 +136,7 @@ export default function PatientEditor(props){
         for(let key of constants.DECISIONS){
             if(isSimulated){
                 let loc = constants.DECISIONS.indexOf(key);
-                let decision = props.getSimulation()['decision'+(loc+1)];
+                let decision = getSim()['decision'+(loc+1)];
                 values[key] = decision;
             } else{
                 let val = p[key] === undefined? 0:p[key] > .5;
@@ -124,7 +146,7 @@ export default function PatientEditor(props){
         for(let key of constants.OUTCOMES){
             if(isSimulated){
                 let loc = constants.OUTCOMES.indexOf(key);
-                let outcome = props.getSimulation()['outcomes'][loc];
+                let outcome = getSim()['outcomes'][loc];
                 values[key] = outcome;
             } else{
                 let val = p[key] === undefined? 0:p[key];
@@ -138,7 +160,6 @@ export default function PatientEditor(props){
         //pass
         
         let mainPatient = encodePatient(props.patientFeatures,true);
-        
 
         const simResults = props.simulation[props.modelOutput];
         const decision = simResults['decision'+(props.currState+1)];
@@ -197,7 +218,7 @@ export default function PatientEditor(props){
 
         let nPaths = [];
         let decisionName = constants.DECISIONS[props.currState];
-        const mainDecisionProbability = props.getSimulation();
+        const mainDecisionProbability = getSim();
         //props.simulation[props.modelOutput]['decision'+(props.currState+1)];
         const mainDecision = (mainDecisionProbability > .5) + 0;
 
@@ -291,7 +312,6 @@ export default function PatientEditor(props){
 
         const [allPath, allDots] = formatPath(allMeans,
             'cohort avg','patientMarker meanMarker','black',.5,'');
-        
         //want decision = yes to be blue
         const cfColor = mainDecision > 0? constants.noColor: constants.yesColor;
         const nColor = mainDecision > 0? constants.yesColor:constants.noColor;
@@ -299,10 +319,17 @@ export default function PatientEditor(props){
             'neighbors','patientMarker meanMarker',nColor,.5,'');
         const [cfPath, cfDots] = formatPath(cfMeans,
             'counterfactuals','patientMarker meanMarker',cfColor,.5,'');
-        nPaths.push(allPath);
-        nPaths.push(nPath);
+
         nPaths.push(cfPath);
-        pData = pData.concat(allDots).concat(nDots).concat(cfDots);
+        pData = pData.concat(cfDots);
+        if(showAverage){ 
+            nPaths.push(allPath); 
+            pData = pData.concat(allDots);
+        }
+        if(showNeighbors){
+            nPaths.push(nPath);
+            pData = pData.concat(nDots);
+        }
 
         //if I bring this back do also cf entries
         // for(let nEntry of neighborEntries){
@@ -387,6 +414,7 @@ export default function PatientEditor(props){
                     newVal = Math.round(newVal);
                     duration = 100;
                 }
+                console.log('drag pos',newY)
                 d3.select(this)
                     .transition()
                     .duration(duration)
@@ -415,6 +443,7 @@ export default function PatientEditor(props){
                         fQue[d.name] = newVal;
                     }
                 }
+                console.log('pos',newY,fQue,d.name)
                 d3.select(this)
                     .attr('cy',newY)
                 props.setFeatureQue(fQue);
@@ -448,16 +477,16 @@ export default function PatientEditor(props){
         setEncodedCohort(patients);
     },[props.cohortData])
 
-    useEffect(()=>{
-        if(svg === undefined){ return;}
-        if(props.featureQue === undefined | Object.keys(props.featureQue).length < 1){
-            let points = svg.selectAll('.patientMarker');
-            if(!points.empty()){
-                points.transition().duration(200).attr('cy',d=>d.y);
-            }
-        }
+    // useEffect(()=>{
+    //     if(svg === undefined){ return;}
+    //     if(props.featureQue === undefined | Object.keys(props.featureQue).length < 1){
+    //         let points = svg.selectAll('.patientMarker');
+    //         if(!points.empty()){
+    //             points.transition().duration(200).attr('cy',d=>d.y);
+    //         }
+    //     }
             
-    },[props.featureQue])
+    // },[props.featureQue])
 
     useEffect(()=>{
         if(props.cohortData !== undefined & svg !== undefined){
@@ -532,8 +561,8 @@ export default function PatientEditor(props){
     },[props.patientFeatures,
         svg,
         props.simulation,
-        props.getSimulation,
         encodedCohort,
+        props.fixedDecisions,
         props.currState,props.modelOutput,
         props.currEmbeddings,varScales])
 

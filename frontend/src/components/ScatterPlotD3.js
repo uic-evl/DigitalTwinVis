@@ -158,6 +158,22 @@ export default function ScatterPlotD3(props){
                 });
             points.exit().remove();
         }
+        points.on('mouseover',function(e,d){
+            let pData = props.cohortData[d.id+''];
+            console.log('brushed dude',pData);
+            let string = d.id;
+            tTip.html(string);
+        }).on('mousemove', function(e){
+            Utils.moveTTipEvent(tTip,e);
+        }).on('mouseout', function(e){
+            Utils.hideTTip(tTip);
+        }).on('dblclick',(e,d)=>{
+            let pData = props.cohortData[d.id+''];
+            if(pData !== undefined){
+                //second argument clears the previous stuff
+                props.updatePatient(pData,true);
+            }
+        })
         
 
     },[formattedData]);

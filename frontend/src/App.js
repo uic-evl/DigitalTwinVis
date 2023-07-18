@@ -3,7 +3,7 @@ import React, {useEffect, useState} from 'react';
 import './App.css';
 
 // 1. import `ChakraProvider` component
-import { ChakraProvider,Grid,GridItem,  Button, ButtonGroup, Select} from '@chakra-ui/react';
+import { ChakraProvider,Grid,GridItem,  Button, ButtonGroup} from '@chakra-ui/react';
 
 import DataService from './modules/DataService';
 import Utils from './modules/Utils';
@@ -11,6 +11,7 @@ import Utils from './modules/Utils';
 import ScatterPlotD3 from './components/ScatterPlotD3';
 import PatientEditor from './components/PatientEditor';
 import LNVisD3 from './components/LNVisD3';
+import DLTVisD3 from './components/DLTVisD3';
 
 function App() {
 
@@ -32,7 +33,7 @@ function App() {
   const [currEmbeddings,setCurrEmbeddings] = useState();
   const [cohortData,setCohortData] = useState();
   const [cohortEmbeddings, setCohortEmbeddings] = useState();
-  const [fixedDecisions,setFixedDecisions] = useState([0,-1,-1]);//-1 is not fixed ,0 is no, 1 is yes
+  const [fixedDecisions,setFixedDecisions] = useState([-1,-1,-1]);//-1 is not fixed ,0 is no, 1 is yes
   const [modelOutput,setModelOutpt] = useState('imitation');
   const [currState, setCurrState] = useState(0);//0-2
 
@@ -49,7 +50,7 @@ function App() {
   const [dltSvgPaths,setDltSvgPaths]= useState();
 
   function getSimulation(){
-    if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return}
+    if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
     let key = modelOutput;
     for(let i in fixedDecisions){
       let d = fixedDecisions[i];
@@ -62,8 +63,8 @@ function App() {
     return simulation[key]
   }
 
-  function getUpdatedPatient(features){
-    let p = Object.assign({},patientFeatures);
+  function getUpdatedPatient(features,clear=false){
+    let p = clear? {}: Object.assign({},patientFeatures);
     for(let key of Object.keys(features)){
       p[key] = features[key];
     }
@@ -95,7 +96,7 @@ function App() {
       return;
     }
     const pData = await api.getPatientData();
-    console.log('patient data loaded');
+    console.log('patient data loaded',pData);
     if(pData !== undefined){
       setCohortData(pData);
       setCohortLoading(false);
@@ -198,10 +199,46 @@ function App() {
     let tempButtons = toggles.map((s,i)=>{
       return makeButton(s,tNames[i]);
     })
-
+    function fixDecision(i,v){
+      let fd = fixedDecisions.map(i=>i);
+      fd[i] = v;
+      setFixedDecisions(fd);
+    }
+    let radioButtons = [0,1,2].map(i=>{
+      let getVariant = (val) => {
+        if(fixedDecisions[i] == val){
+          return 'outline'
+        } 
+        return 'solid'
+      }
+      let getColor = (val) => {
+        if(fixedDecisions[i] == val){
+          return 'teal'
+        } 
+        return 'blue'
+      }
+      let names = ['N',tNames[i],'Y'];
+      let btns = [0,-1,1].map((bval,ii) => {
+        return (
+          <Button
+            onClick={()=>fixDecision(i,bval)}
+            variant={getVariant(bval)}
+            colorScheme={getColor(bval)}
+          >{names[ii]}</Button>
+        )
+      })
+      return (<ButtonGroup 
+        isAttached
+        style={{'display':'inline','margin':10}}
+        spacing={0}
+      >
+        {btns}
+      </ButtonGroup>)
+    })
 
     return (
       <>
+        <Button>{"Model:"}</Button>
         <Button
           onClick={toggleModelOutput}
           disabled={modelOutput === 'optimal'}
@@ -214,8 +251,12 @@ function App() {
           variant={modelOutput === 'imitation'? 'outline':'solid'}
           colorScheme={modelOutput === 'imitation'? 'teal':'blue'}
         >{"Imitation"}</Button>
+        <div style={{'display': 'inline','width':'auto'}}>{' | '}</div>
         <Button>{"Decision:"}</Button>
         {tempButtons}
+        <div style={{'display': 'inline','width':'auto'}}>{' | '}</div>
+        <Button>{'Fix Decisions'}</Button>
+        {radioButtons}
       </>
     )
   }
@@ -224,17 +265,17 @@ function App() {
   function makeScatterPlot(){
     
     return (
-      <Grid
-        templateRows='1.6em 1fr'
-        templateColumns='1fr 1fr'
-        h='1000px'
-        w='100px'
-        className={'fillSpace'}
-      >
-        <GridItem w='100%' h='100%' colSpan={2}>
-          {makeButtonToggle()}
-        </GridItem>
-        <GridItem  w='100%' h='100%' bg='pink' colSpan={2}>
+      // <Grid
+      //   templateRows='1.6em 1fr'
+      //   templateColumns='1fr 1fr'
+      //   h='1000px'
+      //   w='100px'
+      //   className={'fillSpace'}
+      // >
+      //   <GridItem w='100%' h='100%' colSpan={2}>
+      //   {makeButtonToggle()}
+      //   </GridItem>
+      //   <GridItem  w='100%' h='100%' bg='pink' colSpan={2}>
           <ScatterPlotD3
               cohortData={cohortData}
               cohortEmbeddings={cohortEmbeddings}
@@ -249,9 +290,11 @@ function App() {
               patientSimLoading={patientSimLoading}
               cohortLoading={cohortLoading}
               cohortEmbeddingsLoading={cohortEmbeddingsLoading}
+
+              updatePatient={updatePatient}
           />
-        </GridItem>
-      </Grid>
+      //   </GridItem>
+      // </Grid>
     )
   }
   
@@ -259,12 +302,12 @@ function App() {
     return (
         <Grid
         templateRows='1.6em 1fr 1fr'
-        templateColumns='1fr 1fr'
+        templateColumns='1fr 1fr 1fr'
         h='1000px'
         w='100px'
         className={'fillSpace'}
       >
-        <GridItem w='100%' h='100%' colSpan={2}>
+        <GridItem w='100%' h='100%' colSpan={3}>
           <Button 
             onClick={()=>updatePatient(featureQue)}
             variant={'outline'}
@@ -277,7 +320,7 @@ function App() {
             colorScheme={'red'}
           >{'Reset'}</Button>
         </GridItem>
-        <GridItem  w='100%' h='100%' bg='pink' colSpan={2}>
+        <GridItem colSpan={3}>
         <div className={'fillSpace noGutter'}>
           <PatientEditor
               cohortData={cohortData}
@@ -303,17 +346,26 @@ function App() {
           ></PatientEditor>
           </div>
         </GridItem>
-        <GridItem w='100%' h='100%' colSpan={1}>
-          {'test0'}
+        <GridItem  colSpan={1}>
+          <DLTVisD3
+            dltSvgPaths={dltSvgPaths}
+            data={getSimulation()}
+            currState={currState}
+          />
         </GridItem>
-        <GridItem w='100%' h='100%' colSpan={1}>
+        <GridItem colSpan={1}>
           <LNVisD3
             lnSvgPaths={lnSvgPaths}
             data={patientFeatures}
             isMainPatient={true}
             patientFeatures={patientFeatures}
             setPatientFeatures={setPatientFeatures}
+            setFeatureQue={setFeatureQue}
+            featureQue={featureQue}
           />
+        </GridItem>
+        <GridItem colSpan={1}>
+          {'legend?'}
         </GridItem>
       </Grid>
     )
@@ -324,21 +376,27 @@ function App() {
       <Grid
         h='100%'
         w='100%'
-        templateRows='2em repeat(4,1fr)'
-        templateColumns='calc(55vw + 1em) repeat(2,1fr)'
+        templateRows='2em repeat(2,1fr)'
+        templateColumns='repeat(3,1fr)'
         gap={1}
       >
-        <GridItem rowSpan={1} colSpan={3} >
-          {'1'}
+        <GridItem rowSpan={1} colSpan={3} className={'shadow'}>
+          {makeButtonToggle()}
         </GridItem>
-        <GridItem rowSpan={4} className={'shadow scroll'} colSpan={1}>
-          {'2'}
+        <GridItem rowSpan={1} className={'shadow'} colSpan={2}>
+          {makeThing()}
         </GridItem>
-        <GridItem rowSpan={2} colSpan={2} className={'shadow'}>
+        <GridItem rowSpan={1} colSpan={1} className={'shadow'}>
+          {'top right'}
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={1} className={'shadow'}>
           {makeScatterPlot()}
         </GridItem>
-        <GridItem rowSpan={2} colSpan={2} className={'shadow scroll'}>
-          {makeThing()}
+        <GridItem rowSpan={1} colSpan={1} className={'shadow'}>
+          {'bottom middle'}
+        </GridItem>
+        <GridItem rowSpan={1} colSpan={1} className={'shadow'}>
+          {'bottom right'}
         </GridItem>
       </Grid>
     </ChakraProvider>
