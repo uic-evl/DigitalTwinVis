@@ -192,6 +192,10 @@ export default class Utils {
         return (item && typeof item === 'object' && !Array.isArray(item));
     }
 
+    static capitalize(string){
+        return string[0].toUpperCase() + string.slice(1,string.length);
+    }
+    
     static unCamelCase(string){
         //converts camelCase to Camel Case.  For like, showing names
         //taken from https://stackoverflow.com/a/6229124
@@ -348,6 +352,6 @@ export default class Utils {
         return false
     }
 
-
+    utils
 
 }
