@@ -8,7 +8,8 @@ CORS(app)
 print('code start')
 DATA = load_dataset()
 decision_model,transition_model1,transition_model2,outcome_model = load_models()
-embedding_df = get_embedding_df(DATA,decision_model)
+PCAS = get_embedding_pcas(DATA,decision_model,components=10)
+embedding_df = get_embedding_df(DATA,decision_model,pcas=PCAS)
 print('stuff loaded')
 
 def responsify(dictionary,convert=True):
@@ -44,7 +45,7 @@ def get_patient_embeddings():
     print('getting patient embeddings')
     patients = request.args.getlist('patientIds')
     fields = request.args.getlist('fields')
-    return_vals = get_embedding_json(DATA,decision_model,ids=patients,fields=fields)
+    return_vals = get_embedding_json(DATA,decision_model,embed_df=embedding_df,ids=patients,fields=fields)
     # print('return patient embeddings',return_vals)
     data = responsify(return_vals)
     return data
@@ -64,7 +65,7 @@ def get_newpatient_stuff():
 def get_patient_neighbors():
     patient_dict = request.get_json(force=True)
     state=2
-    n = 100
+    n = 300
     # state = request.get('state')
     # if state is None:
     #     state = 2
@@ -74,10 +75,12 @@ def get_patient_neighbors():
     print('_new patient neibhors request_')
     print(patient_dict)
     print('---')
-    neighbors,similarities = get_neighbors_and_embedding(patient_dict,DATA,decision_model,embedding_df=embedding_df,state=state,max_neighbors=n)
+    neighbors,similarities,embedding,pca = get_neighbors_and_embedding(patient_dict,DATA,decision_model,embedding_df=embedding_df,state=state,max_neighbors=n,pcas=PCAS)
     return_vals = {
         'neighbors': neighbors.astype(int).tolist(),
-        'similarities': similarities.tolist()
+        'similarities': similarities.tolist(),
+        'embedding': embedding.tolist(),
+        'pca': pca.tolist()
     }
     # print(return_vals)
     print('-------')

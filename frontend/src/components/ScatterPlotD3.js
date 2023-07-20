@@ -7,30 +7,199 @@ import PCA from '../modules/PCA.js';
 
 
 
-
-
 export default function ScatterPlotD3(props){
 
     const d3Container = useRef(null);
     const [svg, height, width, tTip] = useSVGCanvas(d3Container);
-    const [pcaComponents,setPCAComponents] = useState([1,2]);
+    const [pcaComponents,setPCAComponents] = useState([0,3]);
+    const [formattedData,setFormattedData] =useState();
+    // const [pcaFit,setPcaFit] = useState();
+    const state = (props.currState === undefined)? 2: props.currState;
+    const modelOutput = props.modelOutput === undefined? 'imitation': props.modelOutput;
+    // console.log('model output',modelOutput)
+    const nNeighbors = 10;
+    const margin = 10;
 
-    function plotPCA(embeddingData,data,state){
-        // console.log('pca',embeddingData)
-        // console.log('pca2',data)
-        const ids = new Array(Object.keys(embeddingData));
-        const embedkey = 'embeddings_state'+state;
-        const embeddings = Object.values(embeddingData).map(x=> x[embedkey])
-        
-        const pcaFit = PCA.getEigenVectors(embeddings);
-        var projection = PCA.computeAdjustedData(embeddings,pcaFit[pcaComponents[0]],pcaFit[pcaComponents[1]]);
-        projection = PCA.transpose(projection.formattedAdjustedData);
-        console.log('pca fit',projection);
+    // function fitPCA(cohortEmbeddings){
+    //     const embeddings = Object.values(cohortEmbeddings).map(x=> x[embedkey]);
+    //     const pcaFit = PCA.getEigenVectors(embeddings);
+    //     setPcaFit(pcaFit);
+    // }
+
+    function getFill(d){
+        if(d.id < 0){
+            return d.imitationDecision > .5? 'green':'blue'
+        }
+        return d.trueDecision > .5? 'black': 'grey';
+    }
+
+    function getStroke(d){
+        if(d.id < 0){
+            return d.optimalDecision > .5? 'green':'blue'
+        }
+        return d[modelOutput+'Decision'] > .5? 'black': 'grey';
+    }
+
+    function plotPCA(cohortEmbeddings,currEmbeddings,cohortData,patientFeatures,simulation,state){
+
+        //simlulated patient gets id of -1
+        const ids = [-1].concat(Object.keys(cohortEmbeddings).map(i=>parseInt(i)));
+        // const pEmbedding = currEmbeddings['embedding'];
+        const pSimilarity = currEmbeddings['similarities']
+        const pNeighbors = currEmbeddings['neighbors'].map(i=>parseInt(i))
+        // const embeddings =[pEmbedding].concat(Object.values(cohortEmbeddings).map(x=> x[embedkey]));
+        const pPca = currEmbeddings['pca'];
+
+        const getComp = x => [x[pcaComponents[0]],x[pcaComponents[1]]]
+        var projection = [getComp(pPca)].concat(
+            Object.values(cohortEmbeddings)
+            .map(x=>x['pca_state'+state])
+            .map(getComp)
+            );
+
+        function isNeighbor(id){
+            if(id === -1){ return false}
+            let pos = pNeighbors.indexOf(parseInt(id));
+            if(pos > 0 & pos < nNeighbors){
+                return true;
+            }
+            return false;
+        }
+
+        function getOpacity(id){
+            if(id === -1){ return 1}
+            return isNeighbor(id)? .9: .7;
+        }
+
+        function getRadius(id){
+            if(id === -1){ return 13}
+            return isNeighbor(id)? 8: 5;
+        }
+
+        function getClass(id){
+            let className = 'patientMarker';
+            if(id === -1){
+                className += ' selectedPatient activePatient'
+            }
+            if(isNeighbor(id)){
+                className += ' patientNeighbor activePatient';
+            }
+            
+            return className
+        }
+
+        var xScale = d3.scaleLinear()
+            .domain(d3.extent(projection.map(d=>d[0])))
+            .range([margin,width-margin]);
+        var yScale = d3.scaleLinear()
+            .domain(d3.extent(projection.map(d=>d[1])))
+            .range([height-margin,margin]);
+
+        var data = [];
+        for(let i in projection){
+            let coords = projection[i];
+            let id = ids[i]
+
+            let entry = {
+                'x': xScale(coords[0]),
+                'y': yScale(coords[1]),
+                'opacity': getOpacity(id),
+                'radius': getRadius(id),
+                'className': getClass(id),
+                'id': parseInt(id),
+            }
+            if(id > 0){
+                entry['imitationDecision'] = cohortEmbeddings[id+'']['decision'+state+'_imitation'];
+                entry['trueDecision'] =cohortData[id+''][constants.DECISIONS[state]];
+                entry['optimalDecision'] = cohortEmbeddings[id+'']['decision'+state+'_optimal'];
+            } 
+            else{
+                entry['imitationDecision'] = simulation['imitation']['decision'+(state+1)];
+                entry['optimalDecision'] = simulation['optimal']['decision'+(state+1)];
+                entry['trueDecision'] = -1;
+            }
+            data.push(entry);
+        }
+        // console.log('scatterplot data',data)
+        setFormattedData(undefined);
+        setFormattedData(data);
     }
 
     useEffect(()=>{
-        plotPCA(props.cohortEmbeddings,props.cohortData,props.currState);
-    },[props.cohortData,props.cohortEmbeddings,props.currState])
+        if(formattedData === undefined | svg===undefined){ return }
+        // svg.selectAll('.patientMarker').remove();
+        let points = svg.selectAll('.patientMarker');
+        if(points.empty()){
+            points.data(formattedData)
+            .enter()
+            .append('circle').attr('class',d=>d.className)
+            .attr('transform',d=>'translate(' + d.x + ',' + d.y+')')
+            .attr('fill',d=>getFill(d))
+            .attr('stroke',getStroke)
+            .attr('opacity',d=>d.opacity)
+            .attr('stroke-width',3)
+            .attr('r',d=>d.radius);
+            svg.selectAll('.activePatient').raise();
+            svg.selectAll('.selectedPatient').raise();
+        } else{
+            points.data(formattedData)
+                .attr('class',d=>d.className)
+                .transition()
+                .duration(500)
+                .attr('transform',d=>'translate(' + d.x + ',' + d.y+')')
+                .attr('fill',getFill)
+                .attr('stroke',getStroke)
+                .attr('opacity',d=>d.opacity)
+                .attr('stroke-width',3)
+                .attr('r',d=>d.radius)
+                .on('end', ()=>{
+                    svg.selectAll('.activePatient').raise();
+                    svg.selectAll('.selectedPatient').raise();
+                });
+            points.exit().remove();
+        }
+        
+
+    },[formattedData]);
+    
+    useEffect(()=>{
+        if(svg === undefined | formattedData === undefined){ return }
+        if(svg.selectAll('.patientMarker').empty()){return}
+        svg.selectAll('.patientMarker')
+            .attr('class',d=>d.className)
+            .transition(500)
+            .attr('stroke',getStroke)
+            .attr('fill',getFill)
+            .on('end', ()=>{
+                svg.selectAll('.activePatient').raise();
+                svg.selectAll('.selectedPatient').raise();
+            });
+
+    },[modelOutput,formattedData]);
+
+    
+
+    useEffect(()=>{
+        let toTest = [props.cohortEmbeddings,
+            props.cohortData,props.patientFeatures,props.currEmbeddings,props.simulation];
+        if(Utils.allValid(toTest)){
+            plotPCA(
+                props.cohortEmbeddings,props.currEmbeddings,
+                props.cohortData,props.patientFeatures,props.simulation,state);
+        } 
+        else{
+            console.log('no')
+        }
+        
+    },[svg,
+        props.patientFeatures,
+        props.simulation,
+        props.cohortEmbeddings,
+        props.currEmbeddings,
+        props.cohortData,
+        // props.modelOutput,
+        props.currState,
+        state])
 
     return (
         <div
