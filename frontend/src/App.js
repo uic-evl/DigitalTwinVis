@@ -181,10 +181,13 @@ function App() {
   },[patientFeatures]);
 
   const Neighbors = useMemo(()=>{
-    if(Utils.allValid([currEmbeddings,currState,cohortData])){
-      console.log('neighbors',currEmbeddings)
+    if(Utils.allValid([currEmbeddings,cohortData])){
+      let decision = fixedDecisions[currState];
+      if(decision < 0){
+        decision = (getSimulation()['decision'+(currState+1)] > .5)? 1: 0;
+      }
     }
-  },[currEmbeddings,currState,cohortData,simulation,fixedDecisions])
+  },[currEmbeddings,currState,cohortData,simulation,fixedDecisions,modelOutput])
 
   function makeButtonToggle(){
     var makeButton = (state,text)=>{
