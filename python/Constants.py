@@ -91,13 +91,13 @@ class Const:
     
 
     tuned_transition_models = [
-        'final_transition1_model_state1_input63_dims500_dropout0.25,0.95.pt',
-        'final_transition2_model_state2_input85_dims500,500_dropout0.25,0.9.pt',
-        'final_outcome_model_state1_input83_dims500_dropout0.5,0.95.pt'
+        'final_transition1_model_state1_input50_dims1000_dropout0.5,0.9.pt',
+        'final_transition2_model_state2_input72_dims500,500_dropout0.5,0.9.pt',
+        'final_outcome_model_state1_input70_dims500,500_dropout0.5,0.9.pt'
     ]
 #     tuned_transition_models = [model_dir + f for f in tuned_transition_models]
     
-    tuned_decision_model = 'final_decision_model_statedecisions_input132_dims600_dropout0.5,0.9.pt'
+    tuned_decision_model = 'final_decision_model_statedecisions_input119_dims500_dropout0.5,0.9.pt'
     
     optimized_model_parameters = {
         'transition1': {'hidden_layers': [500], 'attention_heads': [5], 'embed_size': 800, 'dropout': 0.95, 'input_dropout': 0.5},
