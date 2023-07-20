@@ -159,14 +159,16 @@ export default function ScatterPlotD3(props){
             points.exit().remove();
         }
         points.on('mouseover',function(e,d){
-            let pData = props.cohortData[d.id+''];
-            console.log('brushed dude',pData);
+            if((d.id > 0) & (parseInt(d.id) !== parseInt(props.brushedId))){
+                props.setBrushedId(parseInt(d.id));
+            }
             let string = d.id;
             tTip.html(string);
         }).on('mousemove', function(e){
             Utils.moveTTipEvent(tTip,e);
         }).on('mouseout', function(e){
             Utils.hideTTip(tTip);
+            props.setBrushedId();
         }).on('dblclick',(e,d)=>{
             let pData = props.cohortData[d.id+''];
             if(pData !== undefined){

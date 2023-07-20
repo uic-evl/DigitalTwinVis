@@ -1,9 +1,9 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useMemo} from 'react';
 // import React from 'react';
 import './App.css';
 
 // 1. import `ChakraProvider` component
-import { ChakraProvider,Grid,GridItem,  Button, ButtonGroup} from '@chakra-ui/react';
+import { ChakraProvider, Grid, GridItem,  Button, ButtonGroup} from '@chakra-ui/react';
 
 import DataService from './modules/DataService';
 import Utils from './modules/Utils';
@@ -12,6 +12,7 @@ import ScatterPlotD3 from './components/ScatterPlotD3';
 import PatientEditor from './components/PatientEditor';
 import LNVisD3 from './components/LNVisD3';
 import DLTVisD3 from './components/DLTVisD3';
+import NeighborVisD3 from './components/NeighborVisD3';
 
 function App() {
 
@@ -41,6 +42,7 @@ function App() {
   const [cohortEmbeddingsLoading,setCohortEmbeddingsLoading] = useState(false);
   const [patientSimLoading,setPatientSimLoading]= useState(false);
   const [patientEmbeddingLoading,setPatientEmbeddingLoading] = useState(false);
+  const [brushedId, setBrushedId] = useState();
 
   //dict of path strings svg for each ln + an 'outline 
   //'eg 1A_contra, 1A_ipsi, 1B_contra ...
@@ -176,7 +178,13 @@ function App() {
 
     fetchPatientNeighbors();
     fetchPatientSimulation();
-  },[patientFeatures])
+  },[patientFeatures]);
+
+  const Neighbors = useMemo(()=>{
+    if(Utils.allValid([currEmbeddings,currState,cohortData])){
+      console.log('neighbors',currEmbeddings)
+    }
+  },[currEmbeddings,currState,cohortData,simulation,fixedDecisions])
 
   function makeButtonToggle(){
     var makeButton = (state,text)=>{
@@ -263,19 +271,7 @@ function App() {
 
 
   function makeScatterPlot(){
-    
     return (
-      // <Grid
-      //   templateRows='1.6em 1fr'
-      //   templateColumns='1fr 1fr'
-      //   h='1000px'
-      //   w='100px'
-      //   className={'fillSpace'}
-      // >
-      //   <GridItem w='100%' h='100%' colSpan={2}>
-      //   {makeButtonToggle()}
-      //   </GridItem>
-      //   <GridItem  w='100%' h='100%' bg='pink' colSpan={2}>
           <ScatterPlotD3
               cohortData={cohortData}
               cohortEmbeddings={cohortEmbeddings}
@@ -292,12 +288,13 @@ function App() {
               cohortEmbeddingsLoading={cohortEmbeddingsLoading}
 
               updatePatient={updatePatient}
+
+              brushedId={brushedId}
+              setBrushedId={setBrushedId}
           />
-      //   </GridItem>
-      // </Grid>
-    )
+    );
   }
-  
+
   function makeThing(){
     return (
         <Grid
@@ -343,6 +340,7 @@ function App() {
               fixedDecisions={fixedDecisions}
               setFixedDecisions={setFixedDecisions}
               getSimulation={getSimulation}
+              brushedId={brushedId}
           ></PatientEditor>
           </div>
         </GridItem>
@@ -362,6 +360,11 @@ function App() {
             setPatientFeatures={setPatientFeatures}
             setFeatureQue={setFeatureQue}
             featureQue={featureQue}
+            modelOutput={modelOutput}
+            simulation={simulation}
+            fixedDecisions={fixedDecisions}
+            state={currState}
+            useAttention={true}
           />
         </GridItem>
         <GridItem colSpan={1}>

@@ -317,6 +317,7 @@ class DecisionAttentionModel(DecisionModel):
             memory = torch.cat([m1,m2],dim=1)
             memory = self.add_position_token(memory,position)
             memory = self.activation(self.resize_layer(memory))
+        i = len(self.attentions)
         for attention,layer,norm in zip(self.attentions,self.layers,self.norms):
             if memory is not None:
                 x2, attention_weights = attention(x,memory,memory)
@@ -324,9 +325,17 @@ class DecisionAttentionModel(DecisionModel):
             else:
                 x2, attention_weights = attention(x,x,x)
                 x2 = norm(x2+x)
+                i = 0
             x2 = self.activation(x2)
             x = layer(x2)
             x = self.activation(x)
+            if i > 1:
+                memory2, _ = attention(memory,memory,memory)
+                memory = norm(memory2+memory)
+                memory = self.activation(memory)
+                memory = layer(memory)
+                memory = self.activation(memory)
+                i -= 1
         return x
     
     def save_memory(self,newmemory):
@@ -338,10 +347,14 @@ class DecisionAttentionModel(DecisionModel):
         else:
             model = lambda x: self.forward(x,**kwargs)[output]
         ig = IntegratedGradients(model)
-        if isinstance(x,torch.Tensor):
-            base = torch.zeros(x.shape)
-        else:
-            base = tuple([torch.zeros(xx.shape) for xx in x])
+        base = torch.zeros(x.shape)
+        if self.memory is not None:
+            if self.memory.ndim < 3:
+                m = self.memory
+            else:
+                pos = kwargs.get('position',2)
+                m = self.memory[pos]
+            base[:] = torch.median(m,dim=0)[0].type(torch.FloatTensor)
         attributions = ig.attribute(x,base,target=target)
         return attributions
     

@@ -19,10 +19,10 @@ def load_dataset():
 
 def load_models():
     files = [
-        '../data/models/final_decision_model_statedecisions_input119_dims500_dropout0.5,0.9.pt',
-        '../data/models/final_transition1_model_state1_input50_dims1000_dropout0.5,0.9.pt',
-        '../data/models/final_transition2_model_state2_input72_dims500,500_dropout0.5,0.9.pt',
-        '../data/models/final_outcome_model_state1_input70_dims500,500_dropout0.5,0.9.pt',
+        '../resources/decision_model.pt',
+        '../resources/transition1_model.pt',
+        '../resources/transition2_model.pt',
+        '../resources/outcome_model.pt',
     ]
     decision_model,transition_model1,transition_model2, outcome_model = [torch.load(file) for file in files]
     return decision_model,transition_model1,transition_model2,outcome_model

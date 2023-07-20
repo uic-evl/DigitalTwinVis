@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef} from 'react';
+import React, {useState, useEffect, useRef, useMemo} from 'react';
 import useSVGCanvas from './useSVGCanvas.js';
 import Utils from '../modules/Utils.js';
 import * as d3 from 'd3';
@@ -13,7 +13,7 @@ export default function PatientEditor(props){
 
     const [varScales,setVarScales] = useState();
     const [meanVals,setMeanVals]= useState();
-    const [encodedCohort,setEncodedCohort] = useState();
+    // const [encodedCohort,setEncodedCohort] = useState();
     const showNeighbors = props.showNeighbors === undefined? true:props.showNeighbors;
     const showAverage = props.showAverage === undefined? false:props.showAverage;
     const maxNeighbors = 5;
@@ -165,9 +165,10 @@ export default function PatientEditor(props){
         const decision = simResults['decision'+(props.currState+1)];
         const attention = simResults['decision'+(props.currState+1)+'_attention'];
 
-        const attentionScale = d3.scaleDiverging()
-            .domain([attention.range[0], 0, attention.range[1]])
-            .range(constants.divergingAttributionColors);
+        const attentionScale = Utils.getColorScale('attributions',attention.range[0],attention.range[1]);
+        // const attentionScale = d3.scaleDiverging()
+        //     .domain([attention.range[0], 0, attention.range[1]])
+        //     .range(constants.divergingAttributionColors);
 
 
         function getAttention(key){
@@ -310,6 +311,17 @@ export default function PatientEditor(props){
             return [pathEntry, markerPoints]
         }
 
+        if(props.brushedId !== undefined){
+            console.log('brush',props.brushedId,encodedCohort);
+            let bData = encodedCohort.filter(d=> parseInt(d.id) === parseInt(props.brushedId))[0];
+            // console.log(bData);
+            let [bPath, bDots] = formatPath(bData,'brushedDude','patientMarker brushedMarker','black',.8,0);
+            nPaths.push(bPath);
+            // console.log(bDots);
+            pData = pData.concat(bDots);
+        } else{
+            svg.selectAll('.brushedMarker').remove();
+        }
         const [allPath, allDots] = formatPath(allMeans,
             'cohort avg','patientMarker meanMarker','black',.5,'');
         //want decision = yes to be blue
@@ -414,7 +426,6 @@ export default function PatientEditor(props){
                     newVal = Math.round(newVal);
                     duration = 100;
                 }
-                console.log('drag pos',newY)
                 d3.select(this)
                     .transition()
                     .duration(duration)
@@ -443,7 +454,6 @@ export default function PatientEditor(props){
                         fQue[d.name] = newVal;
                     }
                 }
-                console.log('pos',newY,fQue,d.name)
                 d3.select(this)
                     .attr('cy',newY)
                 props.setFeatureQue(fQue);
@@ -466,7 +476,7 @@ export default function PatientEditor(props){
         }
     }
 
-    useEffect(function processCohort(){
+    const encodedCohort = useMemo(function processCohort(){
         if(props.cohortData === undefined){return}
         let patients = [];
         for(let [id,entry] of Object.entries(props.cohortData)){
@@ -474,8 +484,8 @@ export default function PatientEditor(props){
             pEntry['id'] = parseInt(id);
             patients.push(pEntry);
         }
-        setEncodedCohort(patients);
-    },[props.cohortData])
+        return patients 
+    },[props.cohortData]);
 
     // useEffect(()=>{
     //     if(svg === undefined){ return;}
@@ -563,6 +573,7 @@ export default function PatientEditor(props){
         props.simulation,
         encodedCohort,
         props.fixedDecisions,
+        props.brushedId,
         props.currState,props.modelOutput,
         props.currEmbeddings,varScales])
 

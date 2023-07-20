@@ -14,6 +14,17 @@ export default class Utils {
         'Overall Survival (4 Years)': 'OS'
     }
 
+    static getColorScale(name,min,max){
+        if(name === 'attention' | name === 'attributions'){
+            min = min === undefined? -.1: min;
+            max = max === undefined? .1: max;
+            return d3.scaleDiverging()
+                .domain([min,0,max])
+                .range(['red','white','blue'])
+        } 
+        return d3.interpolateGreys
+    }
+
 
     static getFeatureDisplayName(text){
         if(constants.DECISIONS.indexOf(text) > -1){
