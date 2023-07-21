@@ -16,30 +16,17 @@ export default function PatientEditor(props){
     // const [encodedCohort,setEncodedCohort] = useState();
     const showNeighbors = props.showNeighbors === undefined? true:props.showNeighbors;
     const showAverage = props.showAverage === undefined? false:props.showAverage;
-    const maxNeighbors = 5;
+    const maxNeighbors = props.neighborsToShow === undefined? 5: props.neighborsToShow;
     const topMargin = 20;
     const bottomMargin = Math.min(height*.5,90);
     const textHeight = 10;
     const xMargin = 40;
     const onlyCounterfactuals = props.onlyCounterfactuals === undefined? false:  props.onlyCounterfactuals;
-    const ordinalVars = {
-        // 'AJCC': [1,2,3,4],
-        'N-category': [0,1,2,3],
-        'T-category': [1,2,3,4],
-        'Pathological Grade': [0,1,2,3,4],
-        // 'hpv': [-1,0,1]
-    }
-    const booleanVars = [
-        'Aspiration rate Pre-therapy',
-        'bilateral',
-        'gender',
-        'subsite_BOT','subsite_Tonsil',
 
-    ]
-    const continuousVars = [
-        'age',
-        'hpv',
-        'total_dose','dose_fraction','packs_per_year']
+    const ordinalVars = constants.ordinalVars;
+    const booleanVars = constants.booleanVars;
+    const continuousVars = constants.continuousVars;
+
     const allVars = Object.keys(ordinalVars)
     .concat(continuousVars)
     .concat(booleanVars)

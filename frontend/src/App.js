@@ -3,16 +3,18 @@ import React, {useEffect, useState, useMemo} from 'react';
 import './App.css';
 
 // 1. import `ChakraProvider` component
-import { ChakraProvider, Grid, GridItem,  Button, ButtonGroup} from '@chakra-ui/react';
+import { ChakraProvider, Grid, GridItem,  Button, ButtonGroup, Spinner} from '@chakra-ui/react';
 
 import DataService from './modules/DataService';
 import Utils from './modules/Utils';
-
+import * as constants from "./modules/Constants.js";
 import ScatterPlotD3 from './components/ScatterPlotD3';
 import PatientEditor from './components/PatientEditor';
 import LNVisD3 from './components/LNVisD3';
 import DLTVisD3 from './components/DLTVisD3';
 import NeighborVisD3 from './components/NeighborVisD3';
+
+import * as d3 from 'd3';
 
 function App() {
 
@@ -35,7 +37,7 @@ function App() {
   const [cohortData,setCohortData] = useState();
   const [cohortEmbeddings, setCohortEmbeddings] = useState();
   const [fixedDecisions,setFixedDecisions] = useState([-1,-1,-1]);//-1 is not fixed ,0 is no, 1 is yes
-  const [modelOutput,setModelOutpt] = useState('imitation');
+  const [modelOutput,setModelOutpt] = useState('optimal');
   const [currState, setCurrState] = useState(0);//0-2
 
   const [cohortLoading,setCohortLoading] = useState(false);
@@ -50,6 +52,7 @@ function App() {
   //dict of dlt stuff, each entry is a dict with path and style
   //eg vascular: {'d': path string, 'style' 'fill:#fe7070;fill-opacity:1;stroke:#000000'}
   const [dltSvgPaths,setDltSvgPaths]= useState();
+  const neighborsToShow = 5;
 
   function getSimulation(){
     if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
@@ -181,13 +184,92 @@ function App() {
   },[patientFeatures]);
 
   const Neighbors = useMemo(()=>{
-    if(Utils.allValid([currEmbeddings,cohortData])){
+    if(Utils.allValid([currEmbeddings,cohortData,simulation])){
       let decision = fixedDecisions[currState];
       if(decision < 0){
-        decision = (getSimulation()['decision'+(currState+1)] > .5)? 1: 0;
+        let sim = getSimulation();
+        decision = (sim['decision'+(currState+1)] > .5)? 1: 0;
       }
+      const dString = constants.DECISIONS[currState];
+      const getNeighbor = id => Object.assign({},cohortData[id+'']);
+      var neighbors = [];
+      var cfs = [];
+      for(let i in currEmbeddings.neighbors){
+        var id = currEmbeddings.neighbors[i];
+        var sim = currEmbeddings.similarities[i];
+        var nData = getNeighbor(id);
+        nData.id = id;
+        nData.similarity = sim;
+        var isCf = nData[dString] === decision;
+        nData.isCf = isCf;
+        const maxCfs = cfs.length >= neighborsToShow;
+        const maxN = neighbors.length >= neighborsToShow;
+        if(!maxCfs & isCf){
+          cfs.push(nData);
+        } else if(!maxN){
+          neighbors.push(nData);
+        }
+        if((cfs.length >= neighborsToShow) & (neighbors.length >= neighborsToShow)){
+          break
+        }
+      }
+      const cScale = Utils.getColorScale('attributions');
+      var p = cfs.concat(neighbors);
+      p.sort(d=>d.similarity);
+      
+      const toScale = constants.continuousVars;
+      var ranges = {};
+      for(let key of toScale){
+        let extent = d3.extent(Object.values(cohortData).map(d=>d[key]));
+        ranges[key] = extent;
+      }
+      const nStuff = p.map((d,i) => {
+        const borderColor = d[dString] > .5? constants.yesColor: constants.noColor;
+        return (
+        <div key={d.id} 
+        style={{'marginTop':'.5em','height': '8em','width': '100%','diplay': 'block','borderStyle':'solid','borderColor': borderColor,'borderWidth':'.5em'}}>
+          <div style={{'width':'10em','height':'100%','display':'inline-block'}}>
+            <LNVisD3
+              lnSvgPaths={lnSvgPaths}
+              data={d}
+              isMainPatient={false}
+            ></LNVisD3>
+          </div>
+          <div style={{'width':'10em','height':'100%','display':'inline-block'}}>
+          <DLTVisD3
+            dltSvgPaths={dltSvgPaths}
+            data={d}
+            currState={currState}
+            isMainPatient={false}
+          />
+          </div>
+          <div style={{'width':'calc(100% - 20em)','height':'100%','display':'inline-block'}}>
+            <NeighborVisD3
+              data={d}
+              referenceData={patientFeatures}
+              referenceQue={featureQue}
+              key={d.id+i}
+              lnSvgPaths={lnSvgPaths}
+              valRanges={ranges}
+              dltSvgPaths={dltSvgPaths}
+            ></NeighborVisD3>
+          </div>
+        </div>
+        )
+      })
+      return nStuff;
+    } else{
+      return <Spinner>{'No'}</Spinner>
     }
   },[currEmbeddings,currState,cohortData,simulation,fixedDecisions,modelOutput])
+
+  const Outcomes = useMemo(()=>{
+    if(Utils.allValid([simulation,cohortData,currEmbeddings])){
+      return (<div>{'yes'}</div>)
+    } else{
+      return <Spinner></Spinner>
+    }
+  },[simulation,cohortData,currEmbeddings]);
 
   function makeButtonToggle(){
     var makeButton = (state,text)=>{
@@ -344,6 +426,8 @@ function App() {
               setFixedDecisions={setFixedDecisions}
               getSimulation={getSimulation}
               brushedId={brushedId}
+
+              neighborsToShow={neighborsToShow}
           ></PatientEditor>
           </div>
         </GridItem>
@@ -393,17 +477,17 @@ function App() {
           {makeThing()}
         </GridItem>
         <GridItem rowSpan={1} colSpan={1} className={'shadow'}>
-          {'top right'}
+          {Outcomes}
         </GridItem>
         <GridItem rowSpan={1} colSpan={1} className={'shadow'}>
           {makeScatterPlot()}
         </GridItem>
-        <GridItem rowSpan={1} colSpan={1} className={'shadow'}>
-          {'bottom middle'}
+        <GridItem rowSpan={1} colSpan={2} className={'shadow scroll'}>
+          {Neighbors}
         </GridItem>
-        <GridItem rowSpan={1} colSpan={1} className={'shadow'}>
+        {/* <GridItem rowSpan={1} colSpan={1} className={'shadow'}>
           {'bottom right'}
-        </GridItem>
+        </GridItem> */}
       </Grid>
     </ChakraProvider>
   );

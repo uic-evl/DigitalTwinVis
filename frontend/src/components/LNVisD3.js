@@ -70,6 +70,7 @@ export default function LNVisD3(props){
             let pathData = [];
             const data = props.data;
             for(const [name,path] of Object.entries(props.lnSvgPaths)){
+                if(name.includes('RPN')){continue}
                 let val = data[name];
                 let queVal = props.featureQue === undefined? -1:props.featureQue[name];
                 queVal = queVal === undefined? -1: queVal;
