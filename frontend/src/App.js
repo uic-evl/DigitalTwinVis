@@ -265,11 +265,25 @@ function App() {
 
   const Outcomes = useMemo(()=>{
     if(Utils.allValid([simulation,cohortData,currEmbeddings])){
+      var neighborOutcomes = constants.OUTCOMES.map(o => { return {'yes': [], 'no': []} });
+      const getNeighbor = id => Object.assign({},cohortData[id+'']);
+      var withTreatment = [];
+      var withoutTreatment = [];
+      for(let i in currEmbeddings.neighbors){
+        var id = currEmbeddings.neighbors[i];
+        var sim = currEmbeddings.similarities[i];
+        var nData = getNeighbor(id);
+        for(let i in constants.OUTCOMES){
+          continue
+        }
+      }
+
+
       return (<div>{'yes'}</div>)
     } else{
       return <Spinner></Spinner>
     }
-  },[simulation,cohortData,currEmbeddings]);
+  },[simulation,cohortData,currEmbeddings,modelOutput,currState]);
 
   function makeButtonToggle(){
     var makeButton = (state,text)=>{
