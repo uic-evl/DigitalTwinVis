@@ -61,6 +61,22 @@ export default class DataService {
         
     }
 
+    async getCohortPredictions(patientIds){
+        try{
+            var params = {
+                'patientIds': patientIds,
+            }
+            let qstring = '/cohortPredictions';
+            qstring += this.getParamList(params);
+
+            const response = await this.api.get(qstring);
+            return response.data;
+        } catch(error){
+            console.log('error in getCohortPredictions');
+            console.log(error);
+        }
+    }
+
     async getPatientSimulation(patientFeatures){
         let goodPostData = {}
         for(let key of Object.keys(patientFeatures)){

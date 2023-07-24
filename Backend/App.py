@@ -85,3 +85,13 @@ def get_patient_neighbors():
     # print(return_vals)
     print('-------')
     return responsify(return_vals)
+
+@app.route('/cohortPredictions',methods=['GET'])
+def get_cohort_predictions():
+    patients = request.args.getlist('patientIds')
+    if len(patients) < 1:
+        patients=None
+    pdf = get_predictions(DATA,transition_model1,transition_model2,outcome_model,ids=patients)
+    pdf_json = pdf.to_dict(orient='index')
+    return responsify(pdf_json)
+

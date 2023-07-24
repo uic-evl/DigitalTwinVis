@@ -11,7 +11,17 @@ export default class Utils {
         'N-category': 'N-cat',
         'T-category': 'T-cat',
         'Pathological_grade':'Path.</br>Grade',
-        'Overall Survival (4 Years)': 'OS'
+        'Overall Survival (4 Years)': 'OS',
+        'dlt1': 'Dose-Limiting Toxicities',
+        'dlt2': 'Dose-Limiting Toxicities',
+        'pd1': 'Primary Disease Response',
+        'nd1': 'Nodal Disease Reponse',
+        'pd2': 'Primary Disease Response',
+        'nd2': 'Nodal Disease Response',
+        'CR': "Complete",
+        'PR': "Partial",
+        'SD': "Stable",
+        'PD': "Progressive"
     }
 
     static getColorScale(name,min,max){

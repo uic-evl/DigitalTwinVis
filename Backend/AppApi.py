@@ -7,6 +7,7 @@ import torch
 from Preprocessing import DTDataset
 from sklearn.decomposition import PCA
 from scipy.spatial.distance import cdist
+from Constants import Const
 
 def load_dataset():
     data = DTDataset()
@@ -113,6 +114,38 @@ def get_decision_input(dataset,state=0,ids=None):
 def get_inputkey_order(dataset,state=0):
     return [list(f.columns) for f in get_decision_input(dataset,state=state)]
 
+def get_predictions(dataset,m1,m2,m3,states=[0,1,2],ids=None):
+    outcomes = {}
+    def add_outcomes(names, array):
+        for i,name in enumerate(names):
+            outcomes[name] = array[:,i]
+            
+    for model,state in zip([m1,m2,m3],states):
+        x = dataset.get_input_state(step=state+1,ids=ids)
+        x = df_to_torch(x)
+        y = model(x)
+        if state < 2:
+            y = [yy.cpu().detach().numpy() for yy in y]
+        else:
+            y = y.cpu().detach().numpy()
+        if state == 0:
+            [pds, nd, mod, dlts] = y
+            add_outcomes(Const.primary_disease_states,np.exp(pds))
+            add_outcomes(Const.nodal_disease_states,np.exp(nd))
+            add_outcomes(Const.modifications,np.exp(mod))
+            add_outcomes(Const.dlt1,dlts)
+        elif state == 1:
+            [pd2, nd2, cc, dlts2] = y
+            add_outcomes(Const.primary_disease_states2,np.exp(pd2))
+            add_outcomes(Const.nodal_disease_states2,np.exp(nd2))
+            add_outcomes(Const.dlt2,dlts2)
+        else:
+            add_outcomes(Const.outcomes,y)
+    if ids is None:
+        ids = dataset.processed_df.index.values
+    outcomes = pd.DataFrame(outcomes,ids)
+    outcomes.index.name = 'id'
+    return outcomes
 
 def get_embeddings(dataset,dm,states=[0,1,2],use_saved_memory=True,decimals=2):
     embeddings = []

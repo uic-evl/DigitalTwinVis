@@ -13,7 +13,7 @@ import PatientEditor from './components/PatientEditor';
 import LNVisD3 from './components/LNVisD3';
 import DLTVisD3 from './components/DLTVisD3';
 import NeighborVisD3 from './components/NeighborVisD3';
-
+import OutcomePlots from './components/OutcomePlots';
 import * as d3 from 'd3';
 
 function App() {
@@ -39,6 +39,8 @@ function App() {
   const [fixedDecisions,setFixedDecisions] = useState([-1,-1,-1]);//-1 is not fixed ,0 is no, 1 is yes
   const [modelOutput,setModelOutpt] = useState('optimal');
   const [currState, setCurrState] = useState(0);//0-2
+
+  const [cohortPredictions,setCohortPredictions] = useState();
 
   const [cohortLoading,setCohortLoading] = useState(false);
   const [cohortEmbeddingsLoading,setCohortEmbeddingsLoading] = useState(false);
@@ -141,6 +143,17 @@ function App() {
     }
   }
 
+  async function fetchCohortPredictions(){
+    setCohortPredictions(undefined);
+    const pred = await api.getCohortPredictions();
+    console.log('cohort predictions', pred);
+    if(pred.data !== undefined){
+      setCohortPredictions(pred.data)
+    } else{
+      console.log('error setting cohort predictions');
+    }
+  }
+
   async function fetchPatientNeighbors(){
     if(patientEmbeddingLoading){ return }
     setPatientEmbeddingLoading(true);
@@ -175,6 +188,8 @@ function App() {
   useEffect(() => {
     fetchCohort();
     fetchCohortEmbeddings();
+    //this one gives prediction confidences for all stuff in case I need it for calibration?
+    // fetchCohortPredictions();
   },[]);
 
   useEffect(() => {
@@ -263,27 +278,172 @@ function App() {
     }
   },[currEmbeddings,currState,cohortData,simulation,fixedDecisions,modelOutput])
 
+  const confidenceCalibration = useMemo(()=>{
+    if(Utils.allValid([simulation,cohortData,currEmbeddings,cohortEmbeddings])){
+      const getNeighbor = id => Object.assign(Object.assign({},cohortData[id+'']),cohortEmbeddings[id+'']);
+      var performances = [];
+      for(let state in constants.DECISIONS){
+        const predictionString = 'decision' + state + '_' + modelOutput;
+        var tpr = 0;
+        var fpr = 0;
+        var tnr = 0;
+        var fnr = 0;
+        var acc = 0;
+        let n = 0;
+        for(let i in currEmbeddings.neighbors){
+          var id = currEmbeddings.neighbors[i];
+          var sim = currEmbeddings.similarities[i];
+          var nData = getNeighbor(id);
+          const prediction = (nData[predictionString] > .5) + 0;
+          const trueOutcome = nData[constants.DECISIONS[state]] + 0;
+          const correct = prediction - trueOutcome < .01;
+          if(correct){
+            acc += 1;
+            if(trueOutcome > .001){
+              tpr += 1;
+            } else{
+              tnr +=1
+            }
+          } else{
+            if(trueOutcome > .001){
+              fnr += 1;
+            } else{
+              fpr += 1
+            }
+          }
+          n+=1;
+          if(n > neighborsToShow){
+            break;
+          }
+        }
+        tpr /= n;
+        fpr /= n;
+        tnr /= n;
+        fnr /= n;
+        acc /= n;
+        const entry = {
+          'tpr': tpr,
+          'fpr': fpr,
+          'tnr': tnr,
+          'fnr': fnr,
+          'acc': acc,
+        }
+        performances.push(entry);
+      }
+
+      console.log('performances',performances)
+      return performances
+    }
+    return false
+  },[simulation,cohortData,currEmbeddings,cohortEmbeddings]);
+
+  function getSimulation(){
+    if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
+    let key = modelOutput;
+    for(let i in fixedDecisions){
+      let d = fixedDecisions[i];
+      let di = parseInt(i) + 1
+      if(d >= 0){
+        let suffix = '_decision'+(di)+'-'+d;
+        key += suffix;
+      }
+    }
+    return simulation[key]
+  }
+
   const Outcomes = useMemo(()=>{
-    if(Utils.allValid([simulation,cohortData,currEmbeddings])){
-      var neighborOutcomes = constants.OUTCOMES.map(o => { return {'yes': [], 'no': []} });
-      const getNeighbor = id => Object.assign({},cohortData[id+'']);
-      var withTreatment = [];
-      var withoutTreatment = [];
-      for(let i in currEmbeddings.neighbors){
-        var id = currEmbeddings.neighbors[i];
-        var sim = currEmbeddings.similarities[i];
-        var nData = getNeighbor(id);
-        for(let i in constants.OUTCOMES){
-          continue
+    if(Utils.allValid([simulation,cohortData,currEmbeddings,cohortEmbeddings])){
+      const maxN = 10;
+      let currKey = modelOutput;
+      let altKey = modelOutput;
+      let currPredictions = ['1','2','3'].map(i=> (simulation[modelOutput]['decision'+i] > .5) + 0);
+      let currDecision = 0;
+      for(let i in fixedDecisions){
+        let d = fixedDecisions[i];
+        let di = parseInt(i) + 1;
+        let trueDecision = d >= 0? d: currPredictions[i];
+        let suffix = '';
+        if(d >= 0){
+          suffix = '_decision'+(di)+'-'+d;
+        }
+        currKey += suffix;
+        if(parseInt(i) !== parseInt(currState)){
+          altKey += suffix;
+        } else{
+          let altDecision = trueDecision > 0? 0: 1;
+          let altSuffix = '_decision' + (di) + '-' + altDecision;
+          altKey += altSuffix;
+          currDecision = trueDecision;
         }
       }
+      const sim = simulation[currKey];
+      const altSim = simulation[altKey];
+
+      const getNeighbor = id => Object.assign({},cohortData[id+'']);
+      var neighbors= [];
+      var cfs = [];
+      const nToShow = 20 //dumb name, # of patient to use when calculating outcomes
+      for(let i in currEmbeddings.neighbors){
+        var id = currEmbeddings.neighbors[i];
+        var nData = getNeighbor(id);
+        const prediction = nData[constants.DECISIONS[currState]];
+        if(neighbors.length < nToShow & prediction === currDecision){
+          neighbors.push(nData);
+        } else if(cfs.length < nToShow & prediction !== currDecision){
+          cfs.push(nData);
+        }
+        if( cfs.length > nToShow & neighbors.length > nToShow){
+          break;
+        }
+      }
+      var outcomes = constants.OUTCOMES;
+      if(currState == 0){
+        outcomes = outcomes.concat(constants.dlts1);
+        outcomes = outcomes.concat(constants.primaryDiseaseProgressions);
+        outcomes = outcomes.concat(constants.nodalDiseaseProgressions);
+      } else if(currState == 1){
+        outcomes = outcomes.concat(constants.dlts2);
+        outcomes = outcomes.concat(constants.primaryDiseaseProgressions2);
+        outcomes = outcomes.concat(constants.nodalDiseaseProgressions2);
+      }
+      var neighborPredictions = {};
+      var cfPredictions = {};
+      let nCount = 0;
+      let cfCount = 0;
+      for(let key of outcomes){
+        neighborPredictions[key] = Utils.mean(neighbors.map(d=>d[key]));
+        cfPredictions[key] = Utils.mean(cfs.map(d=>d[key]));
+      }
+      return (<OutcomePlots
+        sim={sim}
+        altSim={altSim}
+        neighborOutcomes={neighborPredictions}
+        counterfactualOutcomes={cfPredictions}
+        state={currState}
+      ></OutcomePlots>)
+      // var neighborOutcomes = constants.OUTCOMES.map(o => { return {'yes': [], 'no': []} });
+      // const getNeighbor = id => Object.assign(Object.assign({},cohortData[id+'']),cohortEmbeddings[id+'']);
+      // var withTreatment = [];
+      // var withoutTreatment = [];
+      // var predicitionAccuracy = constants.OUTCOMES.map(()=>0);
+      // const predictionString = 'decision' + currState + '_' + modelOutput;
+      // for(let i in currEmbeddings.neighbors){
+      //   var id = currEmbeddings.neighbors[i];
+      //   var sim = currEmbeddings.similarities[i];
+      //   var nData = getNeighbor(id);
+      //   const prediction = nData[predictionString]
+      //   // const trueOutcome = nData[]
+      //   for(let i in constants.OUTCOMES){
+      //     continue
+      //   }
+      // }
 
 
       return (<div>{'yes'}</div>)
     } else{
       return <Spinner></Spinner>
     }
-  },[simulation,cohortData,currEmbeddings,modelOutput,currState]);
+  },[simulation,cohortData,currEmbeddings,modelOutput,currState,cohortEmbeddings,fixedDecisions]);
 
   function makeButtonToggle(){
     var makeButton = (state,text)=>{
