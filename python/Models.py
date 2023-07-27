@@ -45,8 +45,12 @@ class SimulatorBase(torch.nn.Module):
         self.identifier = 'state'  +str(state) + '_input'+str(input_size) + '_dims' + ','.join([str(h) for h in hidden_layers]) + '_dropout' + str(input_dropout) + ',' + str(dropout)
         
     def normalize(self,x):
-        x = (x - self.input_mean + self.eps)/(self.input_std + self.eps)
+        x = torch.subtract(x,self.input_mean)
+        x = torch.add(x, self.eps)
+        x= torch.div(x,self.input_std+self.eps)
         return x
+#         x = (x - self.input_mean + self.eps)/(self.input_std + self.eps)
+#         return x
     
     def fit_normalizer(self,x):
         input_mean = x.mean(axis=0)
@@ -152,11 +156,11 @@ class OutcomeSimulator(SimulatorBase):
         #this only kind of works since I think it can end up all zero and softmaxes to .33% flat
         if self.state == 1:
             #pd and nd, shrink complete and partial response columns if decision is 0
-            scale = torch.gt(xin[:,-1],.5).view(-1,1)
-            x_pd[:,0:2] = x_pd[:,0:2]*scale
-            x_nd[:,0:2]  = x_nd[:,0:2] *scale
+            scale = xin[:,-1].view(-1,1)
+            x_pd= torch.mul(x_pd,scale)
+            x_nd= torch.mul(x_nd,scale)
             #shrink all but "no modifications"
-            x_mod[:,1:]  = x_mod[:,1:] *scale
+#             x_mod[:,1:]  = torx_mod[:,1:] *scale
         x_pd = self.softmax(x_pd)
         x_nd = self.softmax(x_nd)
         x_mod = self.softmax(x_mod)
@@ -164,7 +168,7 @@ class OutcomeSimulator(SimulatorBase):
         x_dlts = torch.cat([self.sigmoid(xx) for xx in x_dlts],axis=1)
         #dlts I think are only for chemo so in both ic and cc we do zero if decision is 0
         #this is after sigmoid because the dlts don't use softmax like the other ones
-        x_dlts = x_dlts*(xin[:,-1]).view(-1,1)
+        x_dlts = torch.mul(x_dlts,(xin[:,-1]).view(-1,1))
         xout = [x_pd, x_nd, x_mod, x_dlts]
         
         return xout
@@ -207,9 +211,18 @@ class DecisionModel(SimulatorBase):
                  ):
         #input will be all states up until treatment 3
         input_size = baseline_input_size  + 2*len(Const.dlt1) + len(Const.primary_disease_states)  + len(Const.nodal_disease_states)  + len(Const.ccs)  + len(Const.modifications) + 2
-            
+    
         super().__init__(input_size,hidden_layers=hidden_layers,dropout=dropout,input_dropout=input_dropout,eps=eps,state='decisions')
         self.final_layer = torch.nn.Linear(hidden_layers[-1],len(Const.decisions)*2)
+        self.baseline_input_size= baseline_input_size
+        self.input_sizes = {
+            'baseline': baseline_input_size,
+            'dlt': len(Const.dlt1),
+            'pd': len(Const.primary_disease_states),
+            'nd': len(Const.nodal_disease_states),
+            'cc': len(Const.ccs),
+            'modifications': len(Const.modifications),
+        }
 
 #         self.final_layer = torch.nn.Linear(hidden_layers[-1],1)
         self.sigmoid = torch.nn.Sigmoid()
@@ -233,23 +246,18 @@ class DecisionModel(SimulatorBase):
             x = torch.cat([x,token1,token2],dim=1)
         return x
     
-    def get_embedding(self,xbase,xdlt,xpd,xnd,xcc,xmod,position=0):
+    def get_embedding(self,x,position=0):
+        xbase = x[:,0:self.baseline_input_size]
+        xx = x[:,self.baseline_input_size:]
         xbase = self.normalize(xbase)
-        x = torch.cat([xbase,xdlt,xpd,xnd,xcc,xmod],dim=1)
+        x = torch.cat([xbase,xx],dim=1)
         x = self.add_position_token(x,position)
         for layer in self.layers:
             x = layer(x)
         return x
     
-    def forward(self,xbase,xdlt1,xdlt2,xpd,xnd,xcc,xmod,position=0):
-        #position is 0-2
-#         [xbase, xdlt, xpd, xnd, xcc,xmod] = x
-        xbase = self.normalize(xbase)
-        x = torch.cat([xbase,xdlt1,xdlt2,xpd,xnd,xcc,xmod],dim=1)
-        x = self.input_dropout(x)
-        x = self.add_position_token(x,position)
-        for layer in self.layers:
-            x = layer(x)
+    def forward(self,x,position=0):
+        x = self.get_embedding(x,position=position)
         x = self.dropout(x)
         x = self.final_layer(x)
         x = self.sigmoid(x)
@@ -267,11 +275,23 @@ class DecisionAttentionModel(DecisionModel):
                  input_dropout=0.1,
                  state = 1,
                  eps = 0.01,
+                 calculate_spread=True,
+                 ln_group_positions = [[0, 2, 4, 6, 8, 10, 12, 14, 16, 36],[1, 3, 5, 7, 9, 11, 13, 15, 17, 37]],
                  ):
         #input will be all states up until treatment 3
         input_size = baseline_input_size  + 2*len(Const.dlt1) + len(Const.primary_disease_states)  + len(Const.nodal_disease_states)  + len(Const.ccs)  + len(Const.modifications) + 2
+        super().__init__(input_size,hidden_layers=hidden_layers,dropout=dropout,input_dropout=input_dropout,eps=eps,state='decisions')
+        #must be after call
+        self.baseline_input_size=baseline_input_size
+        #if we do live feature engineering by summing the number of nodes
+        #currently uses just #ipsilateral and #contralateral, may do other stuff idk
+        #will need to update positions if I chane other input features
+        if calculate_spread:
+            input_size += len(ln_group_positions)
+        self.ln_group_positions = ln_group_positions
+        self.calculate_spread = calculate_spread
         
-        self.baseline_input_size= baseline_input_size
+        
         self.input_sizes = {
             'baseline': baseline_input_size,
             'dlt': len(Const.dlt1),
@@ -280,9 +300,6 @@ class DecisionAttentionModel(DecisionModel):
             'cc': len(Const.ccs),
             'modifications': len(Const.modifications),
         }
-        
-        super().__init__(input_size,hidden_layers=hidden_layers,dropout=dropout,input_dropout=input_dropout,eps=eps,state='decisions')
-        
         #to make the input to attention divisible by the initial layer size
         #all layer sizes and embed size need to be divisible by all attention heads
         if embed_size == 0:
@@ -291,6 +308,7 @@ class DecisionAttentionModel(DecisionModel):
             curr_size = input_size
         else:
             self.resize_layer = torch.nn.Linear(input_size,embed_size)
+            torch.nn.init.xavier_uniform_(self.resize_layer.weight)
             curr_size = embed_size
         #overrite layer intitialization
         layers = []
@@ -301,6 +319,7 @@ class DecisionAttentionModel(DecisionModel):
         for aheads,lindim in zip(attention_heads,hidden_layers):
             attention = torch.nn.MultiheadAttention(curr_size,aheads)
             linear = torch.nn.Linear(curr_size,lindim)
+            torch.nn.init.xavier_uniform_(linear.weight)
             norm = torch.nn.LayerNorm(curr_size)
             layers.append(linear)
             attentions.append(attention)
@@ -311,13 +330,26 @@ class DecisionAttentionModel(DecisionModel):
         self.attentions = torch.nn.ModuleList(attentions)
         self.norms = torch.nn.ModuleList(norms)
         self.final_layer = torch.nn.Linear(hidden_layers[-1],len(Const.decisions)*2)
+        torch.nn.init.xavier_uniform_(self.final_layer.weight)
         self.activation = torch.nn.ReLU()
         self.register_buffer('memory',None)
     
+    def get_ln_spreads(self,xbase):
+        spreads = torch.zeros((xbase.shape[0],len(self.ln_group_positions)))
+        for i,idxgroup in enumerate(self.ln_group_positions):
+            spread = torch.sum(xbase[:,idxgroup],dim=1)
+            spread = torch.div(spread,len(idxgroup))
+            spreads[:,i] = spread.view(-1)
+        return spreads
+    
     def get_embedding(self,x,position=0,memory=None,use_saved_memory=False):
         xbase = x[:,0:self.baseline_input_size]
+        if self.calculate_spread:
+            spreads = self.get_ln_spreads(xbase)
         xx = x[:,self.baseline_input_size:]
         xbase = self.normalize(xbase)
+        if self.calculate_spread:
+            xbase = torch.cat([xbase,spreads],dim=1)
         x = torch.cat([xbase,xx],dim=1)
         x = self.input_dropout(x)
         x = self.add_position_token(x,position)
@@ -329,11 +361,14 @@ class DecisionAttentionModel(DecisionModel):
                 memory = memory[position]
             if memory is None:
                 print('passed saved to decision model but no memory has been saved')
-       
         if memory is not None:
             m1 = memory[:,0:self.baseline_input_size]
+            if self.calculate_spread:
+                m1_spread = self.get_ln_spreads(m1)
             m2 = memory[:,self.baseline_input_size:]
             m1 = self.normalize(m1)
+            if self.calculate_spread:
+                m1  = torch.cat([m1,m1_spread],dim=1)
             memory = torch.cat([m1,m2],dim=1)
             memory = self.add_position_token(memory,position)
             memory = self.activation(self.resize_layer(memory))
@@ -404,8 +439,6 @@ class DecisionAttentionModel(DecisionModel):
 #         x = self.final_layer(x)
 #         x = self.sigmoid(x)
 #         return x
-
-
 # -
 
 class OutcomeAttentionSimulator(SimulatorAttentionBase):
