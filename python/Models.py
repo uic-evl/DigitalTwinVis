@@ -32,7 +32,7 @@ class SimulatorBase(torch.nn.Module):
         self.layers = torch.nn.ModuleList(layers)
         self.batchnorm = torch.nn.BatchNorm1d(hidden_layers[-1])
         self.dropout = torch.nn.Dropout(dropout)
-        
+        self.relu = torch.nn.Softplus()
     
         input_mean = torch.tensor([0])
         input_std = torch.tensor([1])
@@ -119,7 +119,6 @@ class OutcomeSimulator(SimulatorBase):
         self.disease_layer = torch.nn.Linear(hidden_layers[-1],len(Const.primary_disease_states))
         self.nodal_disease_layer = torch.nn.Linear(hidden_layers[-1],len(Const.nodal_disease_states))
         #dlt ratings are 0-4 even though they don't always appear
-        
         self.dlt_layers = torch.nn.ModuleList([torch.nn.Linear(hidden_layers[-1],1) for i in Const.dlt1])
         assert( state in [1,2])
         if state == 1:
@@ -130,8 +129,8 @@ class OutcomeSimulator(SimulatorBase):
 #             self.dlt_layers = torch.nn.ModuleList([torch.nn.Linear(hidden_layers[-1],2) for i in Const.dlt2])
             self.treatment_layer = torch.nn.Linear(hidden_layers[-1],len(Const.ccs))
    
-    def forward(self,x):
-        x = self.normalize(x)
+    def forward(self,xin):
+        x = self.normalize(xin)
         x = self.input_dropout(x)
         for layer in self.layers:
             x = layer(x)
@@ -142,12 +141,33 @@ class OutcomeSimulator(SimulatorBase):
         x_mod = self.treatment_layer(x)
         x_dlts = [layer(x) for layer in self.dlt_layers]
         
+        #If I relu the dlts it breaks idk why
+        #the rest needs an activation functiona tha makes everything non-negative so the zeroing out with no IC decisions works properly
+        x_pd = self.relu(x_pd)
+        x_nd = self.relu(x_nd)
+        x_mod = self.relu(x_mod)
+        
+        #last input is decision 1 or 0, if we have no treatment on first decision we have not transitional outcomes so reflect that
+        #this is hardcoded based on original order so check this if I change stuff
+        #this only kind of works since I think it can end up all zero and softmaxes to .33% flat
+        if self.state == 1:
+            #pd and nd, shrink complete and partial response columns if decision is 0
+            scale = torch.gt(xin[:,-1],.5).view(-1,1)
+            x_pd[:,0:2] = x_pd[:,0:2]*scale
+            x_nd[:,0:2]  = x_nd[:,0:2] *scale
+            #shrink all but "no modifications"
+            x_mod[:,1:]  = x_mod[:,1:] *scale
         x_pd = self.softmax(x_pd)
         x_nd = self.softmax(x_nd)
         x_mod = self.softmax(x_mod)
         #dlts are array of nbatch x n_dlts x predictions
         x_dlts = torch.cat([self.sigmoid(xx) for xx in x_dlts],axis=1)
-        return [x_pd, x_nd, x_mod, x_dlts]
+        #dlts I think are only for chemo so in both ic and cc we do zero if decision is 0
+        #this is after sigmoid because the dlts don't use softmax like the other ones
+        x_dlts = x_dlts*(xin[:,-1]).view(-1,1)
+        xout = [x_pd, x_nd, x_mod, x_dlts]
+        
+        return xout
 
 class EndpointSimulator(SimulatorBase):
     
@@ -159,7 +179,7 @@ class EndpointSimulator(SimulatorBase):
                  state = 1,
                 ):
         #predicts disease state (sd, pr, cr) for primar and nodal, then dose modications or cc type (depending on state), and [dlt ratings]
-        super(EndpointSimulator,self).__init__(input_size,hidden_layers=hidden_layers,dropout=dropout,input_dropout=input_dropout,state=state)
+        super().__init__(input_size,hidden_layers=hidden_layers,dropout=dropout,input_dropout=input_dropout,state=state)
         
         self.outcome_layer = torch.nn.Linear(hidden_layers[-1],len(Const.outcomes))
       
