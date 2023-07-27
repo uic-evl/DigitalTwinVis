@@ -18,13 +18,20 @@ def load_dataset():
     data.processed_df = newdf
     return data
 
-def load_models():
+def load_models(use_upsampled=False):
     files = [
         '../resources/decision_model.pt',
         '../resources/transition1_model.pt',
         '../resources/transition2_model.pt',
         '../resources/outcome_model.pt',
     ]
+    if use_upsampled:
+        files = [
+            '../resources/decision_model_smote.pt',
+            '../resources/transition1_model_smote.pt',
+            '../resources/transition2_model_smote.pt',
+            '../resources/outcome_model_smote.pt',
+        ]
     decision_model,transition_model1,transition_model2, outcome_model = [torch.load(file) for file in files]
     return decision_model,transition_model1,transition_model2,outcome_model
 
@@ -313,6 +320,10 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         tinput1 = torch.cat([baseline_inputs[0],thresh(d1)],axis=1)
         [ypd1,ynd1,ymod,ydlt1] = tmodel1(tinput1)
         [ypd1, ynd1, ymod] = [format_transition(i) for i in [ypd1,ynd1,ymod]]
+        #I try to make this work in the model but it just thinks there's no outcome and softmaxes them all often
+        d1_thresh = torch.gt(d1,.5).view(-1,1)
+        ypd1[:,:] = ypd1[:,:]*d1_thresh
+        ynd1[:,:] = ynd1[:,:]*d1_thresh
         
         oinput2 = dict_to_model_input(data,pdata,state=1,concat=False)
         oinput2[1] = ydlt1.view(1,-1)

@@ -110,6 +110,9 @@ def preprocess_dt_data(df,extra_to_keep=None):
     
     to_keep = ['id','hpv','age','packs_per_year','smoking_status','gender','Aspiration rate Pre-therapy','total_dose','dose_fraction'] 
     to_onehot = ['T-category','N-category','AJCC','Pathological Grade','subsite','treatment','laterality','ln_cluster']
+    
+    df['AJCC'] = df.apply(lambda row: merge_editions(row,'ajcc8','ajcc7'),axis=1)
+    
     to_onehot = [c for c in to_onehot if c in df.columns]
     if extra_to_keep is not None:
         to_keep = to_keep + [c for c in extra_to_keep if c not in to_keep and c not in to_onehot]
@@ -137,10 +140,11 @@ def preprocess_dt_data(df,extra_to_keep=None):
         3: 'cc_others',
     }
 
-#     races_shortened = ['White/Caucasian','Hispanic/Latino','African American/Black']
-#     for race in races_shortened:
-#         df[race] = df['Race'].apply(lambda x: x.strip() == race)
-#         to_keep.append(race)
+    races_shortened = ['White/Caucasian','Hispanic/Latino','African American/Black']
+    for race in races_shortened:
+        df[race] = df['Race'].apply(lambda x: x.strip() == race)
+        to_keep.append(race)
+
 
     for k,v in Const.cc_types.items():
         df[v] = df['CC Regimen(0= none, 1= platinum based, 2= cetuximab based, 3= others, 9=unknown)'].apply(lambda x: int(Const.cc_types.get(int(x),0) == v))
@@ -160,7 +164,7 @@ def preprocess_dt_data(df,extra_to_keep=None):
     
     df['packs_per_year'] = df['packs_per_year'].apply(lambda x: str(x).replace('>','').replace('<','')).astype(float).fillna(0)
     #so I'm actually not sure if this is biological sex or gender given this is texas
-    df['AJCC'] = df.apply(lambda row: merge_editions(row,'ajcc8','ajcc7'),axis=1)
+    
     df['N-category'] = df.apply(lambda row: merge_editions(row,'N-category_8th_edition','N-category'),axis=1)
     
     dummy_df = pd.get_dummies(df[to_onehot].fillna(0).astype(str),drop_first=False)
@@ -177,7 +181,7 @@ def preprocess_dt_data(df,extra_to_keep=None):
     for statelist in [Const.state2,Const.state3,Const.decisions,Const.outcomes]:
         toadd = [c for c in statelist if c not in to_keep]
         to_keep = to_keep + toadd
-        
+#     print(to_keep)
    
     return df[to_keep].set_index('id')
 
@@ -224,7 +228,7 @@ def get_contra(row,ln):
 def fix_ln_laterality(df,lncols=None):
     df = df.copy()
     if lncols is None:
-        lncols = [c[1:] for c in df.columns if (c[0] == 'L' and len(c) < 4) or c == 'LRPLN']
+        lncols = [c[1:] for c in df.columns if (c[0] == 'L' and len(c) < 4 and c != 'LRC') or c == 'LRPLN']
     for col in lncols:
         df[col+'_ipsi'] = df.apply(lambda x: get_ipsi(x,col),axis=1)
         df[col+'_contra'] = df.apply(lambda x: get_contra(x,col),axis=1)      
@@ -302,8 +306,14 @@ class DTDataset():
         df2 = self.processed_df.drop(index=df1.index)
         return df1,df2
     
-    def get_states(self,fixed=None,ids = None):
+    def get_states(self,fixed=None,ids = None,require=None):
         processed_df = self.processed_df.copy()
+        if require is not None:
+            if isinstance(require,str):
+                processed_df = processed_df[processed_df[require].apply(lambda x: x > 0)]
+            else:
+                for r in require:
+                    processed_df = processed_df[processed_df[r].apply(lambda x: x > 0)]
         if ids is not None:
             processed_df = processed_df.loc[ids]
         if fixed is not None:
@@ -349,6 +359,7 @@ class DTDataset():
             'survival': processed_df[outcomes[0]],
             'ft': processed_df[outcomes[1]],
             'aspiration': processed_df[outcomes[2]],
+            'lr_control': processed_df[outcomes[3]],
         }
     
         return results
@@ -369,7 +380,7 @@ class DTDataset():
         if step == 2:
             keys =  ['pd_states2','nd_states2','ccs','dlt2']
         if step == 3:
-            keys = ['survival','ft','aspiration']# ['decision1','decision2','decision3']
+            keys = ['survival','ft','aspiration','lr_control']# ['decision1','decision2','decision3']
         if step == 0:
             keys = ['decision1','decision2','decision3']
         if len(keys) < 2:

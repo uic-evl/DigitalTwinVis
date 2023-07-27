@@ -12,7 +12,7 @@ export default function OutcomePlots(props){
     const [svg, height, width, tTip] = useSVGCanvas(d3Container);
     
     const margin = 10;
-    const labelSpacing = 100;
+    const labelSpacing = 60;
     const titleSpacing = 50;
     const xScale = useMemo(()=>{
         return d3.scaleLinear()
@@ -36,28 +36,27 @@ export default function OutcomePlots(props){
     const simStates = useMemo(()=>{
         var keys = {'outcomes': constants.OUTCOMES};
         if(props.state === 0){
-            keys['dlt1'] = constants.dlts1;
             keys['pd1'] = constants.primaryDiseaseProgressions;
             keys['nd1'] = constants.nodalDiseaseProgressions;
+            keys['dlt1'] = constants.dlts1;
         } else if(props.state === 1){
-            keys['dlt2'] = constants.dlts2;
             keys['pd2'] = constants.primaryDiseaseProgressions2;
             keys['nd2'] = constants.nodalDiseaseProgressions2;
+            keys['dlt2'] = constants.dlts2;
         }
         return keys
     },[props.state]);
 
     useEffect(()=>{
         if(!Utils.allValid([svg,props.sim,props.altSim,props.neighborOutcomes,props.counterfactualOutcomes])){
-            console.log('not valid stuff in outcomeplots',props.sim,props.altSim,props.neighborOutcomes,props.counterfactualOutcomes);
+            //console.log('not valid stuff in outcomeplots',props.sim,props.altSim,props.neighborOutcomes,props.counterfactualOutcomes);
         }else{
-            console.log('outcomesplots',props.sim,props.neighborOutcomes,simStates);
             var nStates = 0;
             for(let [key,entry] of Object.entries(simStates)){
                 nStates += 2.5*entry.length;
-                nStates += 2;
+                nStates += 1;
             }
-            const barWidth = ((height - margin*2 - titleSpacing)/nStates) - 2;
+            const barWidth = Math.min(((height - margin*2 - titleSpacing)/nStates) - 2,20);
             var pos = margin+titleSpacing;
             var rectData = [];
             var titles = []
@@ -77,14 +76,18 @@ export default function OutcomePlots(props){
                         'name': name,
                         'model':'primary',
                         'val': probs[ii],
+                        'altVal': altProbs[ii],
                         'y': pos,
+                        'rnn': true,
                     });
                     // pos += barWidth;
                     rectData.push({
                         'name': name,
                         'model':'alternative',
                         'val': altProbs[ii],
+                        'altVal': probs[ii],
                         'y': pos,
+                        'rnn': true,
                     });
 
                     pos += barWidth;
@@ -92,14 +95,18 @@ export default function OutcomePlots(props){
                         'name': name,
                         'model':'similar',
                         'val': nProbs[ii],
+                        'altVal': cfProbs[ii],
                         'y': pos,
+                        'rnn': false,
                     });
                     // pos += barWidth;
                     rectData.push({
                         'name': name,
                         'model':'counterfactuals',
                         'val': cfProbs[ii],
+                        'altVal': nProbs[ii],
                         'y': pos,
+                        'rnn': false
                     });
                     pos += 1.5*barWidth ;
                     
@@ -107,24 +114,28 @@ export default function OutcomePlots(props){
                 pos += barWidth;
                 pos += 1*barWidth;
             }
-            console.log(rectData)
 
+            //this is coded to orient as recommened vs not recommeneded
+            //but this basically just converts it to treated = yes vs no treated for coloring
+            
+            const noTreatmentModels = props.mainDecision > 0.001? ['alternative','counterfactuals']: ['primary','similar'];
+            const isTreatment = d => noTreatmentModels.indexOf(d.model) < 0;
             function getFill(d){
-                if(d.model === 'alternative' | d.model === 'counterfactuals'){
+                if(!isTreatment(d)){
                     return 'none';
                 }
-                return d.model === 'primary'? 'teal':'beige';
+                return d.rnn? 'teal': 'goldenrod';
             }
 
             function getStrokeWidth(d){
-                if(d.model === 'alternative' | d.model === 'counterfactuals'){
+                if(!isTreatment(d)){
                     return 3;
                 }
                 return 0;
             }
 
             function getOpacity(d){
-                if(d.model === 'alternative' | d.model === 'counterfactuals'){
+                if(!isTreatment(d)){
                     return 1;
                 }
                 return .75;
@@ -133,7 +144,7 @@ export default function OutcomePlots(props){
             svg.selectAll('.rect').remove();
             svg.selectAll('.rect').data(rectData)
                 .enter().append('rect')
-                .attr('class','rect')
+                .attr('class',d=> isTreatment(d)? 'rect': 'rect activeRect')
                 .attr('width',d=>xScale(d.val))
                 .attr('y',d=>d.y)
                 .attr('height',barWidth-2)
@@ -141,7 +152,15 @@ export default function OutcomePlots(props){
                 .attr('stroke','black')
                 .attr('stroke-width',getStrokeWidth)
                 .attr('opacity',getOpacity)
-                .attr('x',margin+labelSpacing);
+                .attr('x',margin+labelSpacing)
+                .on('mouseover',function(e,d){
+                    const string = d.name + '</br>' + d.model + '</br>' + d.val.toFixed(4);
+                    tTip.html(string);
+                }).on('mousemove', function(e){
+                    Utils.moveTTipEvent(tTip,e);
+                }).on('mouseout', function(e){
+                    Utils.hideTTip(tTip);
+                });
 
             svg.selectAll('text').remove();
             svg.selectAll('.titles').data(titles)
@@ -169,8 +188,38 @@ export default function OutcomePlots(props){
                 .attr('textLength',d=> fixName(d.name).length > 6? labelSpacing*.9: '')
                 .attr('lengthAdjust','spacingAndGlyphs')
                 .text(d=>fixName(d.name));
+            
+            function getLabelX(d){
+                const higherVal = Math.max(d.altVal,d.val);
+                let x = margin+labelSpacing;
+                if(higherVal > .8){
+                    x += xScale(higherVal) - 80;
+                    return x;
+                }
+                x += xScale(higherVal) + 10;
+                return x;
+            }
+            // const getLabelText = d => 'Y: ' + (d.val*100).toFixed(0) 
+            //     + '% | N:' + (d.altVal*100).toFixed(0) + '%'
+            //     + ' | Δ : ' + ((d.val - d.altVal)*100).toFixed(1) + '%';
+            const getLabelText = d => (d.val > d.altVal? '+':'-') + ' ' + Math.abs((d.val - d.altVal)*100).toFixed(1) + '%';
+            svg.selectAll('.valLabels')
+                .data(rectData.filter(isTreatment))
+                .enter().append('text')
+                .attr('class','valLabels')
+                .attr('text-anchor','start')
+                .attr('y',d=>d.y+barWidth*.75-1)
+                .attr('font-weight','bold')
+                .attr('stroke','white')
+                .attr('stroke-width',.01)
+                .attr('x',getLabelX)
+                .attr('font-size',barWidth*.75)
+                .attr('lengthAdjust','spacingAndGlyphs')
+                .text(getLabelText);
+            //we want the outline stuff to be on top
+            svg.selectAll('.activeRect').raise();
         }
-    },[props.sim,props.altSim,props.neighborOutcomes,props.counterfactualOutcomes,simStates,svg,xScale])
+    },[props.sim,props.altSim,props.neighborOutcomes,props.counterfactualOutcomes,simStates,svg,xScale,props.mainDecision])
 
     return (
         <div
