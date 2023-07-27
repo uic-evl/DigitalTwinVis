@@ -1,7 +1,7 @@
 
 export const API_URL = 'http://127.0.0.1:8000/';//this is a bad way to do this.  Whatever the flask server is set to
 
-export const OUTCOMES = ['Overall Survival (4 Years)','FT','Aspiration rate Post-therapy']
+export const OUTCOMES = ['Overall Survival (4 Years)','FT','Aspiration rate Post-therapy','LRC']
 export const DECISIONS = [
         'Decision 1 (Induction Chemo) Y/N',
         'Decision 2 (CC / RT alone)',
@@ -9,7 +9,7 @@ export const DECISIONS = [
 ]
 
 export const ordinalVars = {
-        // 'AJCC': [1,2,3,4],
+        'AJCC': [1,2,3,4],
         'N-category': [0,1,2,3],
         'T-category': [1,2,3,4],
         'Pathological Grade': [0,1,2,3,4],
@@ -51,6 +51,8 @@ export const inductionModifications = [
         'regiment_modification',
         'unknown'
 ]
+
+export const validSubsites = ['GPS','BOT','NOS','Pharyngeal_wall','Tonsil','Soft palate'];
 
 export const noColor = '#af8dc3';
 export const yesColor = '#7fbf7b';

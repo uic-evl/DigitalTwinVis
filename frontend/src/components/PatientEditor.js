@@ -24,16 +24,16 @@ export default function PatientEditor(props){
     const onlyCounterfactuals = props.onlyCounterfactuals === undefined? false:  props.onlyCounterfactuals;
 
     const ordinalVars = constants.ordinalVars;
-    const booleanVars = constants.booleanVars;
+    const booleanVars = constants.booleanVars.filter(d=>!d.includes('subsite'));
     const continuousVars = constants.continuousVars;
 
     const allVars = Object.keys(ordinalVars)
     .concat(continuousVars)
     .concat(booleanVars)
-    .concat(['placeholder'])
-    .concat(constants.DECISIONS)
-    .concat(['placeholder2'])
-    .concat(constants.OUTCOMES);
+    // .concat(['placeholder'])
+    // .concat(constants.DECISIONS);
+    // .concat(['placeholder2'])
+    // .concat(constants.OUTCOMES);
     
     const xScale = d3.scaleLinear()
             .domain([0,allVars.length])
@@ -73,12 +73,14 @@ export default function PatientEditor(props){
         var means = {};
         const range = [height-bottomMargin,topMargin];
         for(const [key,entry] of Object.entries(ordinalVars)){
+            if(allVars.indexOf(key) < 0){ continue; }
             scales[key] = d3.scaleLinear()
                 .domain([entry[0],entry[entry.length-1]])
                 .range(range);
         }
         let pVals = Object.values(cData);
         for(const key of continuousVars){
+            if(allVars.indexOf(key) < 0){ continue; }
             let vals = pVals.map(d=>d[key]);
             scales[key] = d3.scaleLinear()
                 .domain(d3.extent(vals))
@@ -86,6 +88,7 @@ export default function PatientEditor(props){
             means[key] = d3.median(vals);
         }
         for(const key of booleanVars.concat(constants.DECISIONS).concat(constants.OUTCOMES)){
+            if(allVars.indexOf(key) < 0){ continue; }
             scales[key] = d3.scaleLinear()
                 .domain([0,1])
                 .range([range[0]-topMargin,range[1]+topMargin]);
@@ -495,6 +498,9 @@ export default function PatientEditor(props){
             const markers = [];
             const labels = [];
             for(const [key,scale] of Object.entries(s)){
+                if(allVars.indexOf(key) < 0){
+                    continue;
+                }
                 let x = getX(key);
                 let y0 = height-bottomMargin//scale.range()[0];
                 let y1 = topMargin//scale.range()[1];

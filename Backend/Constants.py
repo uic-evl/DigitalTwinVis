@@ -23,7 +23,11 @@ class Const:
         'Smoking status at Diagnosis (Never/Former/Current)': 'smoking_status',
         'Smoking status (Packs/Year)': 'packs_per_year',
         'Overall Survival (1=alive,0=dead)': 'os',
-        'Dose/fraction (Gy)': 'dose_fraction'
+        'Dose/fraction (Gy)': 'dose_fraction',
+        'Local Control (1=no control, 0=primary recurrance)': 'LC',
+        'Regional Control (1=regional/nodal control,0=regional/nodal recurrance)': 'RC',
+        'Locoregional Control(1=Control,0=Failure)': 'LRC',
+        'Distant Control (1=no DM, 0=DM)': "DC"
     }
     
     dlt_dict = {
@@ -59,7 +63,7 @@ class Const:
     decision2 = 'Decision 2 (CC / RT alone)'
     decision3 = 'Decision 3 Neck Dissection (Y/N)'
     decisions = [decision1,decision2, decision3]
-    outcomes = ['Overall Survival (4 Years)', 'FT', 'Aspiration rate Post-therapy']
+    outcomes = ['Overall Survival (4 Years)', 'FT', 'Aspiration rate Post-therapy','LRC']
     
     modification_types = {
         0: 'no_dose_adjustment',

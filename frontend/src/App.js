@@ -12,8 +12,11 @@ import ScatterPlotD3 from './components/ScatterPlotD3';
 import PatientEditor from './components/PatientEditor';
 import LNVisD3 from './components/LNVisD3';
 import DLTVisD3 from './components/DLTVisD3';
+import SubsiteVisD3 from './components/SubsiteVisD3';
 import NeighborVisD3 from './components/NeighborVisD3';
+import RecommendationPlot from './components/RecommendationsPlot';
 import OutcomePlots from './components/OutcomePlots';
+import AttributionPlotD3 from './components/AttributionPlotD3';
 import * as d3 from 'd3';
 
 function App() {
@@ -24,8 +27,8 @@ function App() {
     'bilateral': 1,
     'hpv': 1,
     'subsite_BOT': 1,
-    '1A': 1,
-    '2B': 2,
+    '1A_ipsi': 1,
+    '1B_ipsi': 1,
   }
   const api = new DataService();
   const maxStackSize = 4;
@@ -54,6 +57,7 @@ function App() {
   //dict of dlt stuff, each entry is a dict with path and style
   //eg vascular: {'d': path string, 'style' 'fill:#fe7070;fill-opacity:1;stroke:#000000'}
   const [dltSvgPaths,setDltSvgPaths]= useState();
+  const [subsiteSvgPaths,setSubsiteSvgPaths] = useState();
   const neighborsToShow = 5;
 
   function getSimulation(){
@@ -185,6 +189,15 @@ function App() {
     })
   },[]);
 
+  useEffect(()=>{
+    fetch('subsite_diagrams.json').then(paths=>{
+      paths.json().then(data=>{
+        console.log('subsites',data)
+        setSubsiteSvgPaths(data);
+      })
+    })
+  },[]);
+
   useEffect(() => {
     fetchCohort();
     fetchCohortEmbeddings();
@@ -243,6 +256,14 @@ function App() {
         return (
         <div key={d.id} 
         style={{'marginTop':'.5em','height': '8em','width': '100%','diplay': 'block','borderStyle':'solid','borderColor': borderColor,'borderWidth':'.5em'}}>
+          <div style={{'width':'8em','height':'100%','display':'inline-block'}}>
+          <DLTVisD3
+            dltSvgPaths={dltSvgPaths}
+            data={d}
+            currState={currState}
+            isMainPatient={false}
+          />
+          </div >
           <div style={{'width':'10em','height':'100%','display':'inline-block'}}>
             <LNVisD3
               lnSvgPaths={lnSvgPaths}
@@ -250,15 +271,15 @@ function App() {
               isMainPatient={false}
             ></LNVisD3>
           </div>
-          <div style={{'width':'10em','height':'100%','display':'inline-block'}}>
-          <DLTVisD3
-            dltSvgPaths={dltSvgPaths}
-            data={d}
-            currState={currState}
-            isMainPatient={false}
-          />
+          <div style={{'width':'6em','height':'100%','display':'inline-block'}}>
+            <SubsiteVisD3
+              subsiteSvgPaths={subsiteSvgPaths}
+              data={d}
+              isSelectable={false}
+              featureQue={{}}
+            ></SubsiteVisD3>
           </div>
-          <div style={{'width':'calc(100% - 20em)','height':'100%','display':'inline-block'}}>
+          <div style={{'width':'calc(100% - 24em)','height':'100%','display':'inline-block'}}>
             <NeighborVisD3
               data={d}
               referenceData={patientFeatures}
@@ -278,64 +299,63 @@ function App() {
     }
   },[currEmbeddings,currState,cohortData,simulation,fixedDecisions,modelOutput])
 
-  const confidenceCalibration = useMemo(()=>{
-    if(Utils.allValid([simulation,cohortData,currEmbeddings,cohortEmbeddings])){
-      const getNeighbor = id => Object.assign(Object.assign({},cohortData[id+'']),cohortEmbeddings[id+'']);
-      var performances = [];
-      for(let state in constants.DECISIONS){
-        const predictionString = 'decision' + state + '_' + modelOutput;
-        var tpr = 0;
-        var fpr = 0;
-        var tnr = 0;
-        var fnr = 0;
-        var acc = 0;
-        let n = 0;
-        for(let i in currEmbeddings.neighbors){
-          var id = currEmbeddings.neighbors[i];
-          var sim = currEmbeddings.similarities[i];
-          var nData = getNeighbor(id);
-          const prediction = (nData[predictionString] > .5) + 0;
-          const trueOutcome = nData[constants.DECISIONS[state]] + 0;
-          const correct = prediction - trueOutcome < .01;
-          if(correct){
-            acc += 1;
-            if(trueOutcome > .001){
-              tpr += 1;
-            } else{
-              tnr +=1
-            }
-          } else{
-            if(trueOutcome > .001){
-              fnr += 1;
-            } else{
-              fpr += 1
-            }
-          }
-          n+=1;
-          if(n > neighborsToShow){
-            break;
-          }
-        }
-        tpr /= n;
-        fpr /= n;
-        tnr /= n;
-        fnr /= n;
-        acc /= n;
-        const entry = {
-          'tpr': tpr,
-          'fpr': fpr,
-          'tnr': tnr,
-          'fnr': fnr,
-          'acc': acc,
-        }
-        performances.push(entry);
-      }
+  // const confidenceCalibration = useMemo(()=>{
+  //   if(Utils.allValid([simulation,cohortData,currEmbeddings,cohortEmbeddings])){
+  //     const getNeighbor = id => Object.assign(Object.assign({},cohortData[id+'']),cohortEmbeddings[id+'']);
+  //     var performances = [];
+  //     for(let state in constants.DECISIONS){
+  //       const predictionString = 'decision' + state + '_' + modelOutput;
+  //       var tpr = 0;
+  //       var fpr = 0;
+  //       var tnr = 0;
+  //       var fnr = 0;
+  //       var acc = 0;
+  //       let n = 0;
+  //       for(let i in currEmbeddings.neighbors){
+  //         var id = currEmbeddings.neighbors[i];
+  //         var sim = currEmbeddings.similarities[i];
+  //         var nData = getNeighbor(id);
+  //         const prediction = (nData[predictionString] > .5) + 0;
+  //         const trueOutcome = nData[constants.DECISIONS[state]] + 0;
+  //         const correct = prediction - trueOutcome < .01;
+  //         if(correct){
+  //           acc += 1;
+  //           if(trueOutcome > .001){
+  //             tpr += 1;
+  //           } else{
+  //             tnr +=1
+  //           }
+  //         } else{
+  //           if(trueOutcome > .001){
+  //             fnr += 1;
+  //           } else{
+  //             fpr += 1
+  //           }
+  //         }
+  //         n+=1;
+  //         if(n > neighborsToShow){
+  //           break;
+  //         }
+  //       }
+  //       tpr /= n;
+  //       fpr /= n;
+  //       tnr /= n;
+  //       fnr /= n;
+  //       acc /= n;
+  //       const entry = {
+  //         'tpr': tpr,
+  //         'fpr': fpr,
+  //         'tnr': tnr,
+  //         'fnr': fnr,
+  //         'acc': acc,
+  //       }
+  //       performances.push(entry);
+  //     }
 
-      console.log('performances',performances)
-      return performances
-    }
-    return false
-  },[simulation,cohortData,currEmbeddings,cohortEmbeddings]);
+  //     return performances
+  //   }
+  //   return false
+  // },[simulation,cohortData,currEmbeddings,cohortEmbeddings]);
 
   function getSimulation(){
     if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
@@ -351,7 +371,7 @@ function App() {
     return simulation[key]
   }
 
-  const Outcomes = useMemo(()=>{
+  const [Outcomes,Recommendation] = useMemo(()=>{
     if(Utils.allValid([simulation,cohortData,currEmbeddings,cohortEmbeddings])){
       const maxN = 10;
       let currKey = modelOutput;
@@ -382,11 +402,15 @@ function App() {
       const getNeighbor = id => Object.assign({},cohortData[id+'']);
       var neighbors= [];
       var cfs = [];
+      var similarDecisions = [];
       const nToShow = 20 //dumb name, # of patient to use when calculating outcomes
       for(let i in currEmbeddings.neighbors){
         var id = currEmbeddings.neighbors[i];
         var nData = getNeighbor(id);
         const prediction = nData[constants.DECISIONS[currState]];
+        if(similarDecisions.length < 20){
+          similarDecisions.push(prediction);
+        }
         if(neighbors.length < nToShow & prediction === currDecision){
           neighbors.push(nData);
         } else if(cfs.length < nToShow & prediction !== currDecision){
@@ -408,40 +432,54 @@ function App() {
       }
       var neighborPredictions = {};
       var cfPredictions = {};
-      let nCount = 0;
-      let cfCount = 0;
       for(let key of outcomes){
         neighborPredictions[key] = Utils.mean(neighbors.map(d=>d[key]));
         cfPredictions[key] = Utils.mean(cfs.map(d=>d[key]));
       }
-      return (<OutcomePlots
-        sim={sim}
-        altSim={altSim}
-        neighborOutcomes={neighborPredictions}
-        counterfactualOutcomes={cfPredictions}
-        state={currState}
-      ></OutcomePlots>)
-      // var neighborOutcomes = constants.OUTCOMES.map(o => { return {'yes': [], 'no': []} });
-      // const getNeighbor = id => Object.assign(Object.assign({},cohortData[id+'']),cohortEmbeddings[id+'']);
-      // var withTreatment = [];
-      // var withoutTreatment = [];
-      // var predicitionAccuracy = constants.OUTCOMES.map(()=>0);
-      // const predictionString = 'decision' + currState + '_' + modelOutput;
-      // for(let i in currEmbeddings.neighbors){
-      //   var id = currEmbeddings.neighbors[i];
-      //   var sim = currEmbeddings.similarities[i];
-      //   var nData = getNeighbor(id);
-      //   const prediction = nData[predictionString]
-      //   // const trueOutcome = nData[]
-      //   for(let i in constants.OUTCOMES){
-      //     continue
-      //   }
-      // }
 
+      const recommendedDecision = simulation[modelOutput]['decision'+(currState+1)];
 
-      return (<div>{'yes'}</div>)
+      return [(
+      <div className={'fillSpace noGutter shadow'}>
+        <OutcomePlots
+          sim={sim}
+          altSim={altSim}
+          neighborOutcomes={neighborPredictions}
+          counterfactualOutcomes={cfPredictions}
+          mainDecision={currDecision}
+          state={currState}
+        ></OutcomePlots>
+      </div>
+      ),
+      (
+        <div className={'fillSpace noGutter shadow'}>
+          <div className={'centerText'}  style={{'height': '1.5em','width':'100%'}}>
+            {'Recommended'}
+          </div>
+          <div style={{'height': 'calc(100% - 1.5em)'}}>
+            <RecommendationPlot
+              decision={recommendedDecision}
+              state={currState}
+              neighborDecisions={similarDecisions}
+            ></RecommendationPlot>
+          </div>
+        </div>
+      )
+      ]
     } else{
-      return <Spinner></Spinner>
+      return [
+        (<Spinner/>),
+        (
+        <div className={'fillSpace noGutter shadow'}>
+          <div className={'centerText'}  style={{'height': '1.5em','width':'100%'}}>
+            {'Recommended'}
+          </div>
+          <div style={{'height': 'calc(100%-1.5em)','width':'100%'}}>
+          <Spinner/>
+          </div>
+        </div>
+      )
+      ]
     }
   },[simulation,cohortData,currEmbeddings,modelOutput,currState,cohortEmbeddings,fixedDecisions]);
 
@@ -557,13 +595,13 @@ function App() {
   function makeThing(){
     return (
         <Grid
-        templateRows='1.6em 1fr 1fr'
-        templateColumns='1fr 1fr 1fr'
+        templateRows='1.6em 1fr 10em 10em'
+        templateColumns='1fr 1fr'
         h='1000px'
         w='100px'
         className={'fillSpace'}
       >
-        <GridItem w='100%' h='100%' colSpan={3}>
+        <GridItem w='100%' h='100%' colSpan={2} rowSpan={1}>
           <Button 
             onClick={()=>updatePatient(featureQue)}
             variant={'outline'}
@@ -576,43 +614,43 @@ function App() {
             colorScheme={'red'}
           >{'Reset'}</Button>
         </GridItem>
-        <GridItem colSpan={3}>
-        <div className={'fillSpace noGutter'}>
-          <PatientEditor
-              cohortData={cohortData}
-              cohortEmbeddings={cohortEmbeddings}
-              patientFeatures={patientFeatures}
-              featureQue={featureQue}
-              setPatientFeatures={setPatientFeatures}
-              setFeatureQue={setFeatureQue}
-              currEmbeddings={currEmbeddings}
-              simulation={simulation}
-              modelOutput={modelOutput}
-              currState={currState}
-              updatePatient={updatePatient}
+        <GridItem colSpan={2} rowSpan={1}>
+          <div className={'fillSpace noGutter'}>
+            <PatientEditor
+                cohortData={cohortData}
+                cohortEmbeddings={cohortEmbeddings}
+                patientFeatures={patientFeatures}
+                featureQue={featureQue}
+                setPatientFeatures={setPatientFeatures}
+                setFeatureQue={setFeatureQue}
+                currEmbeddings={currEmbeddings}
+                simulation={simulation}
+                modelOutput={modelOutput}
+                currState={currState}
+                updatePatient={updatePatient}
 
-              patientEmbeddingLoading={patientEmbeddingLoading}
-              patientSimLoading={patientSimLoading}
-              cohortLoading={cohortLoading}
-              cohortEmbeddingsLoading={cohortEmbeddingsLoading}
+                patientEmbeddingLoading={patientEmbeddingLoading}
+                patientSimLoading={patientSimLoading}
+                cohortLoading={cohortLoading}
+                cohortEmbeddingsLoading={cohortEmbeddingsLoading}
 
-              fixedDecisions={fixedDecisions}
-              setFixedDecisions={setFixedDecisions}
-              getSimulation={getSimulation}
-              brushedId={brushedId}
+                fixedDecisions={fixedDecisions}
+                setFixedDecisions={setFixedDecisions}
+                getSimulation={getSimulation}
+                brushedId={brushedId}
 
-              neighborsToShow={neighborsToShow}
-          ></PatientEditor>
-          </div>
+                neighborsToShow={neighborsToShow}
+            ></PatientEditor>
+            </div>
         </GridItem>
-        <GridItem  colSpan={1}>
+        <GridItem  colSpan={1} rowSpan={1}>
           <DLTVisD3
             dltSvgPaths={dltSvgPaths}
             data={getSimulation()}
             currState={currState}
           />
         </GridItem>
-        <GridItem colSpan={1}>
+        <GridItem colSpan={1} rowSpan={1}>
           <LNVisD3
             lnSvgPaths={lnSvgPaths}
             data={patientFeatures}
@@ -628,8 +666,18 @@ function App() {
             useAttention={true}
           />
         </GridItem>
-        <GridItem colSpan={1}>
-          {'legend?'}
+        <GridItem colSpan={1} rowSpan={1}>
+          <SubsiteVisD3
+            data={patientFeatures}//required
+            featureQue={featureQue}
+            setPatientFeatures={setPatientFeatures}
+            setFeatureQue={setFeatureQue}
+            isSelectable={true}//this determines if you can actually use it to update the que
+            subsiteSvgPaths={subsiteSvgPaths}//required
+          />
+        </GridItem>
+        <GridItem colSpan={1} rowSpan={1}>
+          {'placeholder'}
         </GridItem>
       </Grid>
     )
@@ -641,27 +689,49 @@ function App() {
         h='100%'
         w='100%'
         templateRows='2em repeat(2,1fr)'
-        templateColumns='repeat(3,1fr)'
+        templateColumns='repeat(4,1fr) 1em'
         gap={1}
       >
-        <GridItem rowSpan={1} colSpan={3} className={'shadow'}>
+        <GridItem rowSpan={1} colSpan={5} className={'shadow'}>
           {makeButtonToggle()}
         </GridItem>
-        <GridItem rowSpan={1} className={'shadow'} colSpan={2}>
+        <GridItem  rowSpan={2} colSpan={1} className={'shadow'}>
           {makeThing()}
         </GridItem>
-        <GridItem rowSpan={1} colSpan={1} className={'shadow'}>
-          {Outcomes}
+        <GridItem rowSpan={2} colSpan={1} className={'shadow'}>
+          <Grid 
+            h="100%"
+            w="100%"
+            templateRows='8em 1fr'
+            templateCols='1fr'
+          >
+            <GridItem rowSpan={1} colSpan={1}>
+              {Recommendation}
+            </GridItem>
+            <GridItem rowSpan={1} colSpan={1}>
+              {Outcomes}
+            </GridItem>
+          </Grid>
         </GridItem>
-        <GridItem rowSpan={1} colSpan={1} className={'shadow'}>
-          {makeScatterPlot()}
+        <GridItem rowSpan={2} colSpan={2}>
+          <Grid
+            h="100%"
+            w="100%"
+            templateRows='repeat(3,1fr)'
+          >
+            <GridItem  className={'shadow'}>
+              <AttributionPlotD3
+                simulation={simulation}
+                modelOutput={modelOutput}
+                currState={currState}
+              />
+            </GridItem>
+            <GridItem rowSpan={2}  className={'shadow scroll'}>
+              {Neighbors}
+            </GridItem>
+          </Grid>
         </GridItem>
-        <GridItem rowSpan={1} colSpan={2} className={'shadow scroll'}>
-          {Neighbors}
-        </GridItem>
-        {/* <GridItem rowSpan={1} colSpan={1} className={'shadow'}>
-          {'bottom right'}
-        </GridItem> */}
+        
       </Grid>
     </ChakraProvider>
   );
