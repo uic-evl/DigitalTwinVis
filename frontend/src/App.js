@@ -50,6 +50,7 @@ function App() {
   const [patientSimLoading,setPatientSimLoading]= useState(false);
   const [patientEmbeddingLoading,setPatientEmbeddingLoading] = useState(false);
   const [brushedId, setBrushedId] = useState();
+  const [defaultPredictions,setDefaultPredictions] = useState();
 
   //dict of path strings svg for each ln + an 'outline 
   //'eg 1A_contra, 1A_ipsi, 1B_contra ...
@@ -133,6 +134,15 @@ function App() {
     }
   }
 
+  async function fetchDefaultPredictions(){
+    if(defaultPredictions !== undefined){ return }
+    const pred = await api.getDefaultPredictions();
+    console.log('default predictions',pred);
+    if(pred !== undefined){
+      setDefaultPredictions(pred);
+    }
+  }
+
   async function fetchPatientSimulation(){
     if(patientSimLoading){ return }
     setPatientSimLoading(true);
@@ -201,12 +211,12 @@ function App() {
   useEffect(() => {
     fetchCohort();
     fetchCohortEmbeddings();
+    fetchDefaultPredictions();
     //this one gives prediction confidences for all stuff in case I need it for calibration?
     // fetchCohortPredictions();
   },[]);
 
   useEffect(() => {
-
     fetchPatientNeighbors();
     fetchPatientSimulation();
   },[patientFeatures]);
@@ -255,8 +265,9 @@ function App() {
         const borderColor = d[dString] > .5? constants.yesColor: constants.noColor;
         return (
         <div key={d.id} 
-        style={{'marginTop':'.5em','height': '8em','width': '100%','diplay': 'block','borderStyle':'solid','borderColor': borderColor,'borderWidth':'.5em'}}>
-          <div style={{'width':'8em','height':'100%','display':'inline-block'}}>
+        style={{'marginTop':'.1em','height': '4em','width': '100%','diplay': 'block','borderStyle':'solid',
+          'borderColor': borderColor,'borderWidth':'.5em'}}>
+          <div style={{'width':'4em','height':'100%','display':'inline-block'}}>
           <DLTVisD3
             dltSvgPaths={dltSvgPaths}
             data={d}
@@ -264,14 +275,14 @@ function App() {
             isMainPatient={false}
           />
           </div >
-          <div style={{'width':'10em','height':'100%','display':'inline-block'}}>
+          <div style={{'width':'4em','height':'100%','display':'inline-block'}}>
             <LNVisD3
               lnSvgPaths={lnSvgPaths}
               data={d}
               isMainPatient={false}
             ></LNVisD3>
           </div>
-          <div style={{'width':'6em','height':'100%','display':'inline-block'}}>
+          <div style={{'width':'4em','height':'100%','display':'inline-block'}}>
             <SubsiteVisD3
               subsiteSvgPaths={subsiteSvgPaths}
               data={d}
@@ -279,7 +290,7 @@ function App() {
               featureQue={{}}
             ></SubsiteVisD3>
           </div>
-          <div style={{'width':'calc(100% - 24em)','height':'100%','display':'inline-block'}}>
+          <div style={{'width':'calc(100% - 12em)','height':'100%','display':'inline-block'}}>
             <NeighborVisD3
               data={d}
               referenceData={patientFeatures}
@@ -293,7 +304,11 @@ function App() {
         </div>
         )
       })
-      return nStuff;
+      return (
+        <div>
+          <div>{"title"}</div>
+          {nStuff}
+        </div>);
     } else{
       return <Spinner>{'No'}</Spinner>
     }
@@ -724,6 +739,7 @@ function App() {
                 simulation={simulation}
                 modelOutput={modelOutput}
                 currState={currState}
+                defaultPredictions={defaultPredictions}
               />
             </GridItem>
             <GridItem rowSpan={2}  className={'shadow scroll'}>
