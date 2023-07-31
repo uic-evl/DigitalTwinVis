@@ -23,7 +23,7 @@ def load_models(use_upsampled=True):
         '../resources/decision_model.pt',
         '../resources/transition1_model.pt',
         '../resources/transition2_model.pt',
-        '../resources/outcome_model.pt',
+        '../resources/outcome_model_smote.pt',
     ]
     if use_upsampled:
         files = [
@@ -41,9 +41,9 @@ def np_converter(obj):
     if isinstance(obj, np.integer):
         return int(obj)
     elif isinstance(obj, np.float32):
-        return np.round(float(obj),5)
+        return np.round(float(obj),8)
     elif isinstance(obj, float):
-        return round(float(obj),5)
+        return round(float(obj),8)
     elif isinstance(obj, np.ndarray):
         return obj.tolist()
     elif isinstance(obj, np.bool_):
@@ -272,7 +272,7 @@ def get_neighbors_and_embedding(pdata,dataset,decisionmodel,embedding_df=None,st
     neighbor_ids = dataset.processed_df.index.values[min_positions]
     min_dists = dists[min_positions]
     similarities = 1/(1+min_dists)
-    similarities /= similarities.max() #adjust for rounding errors, self sim should be the max
+    # similarities /= similarities.max() #adjust for rounding errors, self sim should be the max
     if pcas is not None:
         pPca = pcas[state].transform(embedding)[0]
         return neighbor_ids, similarities,embedding[0],pPca

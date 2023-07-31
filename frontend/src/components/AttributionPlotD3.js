@@ -16,7 +16,7 @@ export default function AttributionPlotD3(props){
     const topMargin = 20;
     const bottomMargin = 30
 
-    const minAttribution = 0.001;
+    const minAttribution = 0.000;
 
     function makeArrow(height,width,radius){
         //negative width is pointing in other diection
@@ -76,7 +76,7 @@ export default function AttributionPlotD3(props){
 
 
 
-            const amplitude = Math.max(positiveTotal,negativeTotal,.001);
+            const amplitude = Math.max(positiveTotal,negativeTotal,.000000000000000000000001);
             // const aExtents = d3.extent(attributions);
             // const amplitude = Math.abs(Math.max(-aExtents[0],aExtents[1]));
             const xScale = d3.scaleLinear()

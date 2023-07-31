@@ -49,6 +49,7 @@ export default function SubsiteVisD3(props){
                 pathData.push(entry)
             }
 
+            const getColor = d3.interpolateGreys;
             function getFill(d){
                 if(d.name === 'outline'){
                     return 'none'
@@ -56,7 +57,7 @@ export default function SubsiteVisD3(props){
                 if(!d.usable){
                     return 'none'
                 }
-                return d.plotValue > 0? 'teal': 'white';
+                return getColor(d.plotValue);
             }
 
             function getStroke(d){
@@ -79,7 +80,7 @@ export default function SubsiteVisD3(props){
                 .attr('fill',getFill)
                 .attr('cursor',d=>d.usable? 'pointer':'')
                 .on('mouseover',function(e,d){
-                    let string = d.name;
+                    let string = d.name + ' ' + d.plotValue.toFixed(2);
                     tTip.html(string);
                 }).on('mousemove', function(e){
                     Utils.moveTTipEvent(tTip,e);

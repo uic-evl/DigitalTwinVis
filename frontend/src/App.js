@@ -13,7 +13,7 @@ import PatientEditor from './components/PatientEditor';
 import LNVisD3 from './components/LNVisD3';
 import DLTVisD3 from './components/DLTVisD3';
 import SubsiteVisD3 from './components/SubsiteVisD3';
-import NeighborVisD3 from './components/NeighborVisD3';
+import {NeighborVisD3,NeighborVisLabels} from './components/NeighborVisD3';
 import RecommendationPlot from './components/RecommendationsPlot';
 import OutcomePlots from './components/OutcomePlots';
 import AttributionPlotD3 from './components/AttributionPlotD3';
@@ -59,7 +59,7 @@ function App() {
   //eg vascular: {'d': path string, 'style' 'fill:#fe7070;fill-opacity:1;stroke:#000000'}
   const [dltSvgPaths,setDltSvgPaths]= useState();
   const [subsiteSvgPaths,setSubsiteSvgPaths] = useState();
-  const neighborsToShow = 5;
+  const neighborsToShow = 7;
 
   function getSimulation(){
     if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
@@ -238,36 +238,55 @@ function App() {
         var nData = getNeighbor(id);
         nData.id = id;
         nData.similarity = sim;
-        var isCf = nData[dString] === decision;
+        nData.decision = nData[dString];
+        var isCf = nData[dString] !== decision;
         nData.isCf = isCf;
         const maxCfs = cfs.length >= neighborsToShow;
         const maxN = neighbors.length >= neighborsToShow;
         if(!maxCfs & isCf){
           cfs.push(nData);
-        } else if(!maxN){
+        } else if(!maxN & !isCf){
           neighbors.push(nData);
         }
         if((cfs.length >= neighborsToShow) & (neighbors.length >= neighborsToShow)){
           break
         }
       }
+
+      function getPatientMeans(plist){
+        const meanObj = {};
+        for(let obj of plist){
+          for(let [key,value] of Object.entries(obj)){
+            let currVal = meanObj[key] === undefined? 0: meanObj[key];
+            currVal += value/plist.length;
+            meanObj[key] = currVal
+          }
+        }
+        return meanObj;
+      }
+      const meanTreated = decision > .5? getPatientMeans(neighbors): getPatientMeans(cfs);
+      const meanUntreated = decision > .5? getPatientMeans(cfs): getPatientMeans(neighbors);
       const cScale = Utils.getColorScale('attributions');
       var p = cfs.concat(neighbors);
-      p.sort(d=>d.similarity);
-      
+      p.sort((a,b)=> b.similarity - a.similarity);
       const toScale = constants.continuousVars;
       var ranges = {};
       for(let key of toScale){
         let extent = d3.extent(Object.values(cohortData).map(d=>d[key]));
         ranges[key] = extent;
       }
-      const nStuff = p.map((d,i) => {
+      const thingHeight = '4em';
+      const dltWidth = '4em'
+      const lnWidth = '5em';
+      const subsiteWidth = '4em';
+      const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
+      function makeN(d,i,useReference=true,showLabels=false){
         const borderColor = d[dString] > .5? constants.yesColor: constants.noColor;
         return (
         <div key={d.id} 
-        style={{'marginTop':'.1em','height': '4em','width': '100%','diplay': 'block','borderStyle':'solid',
-          'borderColor': borderColor,'borderWidth':'.5em'}}>
-          <div style={{'width':'4em','height':'100%','display':'inline-block'}}>
+        style={{'marginTop':'.1em','height': thingHeight,'width': '100%','diplay': 'block','borderStyle':'solid',
+          'borderColor': borderColor,'borderWidth':'.1em'}}>
+          <div style={{'width': dltWidth,'height':'100%','display':'inline-block'}}>
           <DLTVisD3
             dltSvgPaths={dltSvgPaths}
             data={d}
@@ -275,14 +294,14 @@ function App() {
             isMainPatient={false}
           />
           </div >
-          <div style={{'width':'4em','height':'100%','display':'inline-block'}}>
+          <div style={{'width': lnWidth,'height':'100%','display':'inline-block'}}>
             <LNVisD3
               lnSvgPaths={lnSvgPaths}
               data={d}
               isMainPatient={false}
             ></LNVisD3>
           </div>
-          <div style={{'width':'4em','height':'100%','display':'inline-block'}}>
+          <div style={{'width':subsiteWidth,'height':'100%','display':'inline-block'}}>
             <SubsiteVisD3
               subsiteSvgPaths={subsiteSvgPaths}
               data={d}
@@ -290,24 +309,47 @@ function App() {
               featureQue={{}}
             ></SubsiteVisD3>
           </div>
-          <div style={{'width':'calc(100% - 12em)','height':'100%','display':'inline-block'}}>
+          <div style={{'width':nWidth,'height':'100%','display':'inline-block'}}>
             <NeighborVisD3
               data={d}
-              referenceData={patientFeatures}
-              referenceQue={featureQue}
+              referenceData={useReference? patientFeatures: undefined}
+              referenceQue={useReference? featureQue: undefined}
               key={d.id+i}
               lnSvgPaths={lnSvgPaths}
               valRanges={ranges}
               dltSvgPaths={dltSvgPaths}
+              currState={currState}
+              showLabels={showLabels}
             ></NeighborVisD3>
           </div>
         </div>
         )
-      })
+      }
+      const nStuff = p.map((d,i) => makeN(d,i,true,false));
+
       return (
-        <div>
-          <div>{"title"}</div>
-          {nStuff}
+        <div className={'fillSpace'}>
+          <div style={{'width': 'calc(100% - 5em)','height': 'auto','fontWeight':'bold'}} className={'centerText'}>
+            <div style={{'display': 'inline-block', 'width': dltWidth}}>
+              {'DLTs'}
+            </div>
+            <div style={{'display': 'inline-block', 'width': lnWidth}}>
+              {'L. Nodes'}
+            </div>
+            <div style={{'display': 'inline-block', 'width': subsiteWidth,}}>
+              {'Subsite'}
+            </div>
+            <div style={{'display': 'inline-block', 'width': nWidth,'height':'100%'}}>
+              <NeighborVisLabels/>
+            </div>
+            {makeN(meanTreated,'n',false,true)}
+            {makeN(meanUntreated,'cf',false,false)}
+          </div>
+          <div  className={'scroll noGutter'}
+            style={{'height': 'calc(100% - 2em)'}}
+          >
+            {nStuff}
+          </div>
         </div>);
     } else{
       return <Spinner>{'No'}</Spinner>
@@ -735,14 +777,15 @@ function App() {
             templateRows='repeat(3,1fr)'
           >
             <GridItem  className={'shadow'}>
-              <AttributionPlotD3
+              {makeScatterPlot()}
+              {/* <AttributionPlotD3
                 simulation={simulation}
                 modelOutput={modelOutput}
                 currState={currState}
                 defaultPredictions={defaultPredictions}
-              />
+              /> */}
             </GridItem>
-            <GridItem rowSpan={2}  className={'shadow scroll'}>
+            <GridItem rowSpan={2}  className={'shadow'}>
               {Neighbors}
             </GridItem>
           </Grid>
