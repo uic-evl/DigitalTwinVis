@@ -61,6 +61,16 @@ export default class DataService {
         
     }
 
+    async getDefaultPredictions(){
+        try{
+            const response = await this.api.get('/defaultPredictions');
+            return response.data;
+        } catch(error){
+            console.log('error in get default predictions');
+            console.log(error);
+        }
+    }
+
     async getCohortPredictions(patientIds){
         try{
             var params = {

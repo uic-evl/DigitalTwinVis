@@ -13,7 +13,7 @@ import PatientEditor from './components/PatientEditor';
 import LNVisD3 from './components/LNVisD3';
 import DLTVisD3 from './components/DLTVisD3';
 import SubsiteVisD3 from './components/SubsiteVisD3';
-import NeighborVisD3 from './components/NeighborVisD3';
+import {NeighborVisD3,NeighborVisLabels} from './components/NeighborVisD3';
 import RecommendationPlot from './components/RecommendationsPlot';
 import OutcomePlots from './components/OutcomePlots';
 import AttributionPlotD3 from './components/AttributionPlotD3';
@@ -50,6 +50,7 @@ function App() {
   const [patientSimLoading,setPatientSimLoading]= useState(false);
   const [patientEmbeddingLoading,setPatientEmbeddingLoading] = useState(false);
   const [brushedId, setBrushedId] = useState();
+  const [defaultPredictions,setDefaultPredictions] = useState();
 
   //dict of path strings svg for each ln + an 'outline 
   //'eg 1A_contra, 1A_ipsi, 1B_contra ...
@@ -58,7 +59,7 @@ function App() {
   //eg vascular: {'d': path string, 'style' 'fill:#fe7070;fill-opacity:1;stroke:#000000'}
   const [dltSvgPaths,setDltSvgPaths]= useState();
   const [subsiteSvgPaths,setSubsiteSvgPaths] = useState();
-  const neighborsToShow = 5;
+  const neighborsToShow = 7;
 
   function getSimulation(){
     if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
@@ -133,6 +134,15 @@ function App() {
     }
   }
 
+  async function fetchDefaultPredictions(){
+    if(defaultPredictions !== undefined){ return }
+    const pred = await api.getDefaultPredictions();
+    console.log('default predictions',pred);
+    if(pred !== undefined){
+      setDefaultPredictions(pred);
+    }
+  }
+
   async function fetchPatientSimulation(){
     if(patientSimLoading){ return }
     setPatientSimLoading(true);
@@ -201,12 +211,12 @@ function App() {
   useEffect(() => {
     fetchCohort();
     fetchCohortEmbeddings();
+    fetchDefaultPredictions();
     //this one gives prediction confidences for all stuff in case I need it for calibration?
     // fetchCohortPredictions();
   },[]);
 
   useEffect(() => {
-
     fetchPatientNeighbors();
     fetchPatientSimulation();
   },[patientFeatures]);
@@ -228,35 +238,55 @@ function App() {
         var nData = getNeighbor(id);
         nData.id = id;
         nData.similarity = sim;
-        var isCf = nData[dString] === decision;
+        nData.decision = nData[dString];
+        var isCf = nData[dString] !== decision;
         nData.isCf = isCf;
         const maxCfs = cfs.length >= neighborsToShow;
         const maxN = neighbors.length >= neighborsToShow;
         if(!maxCfs & isCf){
           cfs.push(nData);
-        } else if(!maxN){
+        } else if(!maxN & !isCf){
           neighbors.push(nData);
         }
         if((cfs.length >= neighborsToShow) & (neighbors.length >= neighborsToShow)){
           break
         }
       }
+
+      function getPatientMeans(plist){
+        const meanObj = {};
+        for(let obj of plist){
+          for(let [key,value] of Object.entries(obj)){
+            let currVal = meanObj[key] === undefined? 0: meanObj[key];
+            currVal += value/plist.length;
+            meanObj[key] = currVal
+          }
+        }
+        return meanObj;
+      }
+      const meanTreated = decision > .5? getPatientMeans(neighbors): getPatientMeans(cfs);
+      const meanUntreated = decision > .5? getPatientMeans(cfs): getPatientMeans(neighbors);
       const cScale = Utils.getColorScale('attributions');
       var p = cfs.concat(neighbors);
-      p.sort(d=>d.similarity);
-      
+      p.sort((a,b)=> b.similarity - a.similarity);
       const toScale = constants.continuousVars;
       var ranges = {};
       for(let key of toScale){
         let extent = d3.extent(Object.values(cohortData).map(d=>d[key]));
         ranges[key] = extent;
       }
-      const nStuff = p.map((d,i) => {
+      const thingHeight = '4em';
+      const dltWidth = '4em'
+      const lnWidth = '5em';
+      const subsiteWidth = '4em';
+      const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
+      function makeN(d,i,useReference=true,showLabels=false){
         const borderColor = d[dString] > .5? constants.yesColor: constants.noColor;
         return (
         <div key={d.id} 
-        style={{'marginTop':'.5em','height': '8em','width': '100%','diplay': 'block','borderStyle':'solid','borderColor': borderColor,'borderWidth':'.5em'}}>
-          <div style={{'width':'8em','height':'100%','display':'inline-block'}}>
+        style={{'marginTop':'.1em','height': thingHeight,'width': '100%','diplay': 'block','borderStyle':'solid',
+          'borderColor': borderColor,'borderWidth':'.1em'}}>
+          <div style={{'width': dltWidth,'height':'100%','display':'inline-block'}}>
           <DLTVisD3
             dltSvgPaths={dltSvgPaths}
             data={d}
@@ -264,14 +294,14 @@ function App() {
             isMainPatient={false}
           />
           </div >
-          <div style={{'width':'10em','height':'100%','display':'inline-block'}}>
+          <div style={{'width': lnWidth,'height':'100%','display':'inline-block'}}>
             <LNVisD3
               lnSvgPaths={lnSvgPaths}
               data={d}
               isMainPatient={false}
             ></LNVisD3>
           </div>
-          <div style={{'width':'6em','height':'100%','display':'inline-block'}}>
+          <div style={{'width':subsiteWidth,'height':'100%','display':'inline-block'}}>
             <SubsiteVisD3
               subsiteSvgPaths={subsiteSvgPaths}
               data={d}
@@ -279,21 +309,48 @@ function App() {
               featureQue={{}}
             ></SubsiteVisD3>
           </div>
-          <div style={{'width':'calc(100% - 24em)','height':'100%','display':'inline-block'}}>
+          <div style={{'width':nWidth,'height':'100%','display':'inline-block'}}>
             <NeighborVisD3
               data={d}
-              referenceData={patientFeatures}
-              referenceQue={featureQue}
+              referenceData={useReference? patientFeatures: undefined}
+              referenceQue={useReference? featureQue: undefined}
               key={d.id+i}
               lnSvgPaths={lnSvgPaths}
               valRanges={ranges}
               dltSvgPaths={dltSvgPaths}
+              currState={currState}
+              showLabels={showLabels}
             ></NeighborVisD3>
           </div>
         </div>
         )
-      })
-      return nStuff;
+      }
+      const nStuff = p.map((d,i) => makeN(d,i,true,false));
+
+      return (
+        <div className={'fillSpace'}>
+          <div style={{'width': 'calc(100% - 5em)','height': 'auto','fontWeight':'bold'}} className={'centerText'}>
+            <div style={{'display': 'inline-block', 'width': dltWidth}}>
+              {'DLTs'}
+            </div>
+            <div style={{'display': 'inline-block', 'width': lnWidth}}>
+              {'L. Nodes'}
+            </div>
+            <div style={{'display': 'inline-block', 'width': subsiteWidth,}}>
+              {'Subsite'}
+            </div>
+            <div style={{'display': 'inline-block', 'width': nWidth,'height':'100%'}}>
+              <NeighborVisLabels/>
+            </div>
+            {makeN(meanTreated,'n',false,true)}
+            {makeN(meanUntreated,'cf',false,false)}
+          </div>
+          <div  className={'scroll noGutter'}
+            style={{'height': 'calc(100% - 2em)'}}
+          >
+            {nStuff}
+          </div>
+        </div>);
     } else{
       return <Spinner>{'No'}</Spinner>
     }
@@ -377,6 +434,7 @@ function App() {
       let currKey = modelOutput;
       let altKey = modelOutput;
       let currPredictions = ['1','2','3'].map(i=> (simulation[modelOutput]['decision'+i] > .5) + 0);
+      const currPropensity = simulation['imitation']['decision'+ (currState+1)];
       let currDecision = 0;
       for(let i in fixedDecisions){
         let d = fixedDecisions[i];
@@ -399,27 +457,59 @@ function App() {
       const sim = simulation[currKey];
       const altSim = simulation[altKey];
 
-      const getNeighbor = id => Object.assign({},cohortData[id+'']);
+      const getNeighbor = id => Object.assign(Object.assign({},cohortData[id+'']),cohortEmbeddings[id+'']);
       var neighbors= [];
       var cfs = [];
       var similarDecisions = [];
-      const nToShow = 20 //dumb name, # of patient to use when calculating outcomes
+      const nToShow = 50; //bad name now but the max # of similar patients before balancing propensity;
+      var nPropensity = [0];
+      var cfPropensity = [0];
       for(let i in currEmbeddings.neighbors){
         var id = currEmbeddings.neighbors[i];
         var nData = getNeighbor(id);
         const prediction = nData[constants.DECISIONS[currState]];
+        const propensity = nData['decision'+(currState)+"_imitation"];
+        nData.propensity = propensity;
+        nData.propensity_diff = Math.abs(currPropensity - propensity);
         if(similarDecisions.length < 20){
           similarDecisions.push(prediction);
         }
         if(neighbors.length < nToShow & prediction === currDecision){
           neighbors.push(nData);
+          nPropensity.push((nPropensity[nPropensity.length-1] + nData.propensity));
         } else if(cfs.length < nToShow & prediction !== currDecision){
           cfs.push(nData);
+          cfPropensity.push((cfPropensity[cfPropensity.length-1] + nData.propensity));
         }
         if( cfs.length > nToShow & neighbors.length > nToShow){
           break;
         }
       }
+
+      //so basically from the pool of similar patients I'm finding the # to use that minimizes
+      //the average diference in propensity score so the outcomes approximates a causal effect
+      nPropensity = nPropensity.map((d,i) => d/(i+1));
+      cfPropensity = cfPropensity.map((d,i) => d/(i+1));
+      let optimalLoc = 5;
+      let minPropDiff = 1;
+      for(let i in cfPropensity){
+        if(i < optimalLoc){
+          continue;
+        }
+        let cfP = cfPropensity[i];
+        let nP = nPropensity[i];
+        let diff = Math.abs(cfP - nP);
+        if(diff < minPropDiff){
+          optimalLoc = i;
+          minPropDiff = diff;
+        }
+        if(minPropDiff < .01){
+          break
+        }
+      }
+      cfs = cfs.slice(0,optimalLoc);
+      neighbors = neighbors.slice(0,optimalLoc);
+
       var outcomes = constants.OUTCOMES;
       if(currState == 0){
         outcomes = outcomes.concat(constants.dlts1);
@@ -720,13 +810,15 @@ function App() {
             templateRows='repeat(3,1fr)'
           >
             <GridItem  className={'shadow'}>
-              <AttributionPlotD3
+              {makeScatterPlot()}
+              {/* <AttributionPlotD3
                 simulation={simulation}
                 modelOutput={modelOutput}
                 currState={currState}
-              />
+                defaultPredictions={defaultPredictions}
+              /> */}
             </GridItem>
-            <GridItem rowSpan={2}  className={'shadow scroll'}>
+            <GridItem rowSpan={2}  className={'shadow'}>
               {Neighbors}
             </GridItem>
           </Grid>

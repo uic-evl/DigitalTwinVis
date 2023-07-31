@@ -10,6 +10,7 @@ DATA = load_dataset()
 decision_model,transition_model1,transition_model2,outcome_model = load_models()
 PCAS = get_embedding_pcas(DATA,decision_model,components=10)
 embedding_df = get_embedding_df(DATA,decision_model,pcas=PCAS)
+DEFAULT_DECISIONS = get_default_prediction_json(decision_model)
 print('stuff loaded')
 
 def responsify(dictionary,convert=True):
@@ -29,7 +30,12 @@ def responsify(dictionary,convert=True):
 def test():
     return 'test succesful'
 
-    
+@app.route('/defaultPredictions',methods=['GET'])
+def get_default_predictions():
+    res = responsify(DEFAULT_DECISIONS)
+    return res
+
+
 @app.route('/patientdata',methods=['GET'])
 def get_patient_data():
     print('getting patient data')

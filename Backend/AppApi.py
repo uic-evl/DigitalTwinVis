@@ -18,12 +18,12 @@ def load_dataset():
     data.processed_df = newdf
     return data
 
-def load_models(use_upsampled=False):
+def load_models(use_upsampled=True):
     files = [
         '../resources/decision_model.pt',
         '../resources/transition1_model.pt',
         '../resources/transition2_model.pt',
-        '../resources/outcome_model.pt',
+        '../resources/outcome_model_smote.pt',
     ]
     if use_upsampled:
         files = [
@@ -41,9 +41,9 @@ def np_converter(obj):
     if isinstance(obj, np.integer):
         return int(obj)
     elif isinstance(obj, np.float32):
-        return np.round(float(obj),5)
+        return np.round(float(obj),8)
     elif isinstance(obj, float):
-        return round(float(obj),5)
+        return round(float(obj),8)
     elif isinstance(obj, np.ndarray):
         return obj.tolist()
     elif isinstance(obj, np.bool_):
@@ -52,6 +52,27 @@ def np_converter(obj):
         return obj.__str__()
     print('np_converter cant encode obj of type', obj,type(obj))
     return obj
+
+def get_default_predictions(dm):
+    res  = []
+    for state in [0,1,2]:
+        mem = dm.memory[state]
+        mem = torch.median(mem,dim=0)[0].type(torch.FloatTensor)
+        val = dm(mem.reshape(1,-1),position=state)
+        res.append(val.cpu().detach().numpy())
+    return np.vstack(res)
+
+def get_default_prediction_json(dm):
+    vals = get_default_predictions(dm)
+    res={}
+    for i,model in enumerate(['optimal','imitation']):
+        entry = {}
+        for state,decision in enumerate(Const.decisions):
+            val = vals[state, state + (3*i)]
+            entry[decision] = val
+        res[model] = entry
+    return res
+
 def jsonify_np_dict(d):
     return simplejson.dumps(d,default=np_converter)
 
@@ -251,7 +272,7 @@ def get_neighbors_and_embedding(pdata,dataset,decisionmodel,embedding_df=None,st
     neighbor_ids = dataset.processed_df.index.values[min_positions]
     min_dists = dists[min_positions]
     similarities = 1/(1+min_dists)
-    similarities /= similarities.max() #adjust for rounding errors, self sim should be the max
+    # similarities /= similarities.max() #adjust for rounding errors, self sim should be the max
     if pcas is not None:
         pPca = pcas[state].transform(embedding)[0]
         return neighbor_ids, similarities,embedding[0],pPca
