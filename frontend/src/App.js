@@ -434,6 +434,7 @@ function App() {
       let currKey = modelOutput;
       let altKey = modelOutput;
       let currPredictions = ['1','2','3'].map(i=> (simulation[modelOutput]['decision'+i] > .5) + 0);
+      const currPropensity = simulation['imitation']['decision'+ (currState+1)];
       let currDecision = 0;
       for(let i in fixedDecisions){
         let d = fixedDecisions[i];
@@ -456,27 +457,59 @@ function App() {
       const sim = simulation[currKey];
       const altSim = simulation[altKey];
 
-      const getNeighbor = id => Object.assign({},cohortData[id+'']);
+      const getNeighbor = id => Object.assign(Object.assign({},cohortData[id+'']),cohortEmbeddings[id+'']);
       var neighbors= [];
       var cfs = [];
       var similarDecisions = [];
-      const nToShow = 20 //dumb name, # of patient to use when calculating outcomes
+      const nToShow = 50; //bad name now but the max # of similar patients before balancing propensity;
+      var nPropensity = [0];
+      var cfPropensity = [0];
       for(let i in currEmbeddings.neighbors){
         var id = currEmbeddings.neighbors[i];
         var nData = getNeighbor(id);
         const prediction = nData[constants.DECISIONS[currState]];
+        const propensity = nData['decision'+(currState)+"_imitation"];
+        nData.propensity = propensity;
+        nData.propensity_diff = Math.abs(currPropensity - propensity);
         if(similarDecisions.length < 20){
           similarDecisions.push(prediction);
         }
         if(neighbors.length < nToShow & prediction === currDecision){
           neighbors.push(nData);
+          nPropensity.push((nPropensity[nPropensity.length-1] + nData.propensity));
         } else if(cfs.length < nToShow & prediction !== currDecision){
           cfs.push(nData);
+          cfPropensity.push((cfPropensity[cfPropensity.length-1] + nData.propensity));
         }
         if( cfs.length > nToShow & neighbors.length > nToShow){
           break;
         }
       }
+
+      //so basically from the pool of similar patients I'm finding the # to use that minimizes
+      //the average diference in propensity score so the outcomes approximates a causal effect
+      nPropensity = nPropensity.map((d,i) => d/(i+1));
+      cfPropensity = cfPropensity.map((d,i) => d/(i+1));
+      let optimalLoc = 5;
+      let minPropDiff = 1;
+      for(let i in cfPropensity){
+        if(i < optimalLoc){
+          continue;
+        }
+        let cfP = cfPropensity[i];
+        let nP = nPropensity[i];
+        let diff = Math.abs(cfP - nP);
+        if(diff < minPropDiff){
+          optimalLoc = i;
+          minPropDiff = diff;
+        }
+        if(minPropDiff < .01){
+          break
+        }
+      }
+      cfs = cfs.slice(0,optimalLoc);
+      neighbors = neighbors.slice(0,optimalLoc);
+
       var outcomes = constants.OUTCOMES;
       if(currState == 0){
         outcomes = outcomes.concat(constants.dlts1);
