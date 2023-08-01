@@ -18,12 +18,10 @@ export default function PatientEditor(props){
     const showAverage = props.showAverage === undefined? false:props.showAverage;
     const showCfs = props.showCfs === undefined? false:props.showCfs;
     const maxNeighbors = props.neighborsToShow === undefined? 5: props.neighborsToShow;
-    const topMargin = 20;
-    const bottomMargin = 20;
-    const textHeight = 10;
-    const xMargin = 20;
-    const textSpacing = 60;
-    const onlyCounterfactuals = props.onlyCounterfactuals === undefined? false:  props.onlyCounterfactuals;
+    const topMargin = 100;
+    const bottomMargin = 40;
+    const xMargin = 40;
+    const textSpacing = 0;
 
     const ordinalVars = constants.ordinalVars;
     const booleanVars = constants.booleanVars.filter(d=>!d.includes('subsite'));
@@ -31,15 +29,17 @@ export default function PatientEditor(props){
 
     const allVars = Object.keys(ordinalVars)
     .concat(continuousVars)
-    .concat(booleanVars)
+    .concat(booleanVars);
     // .concat(['placeholder'])
     // .concat(constants.DECISIONS);
     // .concat(['placeholder2'])
     // .concat(constants.OUTCOMES);
+
+    const xRange = [textSpacing+xMargin,width-xMargin];
     
     const yScale = d3.scaleLinear()
-            .domain([0,allVars.length])
-            .range([height-topMargin,bottomMargin]);
+            .domain([0,allVars.length-1])
+            .range([height-bottomMargin,topMargin]);
 
     function getSim(){
         //get simulation but inside call so it doesn't break the drag stuff
@@ -71,10 +71,17 @@ export default function PatientEditor(props){
         return yScale(pos);
     }
 
+    const getRadius = (id)=>{
+        if(id === -1){
+            return Math.min(width/(allVars.length+1),20);
+        }
+        return 7;
+    }
+
     function makeScales(cData){
         var scales = {};
         var means = {};
-        const range = [textSpacing+xMargin,width-xMargin];
+        const range = xRange;
         for(const [key,entry] of Object.entries(ordinalVars)){
             if(allVars.indexOf(key) < 0){ continue; }
             scales[key] = d3.scaleLinear()
@@ -190,6 +197,8 @@ export default function PatientEditor(props){
             return s(value);
         }
 
+        
+
         let pData = [];
 
         for(let key of allVars){
@@ -212,6 +221,7 @@ export default function PatientEditor(props){
                 'class': className,
                 'fill': attentionScale(attentionV),
                 'attention': attentionV,
+                'radius': getRadius(-1),
             })
         }
 
@@ -294,7 +304,9 @@ export default function PatientEditor(props){
                     'class': className,
                     'fill': lineColor,
                     'attention': 0,
-                })
+                    'radius': getRadius(id),
+                });
+    
             }
             let path = d3.line()(pathPoints);
             let pathEntry = {
@@ -310,7 +322,6 @@ export default function PatientEditor(props){
         }
 
         if(props.brushedId !== undefined){
-            console.log('brush',props.brushedId,encodedCohort);
             let bData = encodedCohort.filter(d=> parseInt(d.id) === parseInt(props.brushedId))[0];
             // console.log(bData);
             let [bPath, bDots] = formatPath(bData,'brushedDude','patientMarker brushedMarker','black',.8,0);
@@ -350,13 +361,6 @@ export default function PatientEditor(props){
         //     if(nPos > -1){ sim =  props.currEmbeddings['similarities'][nPos]; }
         //     nPaths.push( formatPath(nEntry,nEntry.id,'patientMarker','grey',.01,sim)[0] );
         // }
-        
-        var getRadius = (d)=>{
-            if(d.id === -1){
-                return 10;
-            }
-            return 7;
-        }
 
         var getFill = (d)=>{return d.fill;}
 
@@ -397,7 +401,7 @@ export default function PatientEditor(props){
             .append('circle').attr('class',d=>d.class)
             .attr('cx',d=>d.x)
             .attr('cy',d=>d.y)
-            .attr('r',getRadius)
+            .attr('r',d=>d.radius)
             .attr('fill',getFill)
             .attr('opacity',getOpacity)
             .attr('stroke','black')
@@ -430,7 +434,9 @@ export default function PatientEditor(props){
                     .transition()
                     .duration(duration)
                     .attr('cx',newX);
-
+                console.log('value',newVal);
+                tTip.html(d.name +': ' + newVal)
+                Utils.moveTTip(tTip,newX+d.radius,d.y);
             }).on('end',function(e,d){
                 let scale = varScales[d.name];
                 let px  = e.x;
@@ -457,19 +463,22 @@ export default function PatientEditor(props){
                 d3.select(this)
                     .attr('cx',newX)
                 props.setFeatureQue(fQue);
+                Utils.hideTTip(tTip);
         });
 
         let mP = svg.selectAll('.patientMarker');
         if(!mP.empty()){
             mP.on('mouseover',function(e,d){
                 let attention = d.attention === undefined? 'NA': d.attention.toFixed(3);
-                let string = d.id + '</br>'
-                    + d.name + ': ' + d.value + '</br>'
-                    + 'attribution: ' + attention;
+                let string = d.name + ': ' + d.value;
                 tTip.html(string);
-            }).on('mousemove', function(e){
-                Utils.moveTTipEvent(tTip,e);
-            }).on('mouseout', function(e){
+                Utils.moveTTip(tTip,d.x+d.radius,d.y+d.radius);
+            })
+            // .on('mousemove', function(e,d){
+            //     Utils.moveTTip(tTip,d.x+d.radius,d.y);
+            //     // Utils.moveTTipEvent(tTip,e);
+            // })
+            .on('mouseout', function(e){
                 Utils.hideTTip(tTip);
             })
             mP.filter('.moveable').call(dragHandler);
@@ -507,12 +516,14 @@ export default function PatientEditor(props){
             const axes = [];
             const markers = [];
             const labels = [];
+            const tickFontSize = 17;
+            const labelFontSize = 20;
             for(const [key,scale] of Object.entries(s)){
                 if(allVars.indexOf(key) < 0){
                     continue;
                 }
-                let x0 = textSpacing;
-                let x1 = width-xMargin;
+                let x0 = xRange[0];
+                let x1 = xRange[1];
                 let y0 = getY(key);
                 let y1 = getY(key);
                 let line = d3.line()([[x0,y0],[x1,y1]]);
@@ -520,15 +531,41 @@ export default function PatientEditor(props){
                     'path': line,
                     'name': key,
                     'domain': scale.domain(),
-                    'xText':x0 - xMargin,
-                    'yText': y0,
+                    'xText':(x0 + x1)/2,
+                    'yText': y0 - getRadius(-1) - tickFontSize - (labelFontSize/2) - 4,
                 })
-                markers.push({
-                    'x': x0,
-                    'y': y0,
-                    'name': key
-                });
+                let xTicks = [x0,x1];
+                if(ordinalVars[key] !== undefined){
+                    let tRange = constants.ordinalVars[key];
+                    xTicks = [];
+                    for(let t of tRange){
+                        xTicks.push(scale(t));
+                    }
+                }  else if(continuousVars.indexOf(key) > -1 ){
+                    let min = scale.invert(0);
+                    let max = scale.invert(1);
+                    let weights = key === 'hpv'? [0,.5,1]: [0,.25,.5,.75,1];
+                    xTicks = weights.map(w => x0*w + (x1*(1-w)));
+                }
+                for(let xx of xTicks){
+                    let val = scale.invert(xx);
+                    if(booleanVars.indexOf(key) > -1){
+                        val = val > 0? 'Y':'N';
+                    } else if(key == 'hpv'){
+                        val = val > 0? 'Y': val < 0? '?':'N';
+                    }
+                    else if(continuousVars.indexOf(key) > -1){
+                        val = val.toFixed(1);
+                    }
+                    markers.push({
+                        'x': xx,
+                        'y': y0,
+                        'name': key,
+                        'value': val,
+                    });
+                }
             }
+            console.log('markers',markers)
             svg.selectAll('.axes').remove();
             svg.selectAll('.axes')
                 .data(axes).enter()
@@ -538,6 +575,7 @@ export default function PatientEditor(props){
                 .attr('stroke-width',3)
                 .attr('stroke','black')
                 .attr('opacity',.1);
+
 
             svg.selectAll('.axesTick').remove();
             svg.selectAll('.axesTick')
@@ -550,16 +588,34 @@ export default function PatientEditor(props){
                 .attr('stroke','gray')
                 .attr('stroke-width',2);
 
+            svg.selectAll('.tickText').remove();
+            svg.selectAll('.tickText')
+                .data(markers).enter()
+                .append('text').attr('class','tickText')
+                .attr('x',d=>d.x)
+                .attr('text-anchor','middle')
+                .attr('y',d=>d.y - getRadius(-1) - 4)
+                .attr('font-size',tickFontSize)
+                .text(d=>d.value);
+
             svg.selectAll('.axesText').remove();
             svg.selectAll('.axesText')
                 .data(axes).enter()
                 .append('text').attr('class','axesText')
-                .attr('font-size',textHeight)
-                .attr('x',0).attr('y',0)
-                .attr('transform',d=> 'translate('+d.xText+','+d.yText+')rotate(-40)')
+                .attr('font-size',labelFontSize)
+                .attr('x',d=>d.xText).attr('y',d=>d.yText)
                 .attr('text-anchor','middle')
                 .attr('alignment-baseline','middle')
-                .text(d=>Utils.getFeatureDisplayName(d.name))
+                .text(d=>Utils.getFeatureDisplayName(d.name));
+            // svg.selectAll('.axesText')
+            //     .data(axes).enter()
+            //     .append('text').attr('class','axesText')
+            //     .attr('font-size',textHeight)
+            //     .attr('x',0).attr('y',0)
+            //     .attr('transform',d=> 'translate('+d.xText+','+d.yText+')rotate(-40)')
+            //     .attr('text-anchor','middle')
+            //     .attr('alignment-baseline','middle')
+            //     .text(d=>Utils.getFeatureDisplayName(d.name));
         }
     },[props.cohortData,svg]) 
 

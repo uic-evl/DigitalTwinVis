@@ -263,6 +263,7 @@ function App() {
             meanObj[key] = currVal
           }
         }
+        meanObj.id = -2 - meanObj.decision;
         return meanObj;
       }
       const meanTreated = decision > .5? getPatientMeans(neighbors): getPatientMeans(cfs);
@@ -281,10 +282,18 @@ function App() {
       const lnWidth = '5em';
       const subsiteWidth = '4em';
       const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
-      function makeN(d,i,useReference=true,showLabels=false,bottomBorder=false){
+      function makeN(d,i,useReference=true,showLabels=false,bottomBorder=false,brushable=true){
         const borderColor = d[dString] > .5? constants.yesColor: constants.noColor;
         const bBorder = bottomBorder? '.4em solid black':'';
         const marginBottom = bottomBorder? '.4em': '.01em';
+        function brush(){
+          let pId = parseInt(d.id)
+          if(pId > 0 & pId !== brushedId){
+            setBrushedId(pId);
+          } else{
+            setBrushedId(undefined);
+          }
+        }
         return (
         <div key={d.id} 
            style={{'marginTop':'.2em','height': thingHeight,
@@ -292,7 +301,9 @@ function App() {
           'borderColor': borderColor,'borderWidth':'.2em',
           'marginBottom': marginBottom,
           'borderBottom': bBorder,
-          }}>
+          }}
+          onClick={()=>brush()}
+          >
           <div style={{'width': dltWidth,'height':'100%','display':'inline-block'}}>
           <DLTVisD3
             dltSvgPaths={dltSvgPaths}
@@ -362,7 +373,7 @@ function App() {
     } else{
       return <Spinner>{'No'}</Spinner>
     }
-  },[currEmbeddings,currState,cohortData,simulation,fixedDecisions,modelOutput])
+  },[currEmbeddings,currState,cohortData,simulation,fixedDecisions,modelOutput,brushedId])
 
   // const confidenceCalibration = useMemo(()=>{
   //   if(Utils.allValid([simulation,cohortData,currEmbeddings,cohortEmbeddings])){
@@ -701,10 +712,11 @@ function App() {
     }
   }
 
+
   function makeThing(){
     return (
         <Grid
-        templateRows='1.6em 1fr 10em 10em'
+        templateRows='1.6em 1.6em 1fr 13.5em 13.5em'
         templateColumns='1fr 1fr'
         h='1000px'
         w='100px'
@@ -722,6 +734,9 @@ function App() {
             variant={'outline'}
             colorScheme={'red'}
           >{'Reset'}</Button>
+        </GridItem>
+        <GridItem colSpan={2} rowSpan={1} className={'title'}>
+          {'Patient Features'}
         </GridItem>
         <GridItem colSpan={2} rowSpan={1}>
           <div className={'fillSpace noGutter'}>
@@ -753,13 +768,22 @@ function App() {
             </div>
         </GridItem>
         <GridItem  colSpan={1} rowSpan={1}>
-          <DLTVisD3
-            dltSvgPaths={dltSvgPaths}
-            data={getSimulation()}
-            currState={currState}
+          <div className={'title'} style={{'height': '1.5em'}}>{'Subsite'}</div>
+          <div style={{'height': 'calc(100% - 1.5em)'}}>
+          <SubsiteVisD3
+            data={patientFeatures}//required
+            featureQue={featureQue}
+            setPatientFeatures={setPatientFeatures}
+            setFeatureQue={setFeatureQue}
+            isSelectable={true}//this determines if you can actually use it to update the que
+            subsiteSvgPaths={subsiteSvgPaths}//required
           />
+          </div>
+          
         </GridItem>
         <GridItem colSpan={1} rowSpan={1}>
+          <div className={'title'} style={{'height': '1.5em'}}>{'Lymph Nodes'}</div>
+          <div style={{'height': 'calc(100% - 1.5em)'}}>
           <LNVisD3
             lnSvgPaths={lnSvgPaths}
             data={patientFeatures}
@@ -774,19 +798,23 @@ function App() {
             state={currState}
             useAttention={true}
           />
+          </div>
         </GridItem>
         <GridItem colSpan={1} rowSpan={1}>
-          <SubsiteVisD3
-            data={patientFeatures}//required
-            featureQue={featureQue}
-            setPatientFeatures={setPatientFeatures}
-            setFeatureQue={setFeatureQue}
-            isSelectable={true}//this determines if you can actually use it to update the que
-            subsiteSvgPaths={subsiteSvgPaths}//required
+          <div className={'title'} style={{'height': '1.5em'}}>{'DLTs'}</div>
+          <div style={{'height': 'calc(100% - 1.5em)'}}>
+          <DLTVisD3
+            dltSvgPaths={dltSvgPaths}
+            data={getSimulation()}
+            currState={currState}
           />
+          </div>
         </GridItem>
         <GridItem colSpan={1} rowSpan={1}>
-          {'placeholder'}
+        <div className={'title'} style={{'height': '1.5em'}}>{'Legend'}</div>
+          <div style={{'height': 'calc(100% - 1.5em)'}}>
+          {"Something"}
+          </div>
         </GridItem>
       </Grid>
     )

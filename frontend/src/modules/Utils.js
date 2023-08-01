@@ -21,7 +21,8 @@ export default class Utils {
         'CR': "Complete",
         'PR': "Partial",
         'SD': "Stable",
-        'PD': "Progressive"
+        'PD': "Progressive",
+        'gender':"Male"
     }
 
     static getColorScale(name,min,max){

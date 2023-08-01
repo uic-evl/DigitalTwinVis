@@ -65,16 +65,22 @@
   width: 100%;
 }
 
-.centerText{
+.centerText, .title{
   justify-content: center!important;
   text-align: center!important;
   width: 100% !important;
 
 
-  .d3label{
-    text-anchor: 'middle'!important;
-    text-align: center!important;
-  }
+}
+
+.d3label{
+  text-anchor: 'middle'!important;
+  text-align: center!important;
+}
+
+.title{
+  font-size: 1.2em;
+  font-weight: bold!important;
 }
 
 .lightGutter {
