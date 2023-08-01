@@ -14,9 +14,9 @@ export default function PatientEditor(props){
     const [varScales,setVarScales] = useState();
     const [meanVals,setMeanVals]= useState();
     // const [encodedCohort,setEncodedCohort] = useState();
-    const showNeighbors = props.showNeighbors === undefined? false:props.showNeighbors;
+    const showNeighbors = props.showNeighbors === undefined? true:props.showNeighbors;
     const showAverage = props.showAverage === undefined? false:props.showAverage;
-    const showCfs = props.showCfs === undefined? false:props.showCfs;
+    const showCfs = props.showCfs === undefined? true:props.showCfs;
     const maxNeighbors = props.neighborsToShow === undefined? 5: props.neighborsToShow;
     const topMargin = 100;
     const bottomMargin = 40;
@@ -607,15 +607,7 @@ export default function PatientEditor(props){
                 .attr('text-anchor','middle')
                 .attr('alignment-baseline','middle')
                 .text(d=>Utils.getFeatureDisplayName(d.name));
-            // svg.selectAll('.axesText')
-            //     .data(axes).enter()
-            //     .append('text').attr('class','axesText')
-            //     .attr('font-size',textHeight)
-            //     .attr('x',0).attr('y',0)
-            //     .attr('transform',d=> 'translate('+d.xText+','+d.yText+')rotate(-40)')
-            //     .attr('text-anchor','middle')
-            //     .attr('alignment-baseline','middle')
-            //     .text(d=>Utils.getFeatureDisplayName(d.name));
+
         }
     },[props.cohortData,svg]) 
 
