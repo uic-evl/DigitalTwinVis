@@ -84,9 +84,10 @@ export default function AttributionPlotD3(props){
                 .range([width/2,width-margin]);
             // const centerX = negativeTotal > positiveTotal? labelSpacing + xScale(negativeTotal) - xScale(positiveTotal): labelSpacing;
             const centerX = width/2;
-            const colorScale = d3.scaleDiverging()
-                .domain([-amplitude,0,amplitude])
-                .range(['blue','white','red']);
+            const colorScale = Utils.getColorScale('attributions',-amplitude,amplitude);
+            // d3.scaleDiverging()
+            //     .domain([-amplitude,0,amplitude])
+            //     .range(['blue','white','red']);
 
             const barWidth = (height - bottomMargin - topMargin)/(attributions.length);
             

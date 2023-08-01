@@ -32,7 +32,11 @@ export default class Utils {
                 .domain([min,0,max])
                 .range(['red','white','blue'])
         } 
-        return d3.interpolateGreys
+        min = min === undefined? 0: min;
+        max = max === undefined? 1: max;
+        return d3.scaleLinear()
+            .domain([min,max])
+            .range([d3.interpolateGreys(0),d3.interpolateGreys(1)]);
     }
 
 

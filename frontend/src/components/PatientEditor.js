@@ -14,13 +14,15 @@ export default function PatientEditor(props){
     const [varScales,setVarScales] = useState();
     const [meanVals,setMeanVals]= useState();
     // const [encodedCohort,setEncodedCohort] = useState();
-    const showNeighbors = props.showNeighbors === undefined? true:props.showNeighbors;
+    const showNeighbors = props.showNeighbors === undefined? false:props.showNeighbors;
     const showAverage = props.showAverage === undefined? false:props.showAverage;
+    const showCfs = props.showCfs === undefined? false:props.showCfs;
     const maxNeighbors = props.neighborsToShow === undefined? 5: props.neighborsToShow;
     const topMargin = 20;
-    const bottomMargin = Math.min(height*.5,90);
+    const bottomMargin = 20;
     const textHeight = 10;
-    const xMargin = 40;
+    const xMargin = 20;
+    const textSpacing = 60;
     const onlyCounterfactuals = props.onlyCounterfactuals === undefined? false:  props.onlyCounterfactuals;
 
     const ordinalVars = constants.ordinalVars;
@@ -35,9 +37,9 @@ export default function PatientEditor(props){
     // .concat(['placeholder2'])
     // .concat(constants.OUTCOMES);
     
-    const xScale = d3.scaleLinear()
+    const yScale = d3.scaleLinear()
             .domain([0,allVars.length])
-            .range([xMargin,width-xMargin]);
+            .range([height-topMargin,bottomMargin]);
 
     function getSim(){
         //get simulation but inside call so it doesn't break the drag stuff
@@ -61,17 +63,18 @@ export default function PatientEditor(props){
             return props.simulation[key]
         }
 
-    function getX(key){
+    function getY(key){
         let pos = allVars.indexOf(key);
         if(pos < 0){
             console.log('bad x key',key,allVars);
         }
-        return xScale(pos);
+        return yScale(pos);
     }
+
     function makeScales(cData){
         var scales = {};
         var means = {};
-        const range = [height-bottomMargin,topMargin];
+        const range = [textSpacing+xMargin,width-xMargin];
         for(const [key,entry] of Object.entries(ordinalVars)){
             if(allVars.indexOf(key) < 0){ continue; }
             scales[key] = d3.scaleLinear()
@@ -91,7 +94,7 @@ export default function PatientEditor(props){
             if(allVars.indexOf(key) < 0){ continue; }
             scales[key] = d3.scaleLinear()
                 .domain([0,1])
-                .range([range[0]-topMargin,range[1]+topMargin]);
+                .range(range);
             means[key] = 0
         }
         return [scales, means]
@@ -177,8 +180,13 @@ export default function PatientEditor(props){
         }
 
 
-        function getY(value,key){
+        function getX(value,key){
             let s = varScales[key];
+            if(s === undefined){
+                console.log('bad value in getX patienteditor',value,key,varScales,s)
+                return width/2;
+            }
+
             return s(value);
         }
 
@@ -188,8 +196,8 @@ export default function PatientEditor(props){
             if(key.includes('placeholder')){continue}
             let val = mainPatient[key];
             val = val === undefined? 0: val;
-            let x = getX(key);
-            let y = getY(val,key);
+            let x = getX(val,key);
+            let y = getY(key);
             let attentionV = getAttention(key);
             let className = 'patientMarker mainPatient';
             if(constants.OUTCOMES.concat(constants.DECISIONS).indexOf(key) < 0){
@@ -272,10 +280,10 @@ export default function PatientEditor(props){
             let markerPoints = [];
             let decision = entry[decisionName];
             for(let key of allVars){
-                if(key.includes('placeholder')){continue}
+                if(key.includes('placeholder') | key === undefined){continue}
                 let val = entry[key];
-                let x = getX(key);
-                let y = getY(val,key);
+                let x = getX(val,key);
+                let y = getY(key);
                 pathPoints.push([x,y]);
                 markerPoints.push({
                     'x': x,
@@ -322,8 +330,10 @@ export default function PatientEditor(props){
         const [cfPath, cfDots] = formatPath(cfMeans,
             'counterfactuals','patientMarker meanMarker',cfColor,.5,'');
 
-        nPaths.push(cfPath);
-        pData = pData.concat(cfDots);
+        if(showCfs){
+            nPaths.push(cfPath);
+            pData = pData.concat(cfDots);
+        }
         if(showAverage){ 
             nPaths.push(allPath); 
             pData = pData.concat(allDots);
@@ -404,13 +414,13 @@ export default function PatientEditor(props){
         var dragHandler = d3.drag()
             .on('drag',function(e,d){
                 let scale = varScales[d.name];
-                const py = e.y;
-                let newY = Math.min(Math.max(topMargin,py),height-bottomMargin);
-                let newVal = scale.invert(newY);
+                let px  = e.x;
+                let newX = Math.min(Math.max(xMargin+textSpacing,px),width-xMargin);
+                let newVal = scale.invert(newX);
                 let duration = 1;
                 if(booleanVars.indexOf(d.name) > -1){
                     newVal = newVal > .5;
-                    newY = scale(newVal);
+                    newX = scale(newVal);
                     duration = 200;
                 } else if(ordinalVars[d.name] !== undefined){
                     newVal = Math.round(newVal);
@@ -419,19 +429,19 @@ export default function PatientEditor(props){
                 d3.select(this)
                     .transition()
                     .duration(duration)
-                    .attr('cy',newY);
+                    .attr('cx',newX);
 
             }).on('end',function(e,d){
                 let scale = varScales[d.name];
-                let py  = e.y;
-                let newY = Math.min(Math.max(topMargin,py),height-bottomMargin);
-                let newVal = scale.invert(newY);
+                let px  = e.x;
+                let newX = Math.min(Math.max(xMargin+textSpacing,px),width-xMargin);
+                let newVal = scale.invert(newX);
                 if(booleanVars.indexOf(d.name) > -1){
                     newVal = newVal > .5;
-                    newY = scale(newVal);
+                    newX= scale(newVal);
                 } else if(ordinalVars[d.name] !== undefined | d.name === 'hpv'){
                     newVal = Math.round(newVal);
-                    newY = scale(newVal);
+                    newX = scale(newVal);
                 }
                 let fQue = Object.assign({},props.featureQue);
                 if(ordinalVars[d.name] !== undefined){
@@ -445,7 +455,7 @@ export default function PatientEditor(props){
                     }
                 }
                 d3.select(this)
-                    .attr('cy',newY)
+                    .attr('cx',newX)
                 props.setFeatureQue(fQue);
         });
 
@@ -501,24 +511,23 @@ export default function PatientEditor(props){
                 if(allVars.indexOf(key) < 0){
                     continue;
                 }
-                let x = getX(key);
-                let y0 = height-bottomMargin//scale.range()[0];
-                let y1 = topMargin//scale.range()[1];
-                let line = d3.line()([[x,y0],[x,y1]]);
+                let x0 = textSpacing;
+                let x1 = width-xMargin;
+                let y0 = getY(key);
+                let y1 = getY(key);
+                let line = d3.line()([[x0,y0],[x1,y1]]);
                 axes.push({
                     'path': line,
                     'name': key,
                     'domain': scale.domain(),
-                    'xText':x,
-                    'yText': y0 + 20 + textHeight,
+                    'xText':x0 - xMargin,
+                    'yText': y0,
                 })
-                for(let y of [topMargin,height-bottomMargin]){
-                    markers.push({
-                        'x': x,
-                        'y': y,
-                        'name': key,
-                    })
-                }
+                markers.push({
+                    'x': x0,
+                    'y': y0,
+                    'name': key
+                });
             }
             svg.selectAll('.axes').remove();
             svg.selectAll('.axes')
@@ -528,7 +537,7 @@ export default function PatientEditor(props){
                 .attr('d',d=>d.path)
                 .attr('stroke-width',3)
                 .attr('stroke','black')
-                .attr('opacity',.01);
+                .attr('opacity',.1);
 
             svg.selectAll('.axesTick').remove();
             svg.selectAll('.axesTick')

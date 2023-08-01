@@ -45,6 +45,7 @@ function App() {
 
   const [cohortPredictions,setCohortPredictions] = useState();
 
+  const [upperRightView,setUpperRightView] = useState('scatter')
   const [cohortLoading,setCohortLoading] = useState(false);
   const [cohortEmbeddingsLoading,setCohortEmbeddingsLoading] = useState(false);
   const [patientSimLoading,setPatientSimLoading]= useState(false);
@@ -280,12 +281,18 @@ function App() {
       const lnWidth = '5em';
       const subsiteWidth = '4em';
       const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
-      function makeN(d,i,useReference=true,showLabels=false){
+      function makeN(d,i,useReference=true,showLabels=false,bottomBorder=false){
         const borderColor = d[dString] > .5? constants.yesColor: constants.noColor;
+        const bBorder = bottomBorder? '.4em solid black':'';
+        const marginBottom = bottomBorder? '.4em': '.01em';
         return (
         <div key={d.id} 
-        style={{'marginTop':'.1em','height': thingHeight,'width': '100%','diplay': 'block','borderStyle':'solid',
-          'borderColor': borderColor,'borderWidth':'.1em'}}>
+           style={{'marginTop':'.2em','height': thingHeight,
+           'width': '100%','diplay': 'block','borderStyle':'solid',
+          'borderColor': borderColor,'borderWidth':'.2em',
+          'marginBottom': marginBottom,
+          'borderBottom': bBorder,
+          }}>
           <div style={{'width': dltWidth,'height':'100%','display':'inline-block'}}>
           <DLTVisD3
             dltSvgPaths={dltSvgPaths}
@@ -342,11 +349,12 @@ function App() {
             <div style={{'display': 'inline-block', 'width': nWidth,'height':'100%'}}>
               <NeighborVisLabels/>
             </div>
-            {makeN(meanTreated,'n',false,true)}
-            {makeN(meanUntreated,'cf',false,false)}
+            {makeN(meanTreated,'n',false,true,false)}
+            {makeN(meanUntreated,'cf',false,false,false)}
           </div>
+          <hr style={{'height': '.5em','backgroundColor':'black'}}/>
           <div  className={'scroll noGutter'}
-            style={{'height': 'calc(100% - 2em)'}}
+            style={{'height': 'calc(100% - 3em - ' + thingHeight + ' - ' + thingHeight + ')'}}
           >
             {nStuff}
           </div>
@@ -656,9 +664,9 @@ function App() {
     )
   }
 
-
-  function makeScatterPlot(){
-    return (
+  function makeToggleView(key){
+    if(key.includes('scatter')){
+      return (
           <ScatterPlotD3
               cohortData={cohortData}
               cohortEmbeddings={cohortEmbeddings}
@@ -679,7 +687,18 @@ function App() {
               brushedId={brushedId}
               setBrushedId={setBrushedId}
           />
-    );
+      );
+    }
+    else{
+      return (
+        <AttributionPlotD3
+            simulation={simulation}
+            modelOutput={modelOutput}
+            currState={currState}
+            defaultPredictions={defaultPredictions}
+          />
+      )
+    }
   }
 
   function makeThing(){
@@ -810,13 +829,19 @@ function App() {
             templateRows='repeat(3,1fr)'
           >
             <GridItem  className={'shadow'}>
-              {makeScatterPlot()}
-              {/* <AttributionPlotD3
-                simulation={simulation}
-                modelOutput={modelOutput}
-                currState={currState}
-                defaultPredictions={defaultPredictions}
-              /> */}
+              <div>
+                <Button
+                  onClick={(upperRightView !== 'scatter')? ()=> setUpperRightView('scatter'): ()=>console.log('no click')}
+                  variant={(upperRightView !== 'scatter')? 'outline':'solid'}
+                  colorScheme={(upperRightView !== 'scatter')? 'teal':'blue'}
+                >{'Scatter Plot'}</Button>
+                <Button
+                  onClick={(upperRightView !== 'attributions')? ()=> setUpperRightView('attributions'): ()=>console.log('no click')}
+                  variant={(upperRightView !== 'attributions')? 'outline':'solid'}
+                  colorScheme={(upperRightView !== 'attributions')? 'teal':'blue'}
+                >{'Model Attributions'}</Button>
+              </div>
+              {makeToggleView(upperRightView)}
             </GridItem>
             <GridItem rowSpan={2}  className={'shadow'}>
               {Neighbors}

@@ -9,8 +9,8 @@ export default function LNVisD3(props){
 
     const d3Container = useRef(null);
     const [svg, height, width, tTip] = useSVGCanvas(d3Container);
-    const useAttention = props.isMainPatient === undefined? true: props.isMainPatient;
-    
+    const useAttention = props.useAttention === undefined? false: props.useAttention;
+
     const aScale = v => v//Math.sign(v)*(Math.abs(v)**.3);
 
     
@@ -31,13 +31,14 @@ export default function LNVisD3(props){
                     }
                 }
                 let val = d[name];
-                val = val === undefined? -1: val;
+                val = val === undefined? 0: val;
                 return val
             }
             let getAttention = (name) => 0;
 
-            let colorScale = Utils.getColorScale('attributions',-.5,1.5);
-
+            // let colorScale = useAttention? Utils.getColorScale('attributions',-.5,1.5): Utils.getColorScale('grey',0,1);
+            let colorScale = d3.scaleLinear()
+                .domain([0,1]).range(['white','black']);
             if(useAttention & Utils.allValid([props.modelOutput,props.simulation])){
                 if(props.fixedDecisions[props.state] < 0){
                     let key = props.modelOutput;
