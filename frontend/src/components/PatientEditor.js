@@ -14,11 +14,11 @@ export default function PatientEditor(props){
     const [varScales,setVarScales] = useState();
     const [meanVals,setMeanVals]= useState();
     // const [encodedCohort,setEncodedCohort] = useState();
-    const showNeighbors = props.showNeighbors === undefined? true:props.showNeighbors;
+    const showNeighbors = props.showNeighbors === undefined? false:props.showNeighbors;
     const showAverage = props.showAverage === undefined? false:props.showAverage;
-    const showCfs = props.showCfs === undefined? true:props.showCfs;
+    const showCfs = props.showCfs === undefined? false:props.showCfs;
     const maxNeighbors = props.neighborsToShow === undefined? 5: props.neighborsToShow;
-    const topMargin = 100;
+    const topMargin = Math.min(height/15,60);
     const bottomMargin = 40;
     const xMargin = 40;
     const textSpacing = 0;
@@ -40,6 +40,8 @@ export default function PatientEditor(props){
     const yScale = d3.scaleLinear()
             .domain([0,allVars.length-1])
             .range([height-bottomMargin,topMargin]);
+
+    const lineSpacing = Math.abs(yScale(1) - yScale(0));
 
     function getSim(){
         //get simulation but inside call so it doesn't break the drag stuff
@@ -73,7 +75,7 @@ export default function PatientEditor(props){
 
     const getRadius = (id)=>{
         if(id === -1){
-            return Math.min(width/(allVars.length+1),20);
+            return Math.min(lineSpacing/4,20);
         }
         return 7;
     }
@@ -386,7 +388,7 @@ export default function PatientEditor(props){
                 let string = d.id + '</br>';
                 for(let [key,value] of Object.entries(d.data)){
                     if(key === 'id'){continue}
-                    string += key + ': ' + value.toFixed(2) + '</br>'
+                    string += key + ': ' + (0+value).toFixed(2) + '</br>'
                 }
                 tTip.html(string);
             }).on('mousemove', function(e){
@@ -399,6 +401,7 @@ export default function PatientEditor(props){
         let pCircles = svg.selectAll('.patientMarker')
             .data(pData).enter()
             .append('circle').attr('class',d=>d.class)
+            .attr('id',d=>d.name.replace(' ','_'))
             .attr('cx',d=>d.x)
             .attr('cy',d=>d.y)
             .attr('r',d=>d.radius)
@@ -516,8 +519,8 @@ export default function PatientEditor(props){
             const axes = [];
             const markers = [];
             const labels = [];
-            const tickFontSize = 17;
-            const labelFontSize = 20;
+            const tickFontSize = Math.min(height/50,17);
+            const labelFontSize = Math.min(height/40,20);
             for(const [key,scale] of Object.entries(s)){
                 if(allVars.indexOf(key) < 0){
                     continue;
@@ -532,7 +535,7 @@ export default function PatientEditor(props){
                     'name': key,
                     'domain': scale.domain(),
                     'xText':(x0 + x1)/2,
-                    'yText': y0 - getRadius(-1) - tickFontSize - (labelFontSize/2) - 4,
+                    'yText': y0 - getRadius(-1) - tickFontSize - 6,
                 })
                 let xTicks = [x0,x1];
                 if(ordinalVars[key] !== undefined){
@@ -542,30 +545,32 @@ export default function PatientEditor(props){
                         xTicks.push(scale(t));
                     }
                 }  else if(continuousVars.indexOf(key) > -1 ){
-                    let min = scale.invert(0);
-                    let max = scale.invert(1);
                     let weights = key === 'hpv'? [0,.5,1]: [0,.25,.5,.75,1];
                     xTicks = weights.map(w => x0*w + (x1*(1-w)));
                 }
                 for(let xx of xTicks){
                     let val = scale.invert(xx);
+                    const trueValue = val+0;
                     if(booleanVars.indexOf(key) > -1){
                         val = val > 0? 'Y':'N';
                     } else if(key == 'hpv'){
                         val = val > 0? 'Y': val < 0? '?':'N';
                     }
                     else if(continuousVars.indexOf(key) > -1){
-                        val = val.toFixed(1);
+                        val = (0+val).toFixed(1);
+                    }
+                    else if(ordinalVars[key] !== undefined){
+                        val = val.toFixed(0);
                     }
                     markers.push({
                         'x': xx,
                         'y': y0,
                         'name': key,
-                        'value': val,
+                        'value': trueValue,
+                        'text': val,
                     });
                 }
             }
-            console.log('markers',markers)
             svg.selectAll('.axes').remove();
             svg.selectAll('.axes')
                 .data(axes).enter()
@@ -583,10 +588,32 @@ export default function PatientEditor(props){
                 .append('circle').attr('class','axesTick')
                 .attr('cx',d=>d.x)
                 .attr('cy',d=>d.y)
-                .attr('r',2)
+                .attr('r',4)
                 .attr('fill','white')
                 .attr('stroke','gray')
-                .attr('stroke-width',2);
+                .attr('cursor','pointer')
+                .attr('stroke-width',2)
+                .on('click',(e,d)=>{
+                    let fQue = Object.assign({},props.featureQue);
+                    let newVal = d.value;
+                    let oldVal = fQue[d.name];
+                    if(newVal !== oldVal){
+                        if(ordinalVars[d.name] !== undefined){
+                            for(let val of ordinalVars[d.name]){
+                                fQue[d.name+'_'+parseInt(val)] = (val == newVal) + 0;
+                            }
+                        }else{
+                            fQue[d.name] = newVal;
+                        }
+                        let selection = svg.selectAll('.mainPatient').filter('#'+d.name);
+                        if(!selection.empty()){
+                            console.log('selection',selection)
+                            selection.attr('cx',d.x);
+                        }
+                        props.setFeatureQue(fQue);
+                    }
+                });
+                
 
             svg.selectAll('.tickText').remove();
             svg.selectAll('.tickText')
@@ -594,9 +621,9 @@ export default function PatientEditor(props){
                 .append('text').attr('class','tickText')
                 .attr('x',d=>d.x)
                 .attr('text-anchor','middle')
-                .attr('y',d=>d.y - getRadius(-1) - 4)
+                .attr('y',d=>d.y - getRadius(-1))
                 .attr('font-size',tickFontSize)
-                .text(d=>d.value);
+                .text(d=>d.text);
 
             svg.selectAll('.axesText').remove();
             svg.selectAll('.axesText')
@@ -610,6 +637,33 @@ export default function PatientEditor(props){
 
         }
     },[props.cohortData,svg]) 
+
+    useEffect(()=>{
+        if(svg!== undefined){
+            svg.selectAll('.axesTick')
+            .on('click',(e,d)=>{
+                let fQue = Object.assign({},props.featureQue);
+                let newVal = d.value;
+                let oldVal = fQue[d.name];
+                if(newVal !== oldVal){
+                    if(ordinalVars[d.name] !== undefined){
+                        for(let val of ordinalVars[d.name]){
+                            fQue[d.name+'_'+parseInt(val)] = (val == newVal) + 0;
+                        }
+                    }else{
+                        fQue[d.name] = newVal;
+                    }
+                    console.log('selection',d.name.replace(' ','_'))
+                    let selection = svg.selectAll('.mainPatient').filter('#'+d.name.replace(' ','_'));
+                    if(!selection.empty()){
+                        
+                        selection.attr('cx',d.x);
+                    }
+                    props.setFeatureQue(fQue);
+                }
+            });
+        }
+    },[svg,props.featureQue])
 
     useEffect(()=>{
         if(!Utils.allValid([svg,props.patientFeatures,

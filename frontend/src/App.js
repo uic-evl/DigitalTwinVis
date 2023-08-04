@@ -716,7 +716,7 @@ function App() {
   function makeThing(){
     return (
         <Grid
-        templateRows='1.6em 1.6em 1fr 13.5em 13.5em'
+        templateRows='1.6em 1.6em 1fr 13.5em'
         templateColumns='1fr 1fr'
         h='1000px'
         w='100px'
@@ -800,7 +800,7 @@ function App() {
           />
           </div>
         </GridItem>
-        <GridItem colSpan={1} rowSpan={1}>
+        {/* <GridItem colSpan={1} rowSpan={1}>
           <div className={'title'} style={{'height': '1.5em'}}>{'DLTs'}</div>
           <div style={{'height': 'calc(100% - 1.5em)'}}>
           <DLTVisD3
@@ -815,7 +815,7 @@ function App() {
           <div style={{'height': 'calc(100% - 1.5em)'}}>
           {"Something"}
           </div>
-        </GridItem>
+        </GridItem> */}
       </Grid>
     )
   }
