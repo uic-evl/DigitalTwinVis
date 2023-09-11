@@ -277,7 +277,7 @@ function App() {
         let extent = d3.extent(Object.values(cohortData).map(d=>d[key]));
         ranges[key] = extent;
       }
-      const thingHeight = '4em';
+      const thingHeight = '8em';
       const dltWidth = '4em'
       const lnWidth = '5em';
       const subsiteWidth = '4em';
@@ -296,7 +296,7 @@ function App() {
         }
         return (
         <div key={d.id} 
-           style={{'marginTop':'.2em','height': thingHeight,
+           style={{'margin':'.2em','height': thingHeight,
            'width': '100%','diplay': 'block','borderStyle':'solid',
           'borderColor': borderColor,'borderWidth':'.2em',
           'marginBottom': marginBottom,
@@ -346,29 +346,9 @@ function App() {
       const nStuff = p.map((d,i) => makeN(d,i,true,false));
 
       return (
-        <div className={'fillSpace'}>
-          <div style={{'width': 'calc(100% - 5em)','height': 'auto','fontWeight':'bold'}} className={'centerText'}>
-            <div style={{'display': 'inline-block', 'width': dltWidth}}>
-              {'DLTs'}
-            </div>
-            <div style={{'display': 'inline-block', 'width': lnWidth}}>
-              {'L. Nodes'}
-            </div>
-            <div style={{'display': 'inline-block', 'width': subsiteWidth,}}>
-              {'Subsite'}
-            </div>
-            <div style={{'display': 'inline-block', 'width': nWidth,'height':'100%'}}>
-              <NeighborVisLabels/>
-            </div>
+        <div className={'fillSpace centerText'}>
             {makeN(meanTreated,'n',false,true,false)}
             {makeN(meanUntreated,'cf',false,false,false)}
-          </div>
-          <hr style={{'height': '.5em','backgroundColor':'black'}}/>
-          <div  className={'scroll noGutter'}
-            style={{'height': 'calc(100% - 3em - ' + thingHeight + ' - ' + thingHeight + ')'}}
-          >
-            {nStuff}
-          </div>
         </div>);
     } else{
       return <Spinner>{'No'}</Spinner>
@@ -549,7 +529,7 @@ function App() {
       const recommendedDecision = simulation[modelOutput]['decision'+(currState+1)];
 
       return [(
-      <div className={'fillSpace noGutter shadow'}>
+      <div className={'fillSpace noGutter'}>
         <OutcomePlots
           sim={sim}
           altSim={altSim}
@@ -675,40 +655,48 @@ function App() {
     )
   }
 
+  function makeScatterplot(){
+    return (
+        <ScatterPlotD3
+            cohortData={cohortData}
+            cohortEmbeddings={cohortEmbeddings}
+            currState={currState}
+            setCurrState={setCurrState}
+            patientFeatures={patientFeatures}
+            currEmbeddings={currEmbeddings}
+            modelOutput={modelOutput}
+            simulation={simulation}
+
+            patientEmbeddingLoading={patientEmbeddingLoading}
+            patientSimLoading={patientSimLoading}
+            cohortLoading={cohortLoading}
+            cohortEmbeddingsLoading={cohortEmbeddingsLoading}
+
+            updatePatient={updatePatient}
+
+            brushedId={brushedId}
+            setBrushedId={setBrushedId}
+        />
+    );
+  }
+
+  function makeAttributionPlot(){
+    return (
+      <AttributionPlotD3
+          simulation={simulation}
+          modelOutput={modelOutput}
+          currState={currState}
+          defaultPredictions={defaultPredictions}
+        />
+    )
+  }
+
   function makeToggleView(key){
     if(key.includes('scatter')){
-      return (
-          <ScatterPlotD3
-              cohortData={cohortData}
-              cohortEmbeddings={cohortEmbeddings}
-              currState={currState}
-              setCurrState={setCurrState}
-              patientFeatures={patientFeatures}
-              currEmbeddings={currEmbeddings}
-              modelOutput={modelOutput}
-              simulation={simulation}
-
-              patientEmbeddingLoading={patientEmbeddingLoading}
-              patientSimLoading={patientSimLoading}
-              cohortLoading={cohortLoading}
-              cohortEmbeddingsLoading={cohortEmbeddingsLoading}
-
-              updatePatient={updatePatient}
-
-              brushedId={brushedId}
-              setBrushedId={setBrushedId}
-          />
-      );
+      return makeScatterplot();
     }
     else{
-      return (
-        <AttributionPlotD3
-            simulation={simulation}
-            modelOutput={modelOutput}
-            currState={currState}
-            defaultPredictions={defaultPredictions}
-          />
-      )
+      return makeAttributionPlot();
     }
   }
 
@@ -823,55 +811,46 @@ function App() {
   return (
     <ChakraProvider>
       <Grid
-        h='100%'
+        h='95%'
         w='100%'
         templateRows='2em repeat(2,1fr)'
-        templateColumns='repeat(4,1fr) 1em'
+        templateColumns='25em repeat(4,1fr) 1em'
         gap={1}
       >
-        <GridItem rowSpan={1} colSpan={5} className={'shadow'}>
+        <GridItem rowSpan={1} colSpan={6} className={'shadow'}>
           {makeButtonToggle()}
         </GridItem>
         <GridItem  rowSpan={2} colSpan={1} className={'shadow'}>
           {makeThing()}
         </GridItem>
-        <GridItem rowSpan={2} colSpan={1} className={'shadow'}>
+        <GridItem rowSpan={2} colSpan={2} className={'shadow'}>
           <Grid 
             h="100%"
             w="100%"
             templateRows='8em 1fr'
             templateCols='1fr'
           >
-            <GridItem rowSpan={1} colSpan={1}>
+            <GridItem rowSpan={1}>
               {Recommendation}
             </GridItem>
-            <GridItem rowSpan={1} colSpan={1}>
+            <GridItem rowSpan={1} style={{'overflowY':'scroll'}}>
               {Outcomes}
             </GridItem>
           </Grid>
         </GridItem>
-        <GridItem rowSpan={2} colSpan={2}>
+        <GridItem rowSpan={2} colSpan={3}>
           <Grid
             h="100%"
             w="100%"
             templateRows='repeat(3,1fr)'
           >
-            <GridItem  className={'shadow'}>
-              <div>
-                <Button
-                  onClick={(upperRightView !== 'scatter')? ()=> setUpperRightView('scatter'): ()=>console.log('no click')}
-                  variant={(upperRightView !== 'scatter')? 'outline':'solid'}
-                  colorScheme={(upperRightView !== 'scatter')? 'teal':'blue'}
-                >{'Scatter Plot'}</Button>
-                <Button
-                  onClick={(upperRightView !== 'attributions')? ()=> setUpperRightView('attributions'): ()=>console.log('no click')}
-                  variant={(upperRightView !== 'attributions')? 'outline':'solid'}
-                  colorScheme={(upperRightView !== 'attributions')? 'teal':'blue'}
-                >{'Model Attributions'}</Button>
-              </div>
-              {makeToggleView(upperRightView)}
+            <GridItem rowSpan={1} className={'shadow'}>
+              {makeScatterplot()}
             </GridItem>
-            <GridItem rowSpan={2}  className={'shadow'}>
+            <GridItem rowSpan={1}  className={'shadow'}>
+              {makeAttributionPlot()}
+            </GridItem>
+            <GridItem className={'shadow'}>
               {Neighbors}
             </GridItem>
           </Grid>

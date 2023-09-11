@@ -99,9 +99,29 @@ export default function RecommendationPlot(props){
                 .attr('x',d=>d.x)
                 .attr('font-size',labelSize*.75)
                 .attr('y',d=> d.y + d.radius + labelSize)
-                .text(d=> d.title);    
+                .text(d=> d.title); 
+            
+            
         }
     },[svg,props.decision,props.neighborDecisions])    
+
+
+    useEffect(()=>{
+        if(svg === undefined){return}
+        const radius = tickHeight*.5;
+        const labelSize = Math.min(24,Math.max(radius*1,10));
+        const labels = ['No ',''];
+            svg.selectAll('.xaxislabel').remove();
+            svg.selectAll('.xaxislabel').data(labels)
+                .enter().append('text')
+                .attr('class','xaxislabel')
+                .attr('x',(d,i) => xScale(i))
+                .attr('y', height/2 + radius + labelSize + 2)
+                .attr('text-anchor','middle')
+                .attr('font-size',labelSize)
+                .attr('font-weight','bold')
+                .text(d=> d  + constants.DECISIONS_SHORT[props.state]);
+    },[svg,props.state])
 
     return (
         <div

@@ -8,6 +8,12 @@ export const DECISIONS = [
         'Decision 3 Neck Dissection (Y/N)'
 ]
 
+export const DECISIONS_SHORT = [
+        'IC',
+        'CC',
+        'ND',
+]
+
 export const ordinalVars = {
         'AJCC': [1,2,3,4],
         'N-category': [0,1,2,3],
@@ -57,3 +63,8 @@ export const validSubsites = ['GPS','BOT','NOS','Pharyngeal_wall','Tonsil','Soft
 export const noColor = '#af8dc3';
 export const yesColor = '#7fbf7b';
 export const divergingAttributionColors = ['#91bfdb','white','#fc8d59'];
+
+export const dnnColor = '#762a83';
+export const dnnColorNo = '#c2a5cf';
+export const knnColor = '#1b7837';
+export const knnColorNo = '#a6dba0';

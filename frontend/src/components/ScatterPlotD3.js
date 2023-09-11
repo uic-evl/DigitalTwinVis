@@ -49,7 +49,6 @@ export default function ScatterPlotD3(props){
         const pNeighbors = currEmbeddings['neighbors'].map(i=>parseInt(i))
         // const embeddings =[pEmbedding].concat(Object.values(cohortEmbeddings).map(x=> x[embedkey]));
         const pPca = currEmbeddings['pca'];
-
         const getComp = x => [x[pcaComponents[0]],x[pcaComponents[1]]]
         var projection = [getComp(pPca)].concat(
             Object.values(cohortEmbeddings)
@@ -107,6 +106,7 @@ export default function ScatterPlotD3(props){
                 'radius': getRadius(id),
                 'className': getClass(id),
                 'id': parseInt(id),
+                'data': cohortData[id+''],
             }
             if(id > 0){
                 entry['imitationDecision'] = cohortEmbeddings[id+'']['decision'+state+'_imitation'];
@@ -134,7 +134,7 @@ export default function ScatterPlotD3(props){
             .enter()
             .append('circle').attr('class',d=>d.className)
             .attr('transform',d=>'translate(' + d.x + ',' + d.y+')')
-            .attr('fill',d=>getFill(d))
+            .attr('fill',getFill)
             .attr('stroke',getStroke)
             .attr('opacity',d=>d.opacity)
             .attr('stroke-width',3)
@@ -164,6 +164,7 @@ export default function ScatterPlotD3(props){
             }
             let string = d.id;
             tTip.html(string);
+            console.log('brush',d)
         }).on('mousemove', function(e){
             Utils.moveTTipEvent(tTip,e);
         }).on('mouseout', function(e){

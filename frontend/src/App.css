@@ -4,22 +4,7 @@
   width: 100vw;
 }
 
-.tooltip {	
-  position: absolute;
-  z-index: 10;
-  opacity: 1!important;			
-  text-align: center;			
-  width: auto;		
-  max-width: 50vw;			
-  height: auto;					
-  padding: 10px;				
-  font: 12px sans-serif;		
-  background: rgb(172, 173, 173);	
-  border: 0px;		
-  border-radius: 8px;			
-  pointer-events: none;	
-  font-size: .7em!important;		
-}
+b
 
 .chakra-select, option{
   /* width: !important; */
@@ -69,8 +54,6 @@
   justify-content: center!important;
   text-align: center!important;
   width: 100% !important;
-
-
 }
 
 .d3label{
@@ -78,9 +61,10 @@
   text-align: center!important;
 }
 
-.title{
-  font-size: 1.2em;
+.title, .title > *{
+  font-size: 1em;
   font-weight: bold!important;
+  font-family: Georgia!important;
 }
 
 .lightGutter {
