@@ -173,6 +173,7 @@ class OutcomeSimulator(SimulatorBase):
         
         return xout
 
+# +
 class EndpointSimulator(SimulatorBase):
     
     def __init__(self,
@@ -198,6 +199,102 @@ class EndpointSimulator(SimulatorBase):
         x= self.outcome_layer(x)
         x = self.sigmoid(x)
         return x
+    
+class TransitionEnsemble(torch.nn.Module):
+    
+    def __init__(self,base_models,error_models,ci=.05):
+        super().__init__()
+        self.base_models = torch.nn.ModuleList(base_models)
+        self.error_models = torch.nn.ModuleList(error_models)
+    
+    def average(self,xlist,from_ll=True):
+        if from_ll:
+            xlist = [torch.exp(xx) for xx in xlist]
+        if len(xlist) < 2:
+            return xlist[0]
+        else:
+            return torch.stack(xlist).mean(dim=0) 
+        
+    def quantile(self,xlist,q,from_ll=True):
+        xshape = xlist[0].shape
+        xx = torch.stack(xlist).view((len(xlist),-1))
+        if from_ll:
+            xx = torch.exp(xx)
+        return xx.quantile(q,dim=0).view(xshape)
+    
+    def cf(self,xlist,**kwargs):
+        lower = self.quantile(xlist,.05,**kwargs)
+        upper = self.quantile(xlist,.95,**kwargs)
+        return lower, upper
+    
+    def forward(self,x):
+        xpd = []
+        xpd_range = []
+        xnd = []
+        xnd_range = []
+        xmod = []
+        xmod_range = []
+        xdlt = []
+        xdlt_range = []
+        for m in self.base_models:
+            xx = m(x)
+            xpd.append(xx[0])
+            xnd.append(xx[1])
+            xmod.append(xx[2])
+            xdlt.append(xx[3])
+            xpd_range.append(xx[0])
+            xnd_range.append(xx[1])
+            xmod_range.append(xx[2])
+            xdlt_range.append(xx[3])
+        for m in self.error_models:
+            xx = m(x)
+            xpd_range.append(xx[0])
+            xnd_range.append(xx[1])
+            xmod_range.append(xx[2])
+            xdlt_range.append(xx[3])
+        xpd = self.average(xpd,from_ll=True)
+        xnd = self.average(xnd,from_ll=True)
+        xmod = self.average(xmod,from_ll=True)
+        xdlt = self.average(xdlt,from_ll=False)
+        
+        xpd_range = self.cf(xpd_range,from_ll=True)
+        xnd_range =self.cf(xnd_range,from_ll=True)
+        xmod_range = self.cf(xmod_range,from_ll=True)
+        xdlt_range = self.cf(xdlt_range,from_ll=False)
+        entry = {
+            'predictions': [xpd,xnd,xmod,xdlt],
+            '5%': [xpd_range[0],xnd_range[0],xmod_range[0],xdlt_range[0]],
+            '95%':  [xpd_range[1],xnd_range[1],xmod_range[1],xdlt_range[1]],
+            'order': ['pd','nd','mod','dlt']
+        }
+        return entry
+    
+class EndpointEnsemble(TransitionEnsemble):
+    
+    def __init__(self,base_models,error_models,ci=.05):
+        super().__init__(base_models,error_models)
+    
+    def forward(self,x):
+        xlist = []
+        xrange =[]
+        for m in self.base_models:
+            xx = m(x)
+            xlist.append(xx)
+            xrange.append(xx)
+        for m in self.error_models:
+            xx = m(x)
+            xrange.append(xx)
+        xlist = self.average(xlist,from_ll=False)
+        [x5, x95] = self.cf(xrange,from_ll=False)
+        entry = {
+            'predictions': xlist,
+            '5%':x5,
+            '95%':  x95,
+        }
+        return entry
+
+
+# -
 
 class DecisionModel(SimulatorBase):
     
