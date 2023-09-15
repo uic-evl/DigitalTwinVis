@@ -128,9 +128,9 @@ export default function ScatterPlotD3(props){
     useEffect(()=>{
         if(formattedData === undefined | svg===undefined){ return }
         // svg.selectAll('.patientMarker').remove();
-        let points = svg.selectAll('.patientMarker');
+        let points = svg.selectAll('.patientMarker').data(formattedData,d=>d.id);
         if(points.empty()){
-            points.data(formattedData)
+            points
             .enter()
             .append('circle').attr('class',d=>d.className)
             .attr('transform',d=>'translate(' + d.x + ',' + d.y+')')
@@ -142,7 +142,7 @@ export default function ScatterPlotD3(props){
             svg.selectAll('.activePatient').raise();
             svg.selectAll('.selectedPatient').raise();
         } else{
-            points.data(formattedData)
+            points
                 .attr('class',d=>d.className)
                 .transition()
                 .duration(500)

@@ -225,6 +225,18 @@ function App() {
     fetchPatientSimulation();
   },[patientFeatures]);
 
+  function wrapTitle(item,text){
+    return (
+      <div className={'fillSpace'}>
+        <div style={{'height':'1.5em'}} className={'title'}>
+          {text}
+        </div>
+        <div style={{'height':'calc(100% - 1.5em)','width':'100%'}}>
+        {item}
+        </div>
+      </div>
+    )
+  }
   const Neighbors = useMemo(()=>{
     if(Utils.allValid([currEmbeddings,cohortData,simulation])){
       let decision = fixedDecisions[currState];
@@ -548,6 +560,7 @@ function App() {
         return buttons
       }
 
+
       return [(
       <>
       <div style={{'height': '1.5em','width':'100%'}}>
@@ -568,10 +581,10 @@ function App() {
       ),
       (
         <div className={'fillSpace noGutter shadow'}>
-          <div className={'centerText'}  style={{'height': '1.5em','width':'100%'}}>
-            {'Recommended'}
+          <div className={'title'}  style={{'height': '1em','width':'100%'}}>
+            {'Recommended Treatment'}
           </div>
-          <div style={{'height': 'calc(100% - 1.5em)'}}>
+          <div style={{'height': 'calc(100% - 1em)'}}>
             <RecommendationPlot
               decision={recommendedDecision}
               state={currState}
@@ -682,7 +695,7 @@ function App() {
   }
 
   function makeScatterplot(){
-    return (
+    const scatter = (
         <ScatterPlotD3
             cohortData={cohortData}
             cohortEmbeddings={cohortEmbeddings}
@@ -704,10 +717,11 @@ function App() {
             setBrushedId={setBrushedId}
         />
     );
+    return wrapTitle(scatter,'ScatterPlot')
   }
 
   function makeAttributionPlot(){
-    return (
+    const attr = (
       <AttributionPlotD3
           simulation={simulation}
           modelOutput={modelOutput}
@@ -715,6 +729,7 @@ function App() {
           defaultPredictions={defaultPredictions}
         />
     )
+    return wrapTitle(attr,'Model Feature Importance');
   }
 
   function makeToggleView(key){
