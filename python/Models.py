@@ -212,10 +212,11 @@ class EndpointSimulator(SimulatorBase):
     
 class TransitionEnsemble(torch.nn.Module):
     
-    def __init__(self,base_models,error_models,ci=.05):
+    def __init__(self,base_models,error_models,ci=.1):
         super().__init__()
         self.base_models = torch.nn.ModuleList(base_models)
         self.error_models = torch.nn.ModuleList(error_models)
+        self.register_buffer('ci',torch.FloatTensor([ci]))
     
     def set_device(self,device,**kwargs):
         super().to(device)
@@ -223,6 +224,9 @@ class TransitionEnsemble(torch.nn.Module):
             model.set_device(device,**kwargs)
         for model in self.error_models:
             model.set_device(device,**kwargs)
+    
+    def get_device(self):
+        return next(self.parameters()).device
     
     def average(self,xlist,from_ll=True):
         if from_ll:
@@ -240,11 +244,12 @@ class TransitionEnsemble(torch.nn.Module):
         return xx.quantile(q,dim=0).view(xshape)
     
     def cf(self,xlist,**kwargs):
-        lower = self.quantile(xlist,.05,**kwargs)
-        upper = self.quantile(xlist,.95,**kwargs)
+        lower = self.quantile(xlist,self.ci.item(),**kwargs)
+        upper = self.quantile(xlist,1-self.ci.item(),**kwargs)
         return lower, upper
     
     def forward(self,x):
+        x = x.to(self.get_device())
         xpd = []
         xpd_range = []
         xnd = []
@@ -288,10 +293,11 @@ class TransitionEnsemble(torch.nn.Module):
     
 class EndpointEnsemble(TransitionEnsemble):
     
-    def __init__(self,base_models,error_models,ci=.05):
-        super().__init__(base_models,error_models)
+    def __init__(self,base_models,error_models,ci=.1):
+        super().__init__(base_models,error_models,ci=ci)
     
     def forward(self,x):
+        x=x.to(self.get_device())
         xlist = []
         xrange =[]
         for m in self.base_models:
