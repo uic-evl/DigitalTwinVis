@@ -47,7 +47,18 @@ export default class Utils {
         }
         let newText = this.nameDict[text];
         if(newText === undefined){
-            return this.getVarDisplayName(text.replace('subsite_',''));
+            newText = text.replace('pathological','path.')
+                .replace('category','cat.')
+                .replace('subsite_','')
+                .replace('_0','=0')
+                .replace('_1','=1')
+                .replace('_2','=2')
+                .replace('_3','=3')
+                .replace('_4','=4');
+            newText = this.getVarDisplayName(newText);
+            if(newText.includes('ipsi') | newText.includes('contra')){
+                newText += '(LN)'
+            }
         }
         return newText
     }

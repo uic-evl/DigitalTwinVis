@@ -3,7 +3,7 @@ import React, {useEffect, useState, useMemo} from 'react';
 import './App.css';
 
 // 1. import `ChakraProvider` component
-import { ChakraProvider, Grid, GridItem,  Button, ButtonGroup, Spinner} from '@chakra-ui/react';
+import { ChakraProvider, Grid, GridItem,  Button, ButtonGroup, Spinner, Tabs, TabList, TabPanels, Tab, TabPanel} from '@chakra-ui/react';
 
 import DataService from './modules/DataService';
 import Utils from './modules/Utils';
@@ -61,6 +61,9 @@ function App() {
   const [dltSvgPaths,setDltSvgPaths]= useState();
   const [subsiteSvgPaths,setSubsiteSvgPaths] = useState();
   const neighborsToShow = 7;
+
+  //will be ['all','endpoints','response','dlts','no dlts]
+  const [outcomesView, setOutcomesView] = useState('no dlts')
 
   function getSimulation(){
     if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
@@ -528,8 +531,29 @@ function App() {
 
       const recommendedDecision = simulation[modelOutput]['decision'+(currState+1)];
 
+      const outcomeViewOptions = currState < 2? ['all','endpoints','disease response','dlts','no dlts']: ['endpoints'];
+      function makeOutcomeToggle(){
+        const buttons = outcomeViewOptions.map((n,i) => {
+          const isActive = n === outcomesView;
+          const onclick = isActive? ()=>{}: ()=>setOutcomesView(n);
+          return( 
+            <Button
+              onClick={onclick}
+              variant={isActive? 'ghost': 'solid'}
+              colorScheme={isActive? 'teal':'blue'}
+              key={i}
+            >{Utils.getVarDisplayName(n)}</Button>
+          )
+        })
+        return buttons
+      }
+
       return [(
-      <div className={'fillSpace noGutter'}>
+      <>
+      <div style={{'height': '1.5em','width':'100%'}}>
+            {makeOutcomeToggle()}
+      </div>
+      <div style={{'height': 'calc(100% - 1.5em','width':'100%'}} className={'noGutter'}>
         <OutcomePlots
           sim={sim}
           altSim={altSim}
@@ -537,8 +561,10 @@ function App() {
           counterfactualOutcomes={cfPredictions}
           mainDecision={currDecision}
           state={currState}
+          outcomesView={outcomesView}
         ></OutcomePlots>
       </div>
+      </>
       ),
       (
         <div className={'fillSpace noGutter shadow'}>
@@ -570,7 +596,7 @@ function App() {
       )
       ]
     }
-  },[simulation,cohortData,currEmbeddings,modelOutput,currState,cohortEmbeddings,fixedDecisions]);
+  },[simulation,cohortData,currEmbeddings,modelOutput,currState,cohortEmbeddings,fixedDecisions,outcomesView]);
 
   function makeButtonToggle(){
     var makeButton = (state,text)=>{
@@ -827,15 +853,16 @@ function App() {
           <Grid 
             h="100%"
             w="100%"
-            templateRows='8em 1fr'
+            templateRows='1fr 6em'
             templateCols='1fr'
           >
-            <GridItem rowSpan={1}>
-              {Recommendation}
-            </GridItem>
             <GridItem rowSpan={1} style={{'overflowY':'scroll'}}>
               {Outcomes}
             </GridItem>
+            <GridItem rowSpan={1}>
+              {Recommendation}
+            </GridItem>
+            
           </Grid>
         </GridItem>
         <GridItem rowSpan={2} colSpan={3}>

@@ -76,7 +76,7 @@ export default function AttributionPlotD3(props){
 
 
 
-            const amplitude = Math.max(positiveTotal,negativeTotal,.000000000000000000000001);
+            const amplitude = Math.max(positiveTotal,negativeTotal,.1);
             // const aExtents = d3.extent(attributions);
             // const amplitude = Math.abs(Math.max(-aExtents[0],aExtents[1]));
             const xScale = d3.scaleLinear()
@@ -145,21 +145,21 @@ export default function AttributionPlotD3(props){
                 .attr('stroke-width',1)
                 .attr('stroke','black');
 
-            const labelSize = Math.min(20,barWidth);
-            svg.selectAll('text').remove();
-            svg.selectAll('.labelRect')
+            const labelSize = Math.min(20,barWidth*.8);
+            group.selectAll('text').remove();
+            group.selectAll('.labelRect')
                 .data(rectData).enter()
                 .append('text').attr('class','labelRect')
-                .attr('x',2)
+                .attr('x',d=>d.x-5 + Math.min(d.width,0))
                 .attr('y',d=>d.y + labelSize)
-                .attr('text-anchor','start')
+                .attr('text-anchor','end')
                 .attr('font-size',labelSize)
                 .text(d=>Utils.getFeatureDisplayName(d.name));
 
             const defaultP = props.defaultPredictions[props.modelOutput][constants.DECISIONS[props.currState]]
             const ticks = [
-                [[centerX, topMargin],[centerX,yPos+5]],
-                [[currX, topMargin],[currX,yPos+5]],
+                [[centerX, yPos],[centerX,yPos+5]],
+                [[currX, yPos],[currX,yPos+5]],
             ];
             //theortically defaultP - negativeTotal + postitiveTotal but off due to rounding errors
             const decision = props.simulation[props.modelOutput]['decision'+(props.currState+1)];
@@ -192,8 +192,10 @@ export default function AttributionPlotD3(props){
                 .attr('font-size',bottomMargin/2)
                 .text(d=>(100*d.value).toFixed() + '%');
 
-            let leftMost = Math.min(currX, centerX);
-            group.attr('transform','translate(' +  -1*(leftMost - labelSpacing) + ')');
+            // let leftMost = Math.min(currX, centerX);
+            // group.attr('transform','translate(' +  -1*(leftMost - labelSpacing) + ')');
+            const bounds = group.node().getBBox();
+            group.attr('transform','translate(' +  -1*(bounds.x - margin) + ')');
         }
     },[svg,props.simulation,props.modelOutput,props.currState,width,height,props.defaultPredictions]);
 

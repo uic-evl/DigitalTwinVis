@@ -18,23 +18,15 @@ def load_dataset():
     data.processed_df = newdf
     return data
 
-def load_models(use_upsampled=True):
+def load_models():
     files = [
         '../resources/decision_model.pt',
         '../resources/transition1_model.pt',
         '../resources/transition2_model.pt',
-        '../resources/outcome_model_smote.pt',
+        '../resources/outcome_model.pt',
     ]
-    if use_upsampled:
-        files = [
-            '../resources/decision_model_smote.pt',
-            '../resources/transition1_model_smote.pt',
-            '../resources/transition2_model_smote.pt',
-            '../resources/outcome_model_smote.pt',
-        ]
     decision_model,transition_model1,transition_model2, outcome_model = [torch.load(file) for file in files]
     return decision_model,transition_model1,transition_model2,outcome_model
-
 
 def np_converter(obj):
     #converts stuff to vanilla python  for json since it gives an error with np.int64 and arrays
@@ -144,31 +136,40 @@ def get_inputkey_order(dataset,state=0):
 
 def get_predictions(dataset,m1,m2,m3,states=[0,1,2],ids=None):
     outcomes = {}
-    def add_outcomes(names, array):
+    def add_outcomes(names, array,suffix=''):
         for i,name in enumerate(names):
-            outcomes[name] = array[:,i]
-            
+            outcomes[name+suffix] = array[:,i]
     for model,state in zip([m1,m2,m3],states):
         x = dataset.get_input_state(step=state+1,ids=ids)
-        x = df_to_torch(x)
-        y = model(x)
+        x = df_to_torch(x).to(model.get_device())
+        yout = model(x)
+        y = yout['predictions']
+        y_lower = yout['5%']
+        y_upper = yout['95%']
         if state < 2:
             y = [yy.cpu().detach().numpy() for yy in y]
+            y_lower = [yy.cpu().detach().numpy() for yy in y_lower]
+            y_upper = [yy.cpu().detach().numpy() for yy in y_upper]
         else:
             y = y.cpu().detach().numpy()
+            y_lower = y_lower.cpu().detach().numpy()
+            y_upper = y_upper.cpu().detach().numpy()
         if state == 0:
-            [pds, nd, mod, dlts] = y
-            add_outcomes(Const.primary_disease_states,np.exp(pds))
-            add_outcomes(Const.nodal_disease_states,np.exp(nd))
-            add_outcomes(Const.modifications,np.exp(mod))
-            add_outcomes(Const.dlt1,dlts)
+            for suffixes, values in zip(['','_5%','_95%'],[y,y_lower,y_upper]):
+                [pds, nd, mod, dlts] = values
+                add_outcomes(Const.primary_disease_states,pds,suffixes)
+                add_outcomes(Const.nodal_disease_states,nd,suffixes)
+                add_outcomes(Const.modifications,mod,suffixes)
+                add_outcomes(Const.dlt1,dlts,suffixes)
         elif state == 1:
-            [pd2, nd2, cc, dlts2] = y
-            add_outcomes(Const.primary_disease_states2,np.exp(pd2))
-            add_outcomes(Const.nodal_disease_states2,np.exp(nd2))
-            add_outcomes(Const.dlt2,dlts2)
+            for suffixes, values in zip(['','_5%','_95%'],[y,y_lower,y_upper]):
+                [pd2, nd2, cc, dlts2] = values
+                add_outcomes(Const.primary_disease_states2,pd2,suffixes)
+                add_outcomes(Const.nodal_disease_states2,nd2,suffixes)
+                add_outcomes(Const.dlt2,dlts2,suffixes)
         else:
-            add_outcomes(Const.outcomes,y)
+            for suffixes, values in zip(['','_5%','_95%'],[y,y_lower,y_upper]):
+                add_outcomes(Const.outcomes,values,suffixes)
     if ids is None:
         ids = dataset.processed_df.index.values
     outcomes = pd.DataFrame(outcomes,ids)
@@ -227,11 +228,14 @@ def get_default_input(dataset,state=0,ids=None):
 def format_patient(dataset,input_dict):
     #converts patient input features into data input type
     baselines = dataset.processed_df.median().to_dict()
+    for k in Const.primary_disease_states + Const.nodal_disease_states:
+        baselines[k] = 0
+        baselines[k+' 2'] = 0
     for k,v in input_dict.items():
         baselines[k] = v
     return baselines
 
-def dict_to_model_input(dataset,fdict,state=0,ttype=torch.FloatTensor,concat=True):
+def dict_to_model_input(dataset,fdict,state=0,ttype=torch.FloatTensor,concat=True,zero_transition_states=True):
     fdict = format_patient(dataset,fdict)
     order = get_inputkey_order(dataset,state=state)
     inputs = [torch.tensor([fdict[k] for k in ordersubset]).type(ttype).view(1,-1) for ordersubset in order]
@@ -239,14 +243,15 @@ def dict_to_model_input(dataset,fdict,state=0,ttype=torch.FloatTensor,concat=Tru
     #this is assuming the order is baseline, dlt1, dlt2, primary progression, nodal progression, cc type, dose modification
     def zeroinput(position):
         return torch.zeros(inputs[position].shape).type(ttype)
-    if state == 0 or state == 1:
-        inputs[2] = zeroinput(2)
-        inputs[5] = zeroinput(5)
-    if state < 1:
-        inputs[1] = zeroinput(1)
-        inputs[3] = zeroinput(3)
-        inputs[4] = zeroinput(4)
-        inputs[6] =zeroinput(6)
+    if zero_transition_states:
+        if state == 0 or state == 1:
+            inputs[2] = zeroinput(2)
+            inputs[5] = zeroinput(5)
+        if state < 1:
+            inputs[1] = zeroinput(1)
+            inputs[3] = zeroinput(3)
+            inputs[4] = zeroinput(4)
+            inputs[6] =zeroinput(6)
     if concat:
         inputs = torch.cat(inputs,axis=1)
     #currently at this line its baseline, dlt1, dlt2, pd, nd, cc, modifications
@@ -263,7 +268,7 @@ def get_neighbors_and_embedding(pdata,dataset,decisionmodel,embedding_df=None,st
     inputs = dict_to_model_input(dataset,pdata,state=state)
     
     
-    embedding = decisionmodel.get_embedding(inputs,position=state,use_saved_memory=True)[0].view(1,-1).detach().numpy()
+    embedding = decisionmodel.get_embedding(inputs,position=state,use_saved_memory=True)[0].view(1,-1).cpu().detach().numpy()
 
     dists = cdist(embedding,embeddings).ravel()
     
@@ -278,6 +283,8 @@ def get_neighbors_and_embedding(pdata,dataset,decisionmodel,embedding_df=None,st
         return neighbor_ids, similarities,embedding[0],pPca
     return neighbor_ids, similarities, embedding[0]
 
+
+
 def dictify(keys,values):
     return {k:v for k,v in zip(keys,values)}
 
@@ -286,25 +293,34 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     #currently this is only the baseline and I need to think more about what to do with fixed values?
     pdata = format_patient(data,patient_dict)
     baseline_inputs = dict_to_model_input(data,pdata,state=0,concat=False) 
-    #inputs are order baseline, dlt1, dlt2, pd, nd, cc type, dose modifications
-    #model output is nx6 -> optimal 1 , 2, 3, imitation 1, 2, 3
-    cat = lambda x: torch.cat(x,axis=1)
     
     
-    #do a loop for imitation and a loop for optimal decision making, mod = 3 is imitation
-    format_transition = lambda x: torch.exp(x.view(1,-1))
+    
     tmodel1.eval()
     tmodel2.eval()
     outcomemodel.eval()
     decisionmodel.eval()
+    device = 'cpu'
+    if torch.cuda.is_available():
+        device='cuda'
+    tmodel1.set_device(device)
+    tmodel2.set_device(device)
+    outcomemodel.set_device(device)
+    decisionmodel.set_device(device)
     results = {}
+    
+    #do a loop for imitation and a loop for optimal decision making, mod = 3 is imitation
+    format_transition = lambda x: x.view(1,-1).to(device)
+    #inputs are order baseline, dlt1, dlt2, pd, nd, cc type, dose modifications
+    #model output is nx6 -> optimal 1 , 2, 3, imitation 1, 2, 3
+    cat = lambda x: torch.cat([xx.to(device) for xx in x],axis=1).to(device)
     
     size_dict = decisionmodel.input_sizes
     
     #baseline, dlt1, dlt2, pd, nd, cc, mod
     input_keys = get_inputkey_order(data)
     def get_attention(xx, position, offset):
-        attention = decisionmodel.get_attributions(xx,target=position+offset, position=1)[0].detach().numpy()
+        attention = decisionmodel.get_attributions(xx,target=position+offset, position=1)[0].cpu().detach().numpy()
         attention_dict = {
             'step': position,
             'model': 'optimal' if offset == 0 else 'imitation',
@@ -326,7 +342,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         return attention_dict
         
     memory = get_decision_input(data,state=2)
-    memory = torch.cat([df_to_torch(f) for f in memory],axis=1)
+    memory = cat([df_to_torch(f) for f in memory])
     o1 = decisionmodel(cat(baseline_inputs),position=0)[0]
     
     thresh = lambda x: torch.gt(x,.5).type(torch.FloatTensor)
@@ -338,13 +354,17 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         else:
             d1 = o1[0+modifier].view(1,-1)
             d1_attention = get_attention(cat(baseline_inputs),0,modifier)
-        tinput1 = torch.cat([baseline_inputs[0],thresh(d1)],axis=1)
-        [ypd1,ynd1,ymod,ydlt1] = tmodel1(tinput1)
+        tinput1 = cat([baseline_inputs[0],thresh(d1)])
+        
+        ytransition = tmodel1(tinput1)
+        [ypd1,ynd1,ymod,ydlt1] = ytransition['predictions']
+
         [ypd1, ynd1, ymod] = [format_transition(i) for i in [ypd1,ynd1,ymod]]
+        
         #I try to make this work in the model but it just thinks there's no outcome and softmaxes them all often
-        d1_thresh = torch.gt(d1,.5).view(-1,1)
-        ypd1[:,:] = ypd1[:,:]*d1_thresh
-        ynd1[:,:] = ynd1[:,:]*d1_thresh
+        d1_thresh = torch.gt(d1,.5).view(-1,1).to(device)
+        ypd1[:,0:2] = ypd1[:,0:2]*d1_thresh
+        ynd1[:,0:2] = ynd1[:,0:2]*d1_thresh
         
         oinput2 = dict_to_model_input(data,pdata,state=1,concat=False)
         oinput2[1] = ydlt1.view(1,-1)
@@ -362,8 +382,10 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         #transition 2 modle uses baseline + pd1 + nd1 + modification + dlt1 + decision 1 + deicsion 2
         tinput2 = [baseline_inputs[0], ypd1, ynd1, ymod,ydlt1, thresh(d1),thresh(d2)]
 
-        tinput2 = torch.cat(tinput2,axis=1)
-        [ypd2, ynd2, ycc, ydlt2] = tmodel2(tinput2)
+        tinput2 = cat(tinput2)
+        
+        ytransition2 = tmodel2(tinput2)
+        [ypd2, ynd2, ycc, ydlt2] = ytransition2['predictions']
         [ypd2, ynd2, ycc] = [format_transition(i) for i in [ypd2,ynd2,ycc]]
         
         oinput3 = oinput2[:]
@@ -381,26 +403,34 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         
         #outcomes uses baseline + pd2 + nd2 + cc type + dlt2 + decision 1,2,3
         tinput3 = [baseline_inputs[0], ypd2, ynd2, ycc, ydlt2, thresh(d1), thresh(d2), thresh(d3)]
-        tinput3 = torch.cat(tinput3,axis=1)
+        tinput3 = cat(tinput3)
         outcomes = outcomemodel(tinput3)
         
         entry = {
-            'outcomes': outcomes.detach().numpy()[0],
-            'pd1': ypd1.detach().numpy()[0],
-            'nd1': ynd1.detach().numpy()[0],
-            'pd2': ypd2.detach().numpy()[0],
-            'nd2': ynd2.detach().numpy()[0],
-            'modifications': ymod.detach().numpy()[0],
-            'cc_type': ycc.detach().numpy()[0],
-            'dlt1': ydlt1.detach().numpy()[0],
-            'dlt2': ydlt2.detach().numpy()[0],
-            'decision1': d1.detach().numpy()[0][0],
-            'decision2': d2.detach().numpy()[0][0],
-            'decision3': d3.detach().numpy()[0][0],
+            'decision1': d1.cpu().detach().numpy()[0][0],
+            'decision2': d2.cpu().detach().numpy()[0][0],
+            'decision3': d3.cpu().detach().numpy()[0][0],
             'decision1_attention': d1_attention,
             'decision2_attention': d2_attention,
             'decision3_attention': d3_attention,
         }
+        
+        def add_to_entry(tmodel_output,names):
+            pred = tmodel_output['predictions']
+            lower = tmodel_output['5%']
+            upper = tmodel_output['95%']
+            for suffix,values in zip(['','_5%','_95%'],[pred,lower,upper]):
+                for name, v in zip(names,values):
+                    v = v.cpu().detach().numpy()
+                    if name != 'outcomes':
+                        v = v[0]
+                    #because of softmax the model will output 33% for pd and nd with no ic when it should be fixed to 0
+                    if entry['decision1'] < .5 and 'pd1' in name or 'nd1' in name:
+                        v = np.zeros(v.shape)
+                    entry[name+suffix] = v
+        add_to_entry(ytransition,['pd1','nd1','modifications','dlt1'])
+        add_to_entry(ytransition2,['pd2','nd2','cc_type','dlt2'])
+        add_to_entry(outcomes,['outcomes'])
         key = 'optimal' if modifier < 1 else 'imitation'
         if decision1 is not None:
             key += '_decision1-'+str(decision1)

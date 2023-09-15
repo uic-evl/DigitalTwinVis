@@ -43,7 +43,17 @@ class SimulatorBase(torch.nn.Module):
         self.sigmoid = torch.nn.Sigmoid()
         self.softmax = torch.nn.LogSoftmax(dim=1)
         self.identifier = 'state'  +str(state) + '_input'+str(input_size) + '_dims' + ','.join([str(h) for h in hidden_layers]) + '_dropout' + str(input_dropout) + ',' + str(dropout)
-        
+    
+    def set_device(self,device,**kwargs):
+        self.to(device)
+        self.input_mean = self.input_mean.to(device)
+        self.input_std = self.input_std.to(device)
+        for parameter in self.parameters():
+            parameter.to(device)
+    
+    def get_device(self):
+        return next(self.parameters()).device
+    
     def normalize(self,x):
         x = torch.subtract(x,self.input_mean)
         x = torch.add(x, self.eps)
@@ -198,6 +208,111 @@ class EndpointSimulator(SimulatorBase):
         x= self.outcome_layer(x)
         x = self.sigmoid(x)
         return x
+    
+class TransitionEnsemble(torch.nn.Module):
+    
+    def __init__(self,base_models,error_models,ci=.1):
+        super().__init__()
+        self.base_models = torch.nn.ModuleList(base_models)
+        self.error_models = torch.nn.ModuleList(error_models)
+        self.register_buffer('ci',torch.FloatTensor([ci]))
+    
+    def set_device(self,device,**kwargs):
+        super().to(device)
+        for model in self.base_models:
+            model.set_device(device,**kwargs)
+        for model in self.error_models:
+            model.set_device(device,**kwargs)
+    
+    def get_device(self):
+        return next(self.parameters()).device
+    
+    def average(self,xlist,from_ll=True):
+        if from_ll:
+            xlist = [torch.exp(xx) for xx in xlist]
+        if len(xlist) < 2:
+            return xlist[0]
+        else:
+            return torch.stack(xlist).mean(dim=0) 
+        
+    def quantile(self,xlist,q,from_ll=True):
+        xshape = xlist[0].shape
+        xx = torch.stack(xlist).view((len(xlist),-1))
+        if from_ll:
+            xx = torch.exp(xx)
+        return xx.quantile(q,dim=0).view(xshape)
+    
+    def cf(self,xlist,**kwargs):
+        lower = self.quantile(xlist,self.ci.item(),**kwargs)
+        upper = self.quantile(xlist,1-self.ci.item(),**kwargs)
+        return lower, upper
+    
+    def forward(self,x):
+        x = x.to(self.get_device())
+        xpd = []
+        xpd_range = []
+        xnd = []
+        xnd_range = []
+        xmod = []
+        xmod_range = []
+        xdlt = []
+        xdlt_range = []
+        for m in self.base_models:
+            xx = m(x)
+            xpd.append(xx[0])
+            xnd.append(xx[1])
+            xmod.append(xx[2])
+            xdlt.append(xx[3])
+            xpd_range.append(xx[0])
+            xnd_range.append(xx[1])
+            xmod_range.append(xx[2])
+            xdlt_range.append(xx[3])
+        for m in self.error_models:
+            xx = m(x)
+            xpd_range.append(xx[0])
+            xnd_range.append(xx[1])
+            xmod_range.append(xx[2])
+            xdlt_range.append(xx[3])
+        xpd = self.average(xpd,from_ll=True)
+        xnd = self.average(xnd,from_ll=True)
+        xmod = self.average(xmod,from_ll=True)
+        xdlt = self.average(xdlt,from_ll=False)
+        
+        xpd_range = self.cf(xpd_range,from_ll=True)
+        xnd_range =self.cf(xnd_range,from_ll=True)
+        xmod_range = self.cf(xmod_range,from_ll=True)
+        xdlt_range = self.cf(xdlt_range,from_ll=False)
+        entry = {
+            'predictions': [xpd,xnd,xmod,xdlt],
+            '5%': [xpd_range[0],xnd_range[0],xmod_range[0],xdlt_range[0]],
+            '95%':  [xpd_range[1],xnd_range[1],xmod_range[1],xdlt_range[1]],
+            'order': ['pd','nd','mod','dlt']
+        }
+        return entry
+    
+class EndpointEnsemble(TransitionEnsemble):
+    
+    def __init__(self,base_models,error_models,ci=.1):
+        super().__init__(base_models,error_models,ci=ci)
+    
+    def forward(self,x):
+        xlist = []
+        xrange =[]
+        for m in self.base_models:
+            xx = m(x)
+            xlist.append(xx)
+            xrange.append(xx)
+        for m in self.error_models:
+            xx = m(x)
+            xrange.append(xx)
+        xlist = self.average(xlist,from_ll=False)
+        [x5, x95] = self.cf(xrange,from_ll=False)
+        entry = {
+            'predictions': xlist,
+            '5%':x5,
+            '95%':  x95,
+        }
+        return entry
 
 class DecisionModel(SimulatorBase):
     
@@ -226,24 +341,28 @@ class DecisionModel(SimulatorBase):
 
 #         self.final_layer = torch.nn.Linear(hidden_layers[-1],1)
         self.sigmoid = torch.nn.Sigmoid()
+        self.dummy_param = torch.nn.Parameter(torch.empty(0))
+        
+    
+        
         
     def add_position_token(self,x,position):
         #add 2 binary variables for if the state has already passed
         if position == 0:
-            token = torch.zeros((x.shape[0],2))
-            x = torch.cat([x,token],dim=1)
+            token = torch.zeros((x.shape[0],2)).to(self.get_device())
+            x = torch.cat([x,token],dim=1).to(self.get_device())
         if position == 1:
-            token1 = torch.ones((x.shape[0],1))
-            token2 = torch.zeros((x.shape[0],1))
-            x = torch.cat([x,token1,token2],dim=1)
+            token1 = torch.ones((x.shape[0],1)).to(self.get_device())
+            token2 = torch.zeros((x.shape[0],1)).to(self.get_device())
+            x = torch.cat([x,token1,token2],dim=1).to(self.get_device())
         if position == 2:
-            token1 = torch.zeros((x.shape[0],1))
-            token2 = torch.ones((x.shape[0],1))
+            token1 = torch.zeros((x.shape[0],1)).to(self.get_device())
+            token2 = torch.ones((x.shape[0],1)).to(self.get_device())
             x = torch.cat([x,token1,token2],dim=1)
         if position == 3:
-            token1 = torch.ones((x.shape[0],1))
-            token2 = torch.ones((x.shape[0],1))
-            x = torch.cat([x,token1,token2],dim=1)
+            token1 = torch.ones((x.shape[0],1)).to(self.get_device())
+            token2 = torch.ones((x.shape[0],1)).to(self.get_device())
+            x = torch.cat([x,token1,token2],dim=1).to(self.get_device())
         return x
     
     def get_embedding(self,x,position=0):
@@ -257,13 +376,13 @@ class DecisionModel(SimulatorBase):
         return x
     
     def forward(self,x,position=0):
+        x = x.to(self.get_device())
         x = self.get_embedding(x,position=position)
         x = self.dropout(x)
         x = self.final_layer(x)
         x = self.sigmoid(x)
         return x
 
-# +
 class DecisionAttentionModel(DecisionModel):
     
     def __init__(self,
@@ -308,6 +427,7 @@ class DecisionAttentionModel(DecisionModel):
             curr_size = input_size
         else:
             self.resize_layer = torch.nn.Linear(input_size,embed_size)
+            torch.nn.init.xavier_uniform_(self.resize_layer.weight)
             curr_size = embed_size
         #overrite layer intitialization
         layers = []
@@ -318,6 +438,7 @@ class DecisionAttentionModel(DecisionModel):
         for aheads,lindim in zip(attention_heads,hidden_layers):
             attention = torch.nn.MultiheadAttention(curr_size,aheads)
             linear = torch.nn.Linear(curr_size,lindim)
+            torch.nn.init.xavier_uniform_(linear.weight)
             norm = torch.nn.LayerNorm(curr_size)
             layers.append(linear)
             attentions.append(attention)
@@ -328,18 +449,21 @@ class DecisionAttentionModel(DecisionModel):
         self.attentions = torch.nn.ModuleList(attentions)
         self.norms = torch.nn.ModuleList(norms)
         self.final_layer = torch.nn.Linear(hidden_layers[-1],len(Const.decisions)*2)
+        torch.nn.init.xavier_uniform_(self.final_layer.weight)
         self.activation = torch.nn.ReLU()
         self.register_buffer('memory',None)
     
+
     def get_ln_spreads(self,xbase):
         spreads = torch.zeros((xbase.shape[0],len(self.ln_group_positions)))
         for i,idxgroup in enumerate(self.ln_group_positions):
             spread = torch.sum(xbase[:,idxgroup],dim=1)
             spread = torch.div(spread,len(idxgroup))
             spreads[:,i] = spread.view(-1)
-        return spreads
+        return spreads.to(self.get_device())
     
     def get_embedding(self,x,position=0,memory=None,use_saved_memory=False):
+        x = x.to(self.get_device())
         xbase = x[:,0:self.baseline_input_size]
         if self.calculate_spread:
             spreads = self.get_ln_spreads(xbase)
@@ -394,18 +518,21 @@ class DecisionAttentionModel(DecisionModel):
         self.memory= newmemory
     
     def get_attributions(self,x,output=-1,target=0,**kwargs):
+        device= self.get_device()
+        x = x.to(device)
         if output == -1:
             model = lambda x: self.forward(x,**kwargs)
         else:
             model = lambda x: self.forward(x,**kwargs)[output]
         ig = IntegratedGradients(model)
-        base = torch.zeros(x.shape)
+        base = torch.zeros(x.shape).to(device)
         if self.memory is not None:
             if self.memory.ndim < 3:
                 m = self.memory
             else:
                 pos = kwargs.get('position',2)
                 m = self.memory[pos]
+            m = m.to(device)
             base[:] = torch.median(m,dim=0)[0].type(torch.FloatTensor)
         attributions = ig.attribute(x,base,target=target)
         return attributions
@@ -417,26 +544,6 @@ class DecisionAttentionModel(DecisionModel):
         x = self.final_layer(x)
         x = self.sigmoid(x)
         return x
-
-#     def forward(self,xbase,xdlt1,xdlt2,xpd,xnd,xcc,xmod,position=0):
-#         #position is 0-2
-# #         [xbase, xdlt, xpd, xnd, xcc,xmod] = x
-#         xbase = self.normalize(xbase)
-#         x = torch.cat([xbase,xdlt1,xdlt2,xpd,xnd,xcc,xmod],dim=1)
-#         x = self.input_dropout(x)
-#         x = self.add_position_token(x,position)
-#         x = self.activation(self.resize_layer(x))
-#         for attention,layer,norm in zip(self.attentions,self.layers,self.norms):
-#             x2, attention_weights = attention(x,x,x)
-#             x2 = norm(x2+x)
-#             x2 = self.activation(x2)
-#             x = layer(x2)
-#             x = self.activation(x)
-#         x = self.dropout(x)
-#         x = self.final_layer(x)
-#         x = self.sigmoid(x)
-#         return x
-# -
 
 class OutcomeAttentionSimulator(SimulatorAttentionBase):
     

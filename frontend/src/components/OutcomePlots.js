@@ -20,7 +20,7 @@ export default function OutcomePlots(props){
     const xScale = useMemo(()=>{
         return d3.scaleLinear()
             .domain([0,1])
-            .range([0, width- 2*margin - labelSpacing])
+            .range([margin+labelSpacing, width- 2*margin - labelSpacing])
     },[width])
 
     // const outcomeKey = useMemo(()=>{
@@ -47,8 +47,24 @@ export default function OutcomePlots(props){
             keys['nd2'] = constants.nodalDiseaseProgressions2;
             keys['dlt2'] = constants.dlts2;
         }
-        return keys
-    },[props.state]);
+        if(props.state < 2){
+            var toDel = [];
+            if(props.outcomesView === 'disease response'){
+                toDel = ['dlt1','dlt2','outcomes'];
+            } else if(props.outcomesView === 'dlts'){
+                toDel = ['pd1','nd1','pd2','nd2','outcomes'];
+            } else if(props.outcomesView === 'no dlts'){
+                toDel = ['dlt1','dlt2'];
+            } else if(props.outcomesView === 'endpoints'){
+                toDel = ['pd1','nd1','pd2','nd2','dlt1','dlt2'];
+            }
+            for(let d of toDel){
+                delete keys[d];
+            }
+        }
+        return keys;
+        
+    },[props.state,props.outcomesView]);
 
     useEffect(()=>{
         if(!Utils.allValid([svg,props.sim,props.altSim,props.neighborOutcomes,props.counterfactualOutcomes])){
@@ -60,6 +76,7 @@ export default function OutcomePlots(props){
                 nBars += 4*entry.length;
                 nOutcomes+= entry.length;
             }
+            console.log('outcomes',props)
             //what width it would need to be to actually fit everything, in the worst case (CC)
             //I actually still cant get this to work good but also it never fits anyway
             const idealBarWidth = (height -  2*margin - titleSpacing - (4)*outcomeSpacing - nOutcomes*modelSpacing)/nBars;
@@ -67,13 +84,19 @@ export default function OutcomePlots(props){
             var pos = margin+titleSpacing;
             var rectData = [];
             var titles = [];
-            var pathPoints = []
+            var pathPoints = [];
             function increment(val,increment=0){
                 pos += barWidth + increment;
             }
+            const treatment = props.mainDecision > 0? props.sim: props.altSim;
+            const noTreatment =  props.mainDecision > 0? props.altSim: props.sim;
             for(let [key,entry] of Object.entries(simStates)){
-                let probs = props.sim[key];
-                let altProbs = props.altSim[key];
+                let probs = treatment[key];
+                let altProbs = noTreatment[key];
+                let probsLower = treatment[key+'_5%'];
+                let probsUpper = treatment[key+'_95%'];
+                let altProbsLower= noTreatment[key+'_5%'];
+                let altProbsUpper = noTreatment[key+'_95%'];
                 let nProbs = entry.map(e => props.neighborOutcomes[e]);
                 let cfProbs = entry.map(e => props.counterfactualOutcomes[e]);
                 let titleEntry = {
@@ -81,38 +104,43 @@ export default function OutcomePlots(props){
                     'text': key,
                 }
                 titles.push(titleEntry);
-                
+                const startPos= pos;
                 for(let ii in entry){
                     let newPath = [[margin+labelSpacing,pos]];
+
                     let name = entry[ii];
-                    //this is a lazy way of me changing the order of the bars so treated is alway at the top
-                    //since I changed it from having treated and untreated overlap
-                    if(props.mainDecision){
-                        rectData.push({
-                            'name': name,
-                            'model':'primary',
-                            'val': probs[ii],
-                            'altVal': altProbs[ii],
-                            'y': pos,
-                            'rnn': true,
-                            'first':true,
-                        });
-                        increment(probs[ii]);
-                        if(altProbs[ii] > .001){
-                            
-                            rectData.push({
-                                'name': name,
-                                'model':'alternative',
-                                'val': altProbs[ii],
-                                'altVal': probs[ii],
-                                'y': pos,
-                                'rnn': true,
-                                'first':false,
-                            });
-                            increment(altProbs[ii])
-                        }
-                        pos += modelSpacing;
-                        rectData.push({
+
+                    rectData.push({
+                        'name': name,
+                        'model':'treatment',
+                        'val': probs[ii],
+                        'altVal': altProbs[ii],
+                        'lower': probsLower[ii],
+                        'upper': probsUpper[ii],
+                        'y': pos,
+                        'rnn': true,
+                        'first':true,
+                    });
+                    
+                    increment(probs[ii]);
+
+                    rectData.push({
+                        'name': name,
+                        'model':'noTreatment',
+                        'val': altProbs[ii],
+                        'altVal': probs[ii],
+                        'lower': altProbsLower[ii],
+                        'upper': altProbsUpper[ii],
+                        'y': pos,
+                        'rnn': true,
+                        'first':false,
+                    });
+
+                    increment(altProbs[ii]);
+
+                    pos += modelSpacing;
+
+                    var simEntry = {
                             'name': name,
                             'model':'similar',
                             'val': nProbs[ii],
@@ -120,84 +148,47 @@ export default function OutcomePlots(props){
                             'y': pos,
                             'rnn': false,
                             'first':false,
-                        });
-                        increment(nProbs[ii]);
-                        if(cfProbs[ii] > .001){
-                            
-                            rectData.push({
-                                'name': name,
-                                'model':'counterfactuals',
-                                'val': cfProbs[ii],
-                                'altVal': nProbs[ii],
-                                'y': pos,
-                                'rnn': false,
-                                'first':false,
-                            });
-                            increment(cfProbs[ii]);
-                        }
-                        newPath.push([margin+labelSpacing,pos]);
-                        pos += outcomeSpacing;
-                    } else {
-                        rectData.push({
-                            'name': name,
-                            'model':'alternative',
-                            'val': altProbs[ii],
-                            'altVal': probs[ii],
-                            'y': pos,
-                            'rnn': true,
-                            'first': true,
-                        });
-                    
-                        increment(probs[ii]);
-                        if(probs[ii] > .001){
-    
-                            rectData.push({
-                                'name': name,
-                                'model':'primary',
-                                'val': probs[ii],
-                                'altVal': altProbs[ii],
-                                'y': pos,
-                                'rnn': true,
-                                'first':false,
-                            });
-                            increment(altProbs[ii])
-                        }
-                        pos += modelSpacing;
-                        rectData.push({
-                            'name': name,
-                            'model':'counterfactuals',
-                            'val': cfProbs[ii],
-                            'altVal': nProbs[ii],
-                            'y': pos,
-                            'rnn': false,
-                            'first':false,
-                        });
-                        increment(nProbs[ii]);
-                        if(nProbs[ii] > .001){
-                            rectData.push({
-                                'name': name,
-                                'model':'similar',
-                                'val': nProbs[ii],
-                                'altVal': cfProbs[ii],
-                                'y': pos,
-                                'rnn': false,
-                                'first':false,
-                            });
-                            increment(cfProbs[ii]);
-                        }
-                        newPath.push([margin+labelSpacing,pos]);
-                        pos += outcomeSpacing;
                     }
-                   
+            
+                    var cfEntry = {
+                        'name': name,
+                        'model':'counterfactuals',
+                        'val': cfProbs[ii],
+                        'altVal': nProbs[ii],
+                        'y': pos,
+                        'rnn': false,
+                        'first':false,
+                    }
+
+                
+                    if(props.mainDecision){
+                        rectData.push(simEntry);
+                        increment(nProbs[ii]);
+                        cfEntry.y=pos;
+                        rectData.push(cfEntry);
+                        increment(cfProbs[ii]);
+                    } else{
+                        rectData.push(cfEntry);
+                        increment(cfProbs[ii]);
+                        simEntry.y=pos;
+                        rectData.push(simEntry);
+                        increment(nProbs[ii]);
+                    }
+
+
+                    newPath.push([margin+labelSpacing,pos]);
+        
+                    pos += Math.max(outcomeSpacing, 5+barWidth);
                     pathPoints.push(newPath);
                 }
+        
                 pos += outcomeSpacing;
             }
 
             //this is coded to orient as recommened vs not recommeneded
             //but this basically just converts it to treated = yes vs no treated for coloring
             
-            const noTreatmentModels = props.mainDecision > 0.001? ['alternative','counterfactuals']: ['primary','similar'];
+            const noTreatmentModels = props.mainDecision > 0.001? ['noTreatment','counterfactuals']: ['noTreatment','similar'];
             const isTreatment = d => noTreatmentModels.indexOf(d.model) < 0;
             function getFill(d){
                 if(!isTreatment(d)){
@@ -222,17 +213,17 @@ export default function OutcomePlots(props){
             }
 
             svg.selectAll('.rect').remove();
-            svg.selectAll('.rect').data(rectData)
+            svg.selectAll('.rect').data(rectData,d=> d.name + d.model)
                 .enter().append('rect')
                 .attr('class',d=> isTreatment(d)? 'rect': 'rect activeRect')
-                .attr('width',d=>xScale(d.val))
+                .attr('width',d=>xScale(d.val)-xScale(0))
                 .attr('y',d=>d.y)
-                .attr('height',barWidth-2)
+                .attr('height',(barWidth-2))
                 .attr('fill',getFill)
                 .attr('stroke','black')
                 .attr('stroke-width',getStrokeWidth)
                 .attr('opacity',getOpacity)
-                .attr('x',margin+labelSpacing)
+                .attr('x',xScale(0))
                 .on('mouseover',function(e,d){
                     const string = d.name + '</br>' + d.model + '</br>' + d.val.toFixed(4);
                     tTip.html(string);
@@ -241,6 +232,47 @@ export default function OutcomePlots(props){
                 }).on('mouseout', function(e){
                     Utils.hideTTip(tTip);
                 });
+
+            console.log('errorpoints',rectData.filter(d=>d.rnn));
+
+            svg.selectAll('.error').remove();
+            const eLineFunc = d3.line()
+                .x(d=> xScale(d[0]));
+
+            function getErrorPath(d){
+                let p1 = [d.lower,d.y+barWidth/2];
+                let p2 = [d.upper, d.y+barWidth/2];
+                return eLineFunc([p1,p2]);
+            }
+            svg.selectAll('.error').data(rectData.filter(d=>d.rnn),d=> d.name + d.model)
+                .enter().append('path')
+                .attr('class','error')
+                .attr('d',getErrorPath)
+                .attr('fill','none')
+                .attr('stroke','black')
+                .attr('stroke-width',3)
+                .attr('opacity',1);
+
+            // svg.selectAll('.rnn').remove();
+            // svg.selectAll('.rnn').data(rectData,d=> d.name + d.model)
+            //     .enter().append('circle')
+            //     .attr('class',d=> isTreatment(d)? 'rnn': 'rnn activeRnn')
+            //     .attr('cx',d=>xScale(d.val))
+            //     .attr('cy',d=>d.y+barWidth/2)
+            //     .attr('r',barWidth/2)
+            //     .attr('fill',getFill)
+            //     .attr('stroke','black')
+            //     .attr('stroke-width',getStrokeWidth)
+            //     .attr('opacity',getOpacity)
+            //     .on('mouseover',function(e,d){
+            //         const string = d.name + '</br>' + d.model + '</br>' + d.val.toFixed(4);
+            //         tTip.html(string);
+            //     }).on('mousemove', function(e){
+            //         Utils.moveTTipEvent(tTip,e);
+            //     }).on('mouseout', function(e){
+            //         Utils.hideTTip(tTip);
+            //     });
+    
 
             svg.selectAll('.line').remove();
             svg.selectAll('path').filter('.line')
@@ -274,7 +306,7 @@ export default function OutcomePlots(props){
                 .attr('class','labels')
                 .attr('text-anchor','end')
                 .attr('text-align','top')
-                .attr('y',d=>d.y+2*barWidth)
+                .attr('y',(d,i) => (barWidth+pathPoints[i][0][1] + pathPoints[i][1][1])/2)
                 .attr('x',labelSpacing)
                 .attr('font-size',barWidth)
                 .attr('textLength',d=> fixName(d.name).length > 6? labelSpacing*.9: '')
@@ -282,33 +314,35 @@ export default function OutcomePlots(props){
                 .text(d=>fixName(d.name));
             
             function getLabelX(d){
-                const higherVal = Math.max(d.altVal,d.val);
-                let x = margin+labelSpacing;
-                if(higherVal > .8){
-                    x += xScale(higherVal) - 80;
-                    return x;
-                }
-                x += xScale(higherVal) + 10;
-                return x;
+                return xScale(d.val)+barWidth+5;
+                // const higherVal = Math.max(d.altVal,d.val);
+                // let x = margin+labelSpacing;
+                // if(higherVal > .8){
+                //     x += xScale(higherVal) - 80;
+                //     return x;
+                // }
+                // x += xScale(higherVal) + 10;
+                // return x;
             }
             // const getLabelText = d => 'Y: ' + (d.val*100).toFixed(0) 
             //     + '% | N:' + (d.altVal*100).toFixed(0) + '%'
             //     + ' | Δ : ' + ((d.val - d.altVal)*100).toFixed(1) + '%';
             // const getLabelText = d => (d.val > d.altVal? '+':'-') + ' ' + Math.abs((d.val - d.altVal)*100).toFixed(1) + '%';
-            const getLabelText = d => (100*d.val).toFixed(1) + '%'
-            svg.selectAll('.valLabels')
-                .data(rectData)
-                .enter().append('text')
-                .attr('class','valLabels')
-                .attr('text-anchor','start')
-                .attr('y',d=>d.y+barWidth*.75-1)
-                .attr('font-weight','bold')
-                .attr('stroke','white')
-                .attr('stroke-width',.01)
-                .attr('x',getLabelX)
-                .attr('font-size',barWidth*.75)
-                .attr('lengthAdjust','spacingAndGlyphs')
-                .text(getLabelText);
+
+            // const getLabelText = d => (100*d.val).toFixed(1) + '%'
+            // svg.selectAll('.valLabels')
+            //     .data(rectData.filter(d=>d.val > 0))
+            //     .enter().append('text')
+            //     .attr('class','valLabels')
+            //     .attr('text-anchor','start')
+            //     .attr('y',d=>d.y+barWidth*.75)
+            //     .attr('font-weight','bold')
+            //     .attr('stroke','white')
+            //     .attr('stroke-width',.01)
+            //     .attr('x',getLabelX)
+            //     .attr('font-size',barWidth*.9)
+            //     .attr('lengthAdjust','spacingAndGlyphs')
+            //     .text(getLabelText);
 
             var decisionName = constants.DECISIONS_SHORT[props.state];
             var legendData = [];
@@ -362,10 +396,11 @@ export default function OutcomePlots(props){
                 .text(d=>d.text);
             //we want the outline stuff to be on top
             svg.selectAll('.activeRect').raise();
+            svg.selectAll('.error').raise()
             svg.selectAll('text').raise();
             svg.attr('height',pos+10)
         }
-    },[props.sim,props.altSim,props.neighborOutcomes,props.counterfactualOutcomes,simStates,svg,xScale,props.mainDecision])
+    },[props.sim,props.altSim,props.neighborOutcomes,props.counterfactualOutcomes,simStates,svg,xScale,props.mainDecision,simStates])
 
     return (
         <div
