@@ -48,7 +48,6 @@ export default function SubsiteVisD3(props){
                 }
                 pathData.push(entry)
             }
-
             const getColor = d3.interpolateGreys;
             function getFill(d){
                 if(d.name === 'outline'){

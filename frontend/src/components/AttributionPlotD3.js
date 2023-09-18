@@ -40,10 +40,25 @@ export default function AttributionPlotD3(props){
     //         console.log('default pred',defaultP);
     //     }
     // },[props.defaultPredictions,props.modelOutput,props.currState]);
+    function getSimulationKey(){
+        if(!Utils.allValid([props.simulation,props.modelOutput,props.fixedDecisions])){return undefined}
+        let key = props.modelOutput;
+        for(let i in props.fixedDecisions){
+          let d = props.fixedDecisions[i];
+          let di = parseInt(i) + 1
+          if(d >= 0){
+            let suffix = '_decision'+(di)+'-'+d;
+            key += suffix;
+          }
+        }
+        return key
+    }
+    
 
     useMemo(()=>{
         if(svg !== undefined & props.simulation !== undefined){
-            const res = props.simulation[props.modelOutput]['decision'+(props.currState+1)+'_attention'];
+            const simKey = getSimulationKey();
+            const res = props.simulation[simKey]['decision'+(props.currState+1)+'_attention'];
             var validKeys = ['baseline','dlt1','dlt2','nd','pd'];
             // so commenting this will let me see if I get attributions it should get
             if(props.currState == 1){
@@ -51,7 +66,7 @@ export default function AttributionPlotD3(props){
             } else if(props.currState == 2){
                 validKeys = ['baseline','dlt1','nd','pd']
             }
-            var data = {'other':0,'dlt': 0,'Ipsilateral LNs':0,'Contralateral LNs': 0};
+            var data = {'other':0,'dlt': 0,'Ipsilateral LNs':0,'Contralateral LNs': 0,'Nodal Response': 0,'Primary Response': 0};
             var otherEntries = [];
             
             function addAttribution(d,key,value){
@@ -66,6 +81,8 @@ export default function AttributionPlotD3(props){
             for(let key of validKeys){
                 let newData = res[key];
                 let isDlt = key.includes('dlt');
+                let isPd = key == 'pd';
+                let isNd = key == 'nd';
                 if(newData === undefined){
                     console.log('key invalid',key,res);
                     continue
@@ -79,6 +96,10 @@ export default function AttributionPlotD3(props){
                     } else if(Math.abs(val) < minAttribution){
                         vkey = 'other';
                         otherEntries.push(key2)
+                    } else if(isPd){
+                        vkey = 'Primary Resonse';
+                    } else if(isNd){
+                        vkey = 'Nodal Response';
                     }
                     data = addAttribution(data,vkey,val)
                 }
@@ -101,8 +122,9 @@ export default function AttributionPlotD3(props){
                 }
             }
 
+
             const defaultP = props.defaultPredictions[props.modelOutput][constants.DECISIONS[props.currState]];
-            const decision = props.simulation[props.modelOutput]['decision'+(props.currState+1)];
+            const decision = props.simulation[simKey]['decision'+(props.currState+1)];
             const discrepency = (decision - defaultP) - (positiveTotal - negativeTotal);
             data['other'] = discrepency + data['other'];
             if(discrepency > 0){
@@ -110,7 +132,7 @@ export default function AttributionPlotD3(props){
             } else{
                 negativeTotal += discrepency;
             }
-            console.log('attributions',data, discrepency);
+
             //data should now be a dictionayr of values
             const keys = Object.keys(data);
             const attributions = Object.values(data);
@@ -123,7 +145,7 @@ export default function AttributionPlotD3(props){
                 .range([width/2,width-margin]);
             // const centerX = negativeTotal > positiveTotal? labelSpacing + xScale(negativeTotal) - xScale(positiveTotal): labelSpacing;
             const centerX = width/2;
-            const colorScale = Utils.getColorScale('attributions',-amplitude,amplitude);
+            const colorScale = Utils.getColorScale('attributions',res.range[0],res.range[1]);
 
             const barWidth = (height - bottomMargin - topMargin)/(attributions.length);
             
@@ -236,7 +258,7 @@ export default function AttributionPlotD3(props){
             const bounds = group.node().getBBox();
             group.attr('transform','translate(' +  -1*(bounds.x - margin) + ')');
         }
-    },[svg,props.simulation,props.modelOutput,props.currState,width,height,props.defaultPredictions]);
+    },[svg,props.simulation,props.modelOutput,props.currState,width,height,props.defaultPredictions,props.fixedDecisions]);
 
     return (
         <div

@@ -389,6 +389,20 @@ export default class Utils {
         return false
     }
 
-    utils
+    static makeStateToggles(names,stateAttr,setStateAttr,displayNames=undefined){
+        return names.map((n,i)=>{
+            const active = n === stateAttr;
+            const onClick = active? ()=>{}: ()=>setStateAttr(n);
+            var className = 'toggleButton';
+            if(active){
+                className += ' toggleButtonActive';
+            }
+            let displayName =  this.getVarDisplayName(n);
+            if(displayNames !== undefined){
+                displayName = displayNames[i];
+            }
+            return <div className={className} onClick={onClick}>{displayName}</div>
+        });
+    }
 
 }

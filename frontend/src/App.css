@@ -31,6 +31,51 @@ b
   font-size: .7em!important;		
 }
 
+.rounded, .shadow, .shadow >* {
+  border-radius: 1em!important;
+}
+
+hr {
+  border: none;
+  border-top: 3px double #333;
+  color: #333;
+  overflow: visible;
+  text-align: center;
+  height: 1em;
+  margin-top: .5em;
+  margin-bottom: .5em;
+}
+
+hr:after {
+  background: #fff;
+  content: '§';
+  padding: 0 4px;
+  position: relative;
+  top: -13px;
+}
+
+
+.toggleButton {
+  height: auto;
+  font-size: 1em;
+  color: black;
+  background-color: #fafafa;
+  width: auto;
+  display: inline-flex;
+  padding: .5em;
+  padding-top: .2em;
+  padding-bottom: .2em;
+  border-radius: 0em!important;
+  margin: 0em;
+  font-weight: bold;
+  cursor: pointer;
+}
+
+.toggleButtonActive {
+  border-bottom: .1rem solid grey;
+  background-color: #eeeeee;
+  cursor: default!important;
+}
 
 .d3-component{
   height: 100%!important;
@@ -100,10 +145,6 @@ b
 
 .shadow{
   box-shadow: 2px 2px 10px 1px rgba(0, 0, 0, 0.25);
-}
-
-.rounded, .shadow, .shadow >* {
-  border-radius: 1em!important;
 }
 
 .legendText{

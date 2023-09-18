@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useMemo} from 'react';
+import React, {useEffect, useState, useMemo, createContext} from 'react';
 // import React from 'react';
 import './App.css';
 
@@ -13,11 +13,11 @@ import PatientEditor from './components/PatientEditor';
 import LNVisD3 from './components/LNVisD3';
 import DLTVisD3 from './components/DLTVisD3';
 import SubsiteVisD3 from './components/SubsiteVisD3';
-import {NeighborVisD3,NeighborVisLabels} from './components/NeighborVisD3';
 import RecommendationPlot from './components/RecommendationsPlot';
 import OutcomePlots from './components/OutcomePlots';
 import AttributionPlotD3 from './components/AttributionPlotD3';
 import * as d3 from 'd3';
+import AuxillaryViews from './components/AuxillaryViews';
 
 function App() {
 
@@ -40,7 +40,7 @@ function App() {
   const [cohortData,setCohortData] = useState();
   const [cohortEmbeddings, setCohortEmbeddings] = useState();
   const [fixedDecisions,setFixedDecisions] = useState([-1,-1,-1]);//-1 is not fixed ,0 is no, 1 is yes
-  const [modelOutput,setModelOutpt] = useState('optimal');
+  const [modelOutput,setModelOutput] = useState('optimal');
   const [currState, setCurrState] = useState(0);//0-2
 
   const [cohortPredictions,setCohortPredictions] = useState();
@@ -65,7 +65,8 @@ function App() {
   //will be ['all','endpoints','response','dlts','no dlts]
   const [outcomesView, setOutcomesView] = useState('no dlts');
 
-  const [cursor, setCursor] = useState('default')
+  const [cursor, setCursor] = useState('default');
+
 
   function getSimulation(){
     if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
@@ -89,10 +90,7 @@ function App() {
     return p;
   }
 
-  function toggleModelOutput(){
-    let val = modelOutput === 'imitation'? 'optimal':'imitation';
-    setModelOutpt(val);
-  }
+  
 
   function updatePatient(fQue){
     let newStack = [...previousPatientStack];
@@ -242,138 +240,7 @@ function App() {
       </div>
     )
   }
-  const Neighbors = useMemo(()=>{
-    if(Utils.allValid([currEmbeddings,cohortData,simulation])){
-      let decision = fixedDecisions[currState];
-      if(decision < 0){
-        let sim = getSimulation();
-        decision = (sim['decision'+(currState+1)] > .5)? 1: 0;
-      }
-      const dString = constants.DECISIONS[currState];
-      const getNeighbor = id => Object.assign({},cohortData[id+'']);
-      var neighbors = [];
-      var cfs = [];
-      for(let i in currEmbeddings.neighbors){
-        var id = currEmbeddings.neighbors[i];
-        var sim = currEmbeddings.similarities[i];
-        var nData = getNeighbor(id);
-        nData.id = id;
-        nData.similarity = sim;
-        nData.decision = nData[dString];
-        var isCf = nData[dString] !== decision;
-        nData.isCf = isCf;
-        const maxCfs = cfs.length >= neighborsToShow;
-        const maxN = neighbors.length >= neighborsToShow;
-        if(!maxCfs & isCf){
-          cfs.push(nData);
-        } else if(!maxN & !isCf){
-          neighbors.push(nData);
-        }
-        if((cfs.length >= neighborsToShow) & (neighbors.length >= neighborsToShow)){
-          break
-        }
-      }
-
-      function getPatientMeans(plist){
-        const meanObj = {};
-        for(let obj of plist){
-          for(let [key,value] of Object.entries(obj)){
-            let currVal = meanObj[key] === undefined? 0: meanObj[key];
-            currVal += value/plist.length;
-            meanObj[key] = currVal
-          }
-        }
-        meanObj.id = -2 - meanObj.decision;
-        return meanObj;
-      }
-      const meanTreated = decision > .5? getPatientMeans(neighbors): getPatientMeans(cfs);
-      const meanUntreated = decision > .5? getPatientMeans(cfs): getPatientMeans(neighbors);
-      const cScale = Utils.getColorScale('attributions');
-      var p = cfs.concat(neighbors);
-      p.sort((a,b)=> b.similarity - a.similarity);
-      const toScale = constants.continuousVars;
-      var ranges = {};
-      for(let key of toScale){
-        let extent = d3.extent(Object.values(cohortData).map(d=>d[key]));
-        ranges[key] = extent;
-      }
-      const thingHeight = '8em';
-      const dltWidth = '4em'
-      const lnWidth = '5em';
-      const subsiteWidth = '4em';
-      const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
-      function makeN(d,i,useReference=true,showLabels=false,bottomBorder=false,brushable=true){
-        const borderColor = d[dString] > .5? constants.yesColor: constants.noColor;
-        const bBorder = bottomBorder? '.4em solid black':'';
-        const marginBottom = bottomBorder? '.4em': '.01em';
-        function brush(){
-          let pId = parseInt(d.id)
-          if(pId > 0 & pId !== brushedId){
-            setBrushedId(pId);
-          } else{
-            setBrushedId(undefined);
-          }
-        }
-        return (
-        <div key={d.id} 
-           style={{'margin':'.2em','height': thingHeight,
-           'width': '100%','diplay': 'block','borderStyle':'solid',
-          'borderColor': borderColor,'borderWidth':'.2em',
-          'marginBottom': marginBottom,
-          'borderBottom': bBorder,
-          }}
-          onClick={()=>brush()}
-          >
-          <div style={{'width': dltWidth,'height':'100%','display':'inline-block'}}>
-          <DLTVisD3
-            dltSvgPaths={dltSvgPaths}
-            data={d}
-            currState={currState}
-            isMainPatient={false}
-          />
-          </div >
-          <div style={{'width': lnWidth,'height':'100%','display':'inline-block'}}>
-            <LNVisD3
-              lnSvgPaths={lnSvgPaths}
-              data={d}
-              isMainPatient={false}
-            ></LNVisD3>
-          </div>
-          <div style={{'width':subsiteWidth,'height':'100%','display':'inline-block'}}>
-            <SubsiteVisD3
-              subsiteSvgPaths={subsiteSvgPaths}
-              data={d}
-              isSelectable={false}
-              featureQue={{}}
-            ></SubsiteVisD3>
-          </div>
-          <div style={{'width':nWidth,'height':'100%','display':'inline-block'}}>
-            <NeighborVisD3
-              data={d}
-              referenceData={useReference? patientFeatures: undefined}
-              referenceQue={useReference? featureQue: undefined}
-              key={d.id+i}
-              lnSvgPaths={lnSvgPaths}
-              valRanges={ranges}
-              dltSvgPaths={dltSvgPaths}
-              currState={currState}
-              showLabels={showLabels}
-            ></NeighborVisD3>
-          </div>
-        </div>
-        )
-      }
-      const nStuff = p.map((d,i) => makeN(d,i,true,false));
-
-      return (
-        <div className={'fillSpace centerText'}>
-            {makeN(meanTreated,'n',false,false,false)}
-            {makeN(meanUntreated,'cf',false,false,false)}
-        </div>);
-    } else{
-      return <Spinner>{'No'}</Spinner>
-    }
-  },[currEmbeddings,currState,cohortData,simulation,fixedDecisions,modelOutput,brushedId])
+  
 
   // const confidenceCalibration = useMemo(()=>{
   //   if(Utils.allValid([simulation,cohortData,currEmbeddings,cohortEmbeddings])){
@@ -550,19 +417,7 @@ function App() {
 
       const outcomeViewOptions = currState < 2? ['all','endpoints','disease response','dlts','no dlts']: ['endpoints'];
       function makeOutcomeToggle(){
-        const buttons = outcomeViewOptions.map((n,i) => {
-          const isActive = n === outcomesView;
-          const onclick = isActive? ()=>{}: ()=>setOutcomesView(n);
-          return( 
-            <Button
-              onClick={onclick}
-              variant={isActive? 'ghost': 'solid'}
-              colorScheme={isActive? 'teal':'blue'}
-              key={i}
-            >{Utils.getVarDisplayName(n)}</Button>
-          )
-        })
-        return buttons
+        return Utils.makeStateToggles(outcomeViewOptions,outcomesView,setOutcomesView);
       }
 
 
@@ -618,18 +473,7 @@ function App() {
 
   function makeButtonToggle(){
     var makeButton = (state,text)=>{
-      let isActive = state === currState;
-      let style = isActive? 'default':'pointer';
-      return (
-        <Button
-          key={text+state}
-          onClick={()=>setCurrState(state)}
-          disabled={isActive}
-          variant={isActive? 'ghost': 'solid'}
-          colorScheme={isActive? 'teal':'blue'}
-          style={{'cursor':style}}
-        >{text}</Button>
-      )
+      return Utils.makeStateToggles([state],currState,setCurrState,[text]);
     }
 
     let toggles = [0,1,2];
@@ -637,11 +481,13 @@ function App() {
     let tempButtons = toggles.map((s,i)=>{
       return makeButton(s,tNames[i]);
     })
+
     function fixDecision(i,v){
       let fd = fixedDecisions.map(i=>i);
       fd[i] = v;
       setFixedDecisions(fd);
     }
+
     let radioButtons = [0,1,2].map(i=>{
       let getVariant = (val) => {
         if(fixedDecisions[i] == val){
@@ -674,21 +520,12 @@ function App() {
       </ButtonGroup>)
     })
 
+    const ModelToggle = Utils.makeStateToggles(['optimal','imitation'],modelOutput,setModelOutput);
+
     return (
       <>
         <Button>{"Model:"}</Button>
-        <Button
-          onClick={toggleModelOutput}
-          disabled={modelOutput === 'optimal'}
-          variant={modelOutput === 'optimal'? 'outline':'solid'}
-          colorScheme={modelOutput === 'optimal'? 'teal':'blue'}
-        >{"Optimal"}</Button>
-        <Button
-          onClick={toggleModelOutput}
-          disabled={modelOutput === 'imitation'}
-          variant={modelOutput === 'imitation'? 'outline':'solid'}
-          colorScheme={modelOutput === 'imitation'? 'teal':'blue'}
-        >{"Imitation"}</Button>
+        {ModelToggle}
         <div style={{'display': 'inline','width':'auto'}}>{' | '}</div>
         <Button>{"Decision:"}</Button>
         {tempButtons}
@@ -697,53 +534,6 @@ function App() {
         {radioButtons}
       </>
     )
-  }
-
-  function makeScatterplot(){
-    const scatter = (
-        <ScatterPlotD3
-            cohortData={cohortData}
-            cohortEmbeddings={cohortEmbeddings}
-            currState={currState}
-            setCurrState={setCurrState}
-            patientFeatures={patientFeatures}
-            currEmbeddings={currEmbeddings}
-            modelOutput={modelOutput}
-            simulation={simulation}
-
-            patientEmbeddingLoading={patientEmbeddingLoading}
-            patientSimLoading={patientSimLoading}
-            cohortLoading={cohortLoading}
-            cohortEmbeddingsLoading={cohortEmbeddingsLoading}
-
-            updatePatient={updatePatient}
-
-            brushedId={brushedId}
-            setBrushedId={setBrushedId}
-        />
-    );
-    return wrapTitle(scatter,'ScatterPlot')
-  }
-
-  function makeAttributionPlot(){
-    const attr = (
-      <AttributionPlotD3
-          simulation={simulation}
-          modelOutput={modelOutput}
-          currState={currState}
-          defaultPredictions={defaultPredictions}
-        />
-    )
-    return wrapTitle(attr,'Model Feature Importance');
-  }
-
-  function makeToggleView(key){
-    if(key.includes('scatter')){
-      return makeScatterplot();
-    }
-    else{
-      return makeAttributionPlot();
-    }
   }
 
 
@@ -871,37 +661,57 @@ function App() {
         <GridItem  rowSpan={2} colSpan={1} className={'shadow'}>
           {makeThing()}
         </GridItem>
-        <GridItem rowSpan={2} colSpan={2} className={'shadow'}>
+        <GridItem rowSpan={2} colSpan={2}>
+          <Grid
+            h="100%"
+            w="100%"
+            templateRows='6em 1fr'
+          >
+            <GridItem rowSpan={1} className={'shadow'}>
+              {Recommendation}
+            </GridItem>
+            <GridItem rowSpan={1} colSpan={1} className={'shadow scroll'} >
+              <AuxillaryViews
+                cohortData={cohortData}
+                cohortEmbeddings={cohortEmbeddings}
+                currState={currState}
+                setCurrState={setCurrState}
+                patientFeatures={patientFeatures}
+                currEmbeddings={currEmbeddings}
+                modelOutput={modelOutput}
+                simulation={simulation}
+                getSimulation={getSimulation}
+                patientEmbeddingLoading={patientEmbeddingLoading}
+                patientSimLoading={patientSimLoading}
+                cohortLoading={cohortLoading}
+                cohortEmbeddingsLoading={cohortEmbeddingsLoading}
+                fixedDecisions={fixedDecisions}
+                
+                updatePatient={updatePatient}
+    
+                brushedId={brushedId}
+                setBrushedId={setBrushedId}
+
+                defaultPredictions={defaultPredictions}
+                setBrushedId={setBrushedId}
+                dltSvgPaths={dltSvgPaths}
+                lnSvgPaths={lnSvgPaths}
+                subsiteSvgPaths={subsiteSvgPaths}
+              ></AuxillaryViews>
+            </GridItem>
+          </Grid>
+        </GridItem>
+        <GridItem rowSpan={2} colSpan={3} className={'shadow'}>
           <Grid 
             h="100%"
             w="100%"
             templateRows='1fr 6em'
             templateCols='1fr'
           >
-            <GridItem rowSpan={1} style={{'overflowY':'scroll'}}>
+            <GridItem rowSpan={2} style={{'overflowY':'scroll'}}>
               {Outcomes}
             </GridItem>
-            <GridItem rowSpan={1}>
-              {Recommendation}
-            </GridItem>
             
-          </Grid>
-        </GridItem>
-        <GridItem rowSpan={2} colSpan={3}>
-          <Grid
-            h="100%"
-            w="100%"
-            templateRows='repeat(3,1fr)'
-          >
-            <GridItem rowSpan={1} className={'shadow'}>
-              {makeScatterplot()}
-            </GridItem>
-            <GridItem rowSpan={1}  className={'shadow'}>
-              {makeAttributionPlot()}
-            </GridItem>
-            <GridItem className={'shadow'}>
-              {Neighbors}
-            </GridItem>
           </Grid>
         </GridItem>
         
