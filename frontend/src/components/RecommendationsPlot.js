@@ -79,7 +79,7 @@ export default function RecommendationPlot(props){
                 .attr('opacity',.8);
 
             const labelSize = Math.min(24,Math.max(radius*.9,12));
-            svg.selectAll('text').remove();
+            svg.selectAll('.decisionLabel').remove();
             svg.selectAll('.decisionLabel')
                 .data([dEntry,nEntry]).enter()
                 .append('text').attr('class','decisionLabel')
@@ -92,6 +92,7 @@ export default function RecommendationPlot(props){
                 .attr('y',d=> d.y + labelSize/4)// - d.radius - labelSize/2)
                 .text(d=> (d.value*100).toFixed(0) + '%');
 
+            svg.selectAll('.decisionLabel2').remove();
             svg.selectAll('.decisionLabel2')
                 .data([dEntry,nEntry]).enter()
                 .append('text').attr('class','decisionLabel2')

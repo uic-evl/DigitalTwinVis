@@ -3,6 +3,7 @@ import useSVGCanvas from './useSVGCanvas.js';
 import Utils from '../modules/Utils.js';
 import * as d3 from 'd3';
 import * as constants from "../modules/Constants.js";
+import { position } from '@chakra-ui/react';
 
 
 
@@ -16,7 +17,7 @@ export default function AttributionPlotD3(props){
     const topMargin = 20;
     const bottomMargin = 30
 
-    const minAttribution = 0.000;
+    const minAttribution = 0.0001;
 
     function makeArrow(height,width,radius){
         //negative width is pointing in other diection
@@ -50,33 +51,71 @@ export default function AttributionPlotD3(props){
             } else if(props.currState == 2){
                 validKeys = ['baseline','dlt1','nd','pd']
             }
-            var data = {};
-            var positiveTotal = 0;
-            var negativeTotal = 0;
+            var data = {'other':0,'dlt': 0,'Ipsilateral LNs':0,'Contralateral LNs': 0};
+            var otherEntries = [];
+            
+            function addAttribution(d,key,value){
+                value = value === undefined? 0: value;
+                if(d[key] !== undefined){
+                    d[key] = d[key] + value;
+                } else {
+                    d[key] = value;
+                }
+                return d
+            }
             for(let key of validKeys){
                 let newData = res[key];
+                let isDlt = key.includes('dlt');
                 if(newData === undefined){
                     console.log('key invalid',key,res);
                     continue
                 }
                 for(const [key2,val] of Object.entries(newData)){
-                    if(Math.abs(val) > minAttribution){
-                        data[key2] = val;
-                        if(val > 0){
-                            positiveTotal += Math.abs(val);
-                        } else{
-                            negativeTotal += Math.abs(val);
-                        }
+                    let vkey = isDlt? 'DLT': key2;
+                    if(key2.includes('_ipsi')){
+                        vkey = 'Ipsilateral LNs';
+                    } else if(key2.includes('contra')){
+                        vkey = 'Contralateral LNs';
+                    } else if(Math.abs(val) < minAttribution){
+                        vkey = 'other';
+                        otherEntries.push(key2)
+                    }
+                    data = addAttribution(data,vkey,val)
+                }
+            }
+            for(let [k,v] of Object.entries(data)){
+                if(Math.abs(v) < minAttribution & v !== undefined){
+                    data['other'] = data['other'] + v;
+                    if(k !== 'other'){
+                        delete data[k];
                     }
                 }
             }
+            var positiveTotal = 0;
+            var negativeTotal = 0;
+            for(let [k,v] of Object.entries(data)){
+                if(v > 0){
+                    positiveTotal += v;
+                } else{
+                    negativeTotal += Math.abs(v);
+                }
+            }
+
+            const defaultP = props.defaultPredictions[props.modelOutput][constants.DECISIONS[props.currState]];
+            const decision = props.simulation[props.modelOutput]['decision'+(props.currState+1)];
+            const discrepency = (decision - defaultP) - (positiveTotal - negativeTotal);
+            data['other'] = discrepency + data['other'];
+            if(discrepency > 0){
+                positiveTotal += discrepency;
+            } else{
+                negativeTotal += discrepency;
+            }
+            console.log('attributions',data, discrepency);
             //data should now be a dictionayr of values
             const keys = Object.keys(data);
             const attributions = Object.values(data);
 
-
-
-            const amplitude = Math.max(positiveTotal,negativeTotal,.1);
+            const amplitude = Math.max(positiveTotal,negativeTotal,.000000000000000000000001);
             // const aExtents = d3.extent(attributions);
             // const amplitude = Math.abs(Math.max(-aExtents[0],aExtents[1]));
             const xScale = d3.scaleLinear()
@@ -85,9 +124,6 @@ export default function AttributionPlotD3(props){
             // const centerX = negativeTotal > positiveTotal? labelSpacing + xScale(negativeTotal) - xScale(positiveTotal): labelSpacing;
             const centerX = width/2;
             const colorScale = Utils.getColorScale('attributions',-amplitude,amplitude);
-            // d3.scaleDiverging()
-            //     .domain([-amplitude,0,amplitude])
-            //     .range(['blue','white','red']);
 
             const barWidth = (height - bottomMargin - topMargin)/(attributions.length);
             
@@ -107,9 +143,6 @@ export default function AttributionPlotD3(props){
                 const attribution = attributions[idx];
                 let x = currX;
                 const w = Math.sign(attribution)*(xScale(Math.abs(attribution)) - width/2);
-                // if(attribution < 0){
-                //     x = x - w;
-                // }
                 const entry = {
                     'name': varName,
                     'val': attribution,
@@ -121,11 +154,6 @@ export default function AttributionPlotD3(props){
                 entry.path = makeArrow(entry.height,entry.width);
                 rectData.push(entry);
                 currX += w;
-                // if(attribution > 0){
-                //     currX = currX + w;
-                // } else{
-                //     currX = currX - w;
-                // }
                 yPos += barWidth;
             }
 
@@ -138,12 +166,25 @@ export default function AttributionPlotD3(props){
                 .append('path').attr('class','aRect offset')
                 .attr('d',d=>d.path)
                 .attr('transform', d=> 'translate(' + d.x + ',' + d.y + ')')
-                // .append('rect').attr('class','aRect')
-                // .attr('width',d=>d.width)
-                // .attr('height',d=>d.height)
                 .attr('fill',d=> colorScale(d.val))
                 .attr('stroke-width',1)
-                .attr('stroke','black');
+                .attr('stroke','black')
+                .on('mouseover',function(e,d){
+                    let string = d.name + '</br>'
+                        + 'attribution: ' + d.val;
+                    if(d.name === 'other'){
+                        string += '</br>' + 'features:';
+                        for(let v of otherEntries){
+                            string += v + ', '
+                        }
+                    }
+                    tTip.html(string);
+                    console.log('brush',d)
+                }).on('mousemove', function(e){
+                    Utils.moveTTipEvent(tTip,e);
+                }).on('mouseout', function(e){
+                    Utils.hideTTip(tTip);
+                })
 
             const labelSize = Math.min(20,barWidth*.8);
             group.selectAll('text').remove();
@@ -156,13 +197,11 @@ export default function AttributionPlotD3(props){
                 .attr('font-size',labelSize)
                 .text(d=>Utils.getFeatureDisplayName(d.name));
 
-            const defaultP = props.defaultPredictions[props.modelOutput][constants.DECISIONS[props.currState]]
             const ticks = [
                 [[centerX, yPos],[centerX,yPos+5]],
                 [[currX, yPos],[currX,yPos+5]],
             ];
             //theortically defaultP - negativeTotal + postitiveTotal but off due to rounding errors
-            const decision = props.simulation[props.modelOutput]['decision'+(props.currState+1)];
             const baseTick = {
                 'path': d3.line()(ticks[0]),
                 'x': centerX,

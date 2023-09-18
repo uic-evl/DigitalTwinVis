@@ -437,9 +437,9 @@ export default function PatientEditor(props){
                     .transition()
                     .duration(duration)
                     .attr('cx',newX);
-                console.log('value',newVal);
+                // console.log('value',newVal);
                 tTip.html(d.name +': ' + newVal)
-                Utils.moveTTip(tTip,newX+d.radius,d.y);
+                Utils.moveTTip(tTip,newX+d.radius,e.y);
             }).on('end',function(e,d){
                 let scale = varScales[d.name];
                 let px  = e.x;
@@ -475,7 +475,7 @@ export default function PatientEditor(props){
                 let attention = d.attention === undefined? 'NA': d.attention.toFixed(3);
                 let string = d.name + ': ' + d.value;
                 tTip.html(string);
-                Utils.moveTTip(tTip,d.x+d.radius,d.y+d.radius);
+                Utils.moveTTip(tTip,d.x+d.radius,e.y-d.radius);
             })
             // .on('mousemove', function(e,d){
             //     Utils.moveTTip(tTip,d.x+d.radius,d.y);

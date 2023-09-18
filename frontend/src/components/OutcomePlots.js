@@ -76,7 +76,6 @@ export default function OutcomePlots(props){
                 nBars += 4*entry.length;
                 nOutcomes+= entry.length;
             }
-            console.log('outcomes',props)
             //what width it would need to be to actually fit everything, in the worst case (CC)
             //I actually still cant get this to work good but also it never fits anyway
             const idealBarWidth = (height -  2*margin - titleSpacing - (4)*outcomeSpacing - nOutcomes*modelSpacing)/nBars;
@@ -233,8 +232,6 @@ export default function OutcomePlots(props){
                     Utils.hideTTip(tTip);
                 });
 
-            console.log('errorpoints',rectData.filter(d=>d.rnn));
-
             svg.selectAll('.error').remove();
             const eLineFunc = d3.line()
                 .x(d=> xScale(d[0]));
@@ -314,35 +311,27 @@ export default function OutcomePlots(props){
                 .text(d=>fixName(d.name));
             
             function getLabelX(d){
-                return xScale(d.val)+barWidth+5;
-                // const higherVal = Math.max(d.altVal,d.val);
-                // let x = margin+labelSpacing;
-                // if(higherVal > .8){
-                //     x += xScale(higherVal) - 80;
-                //     return x;
-                // }
-                // x += xScale(higherVal) + 10;
-                // return x;
+                let edge1 = d.upper === undefined? d.val:d.upper;
+                const higherVal = Math.max(d.altVal,edge1);
+                const x = xScale(higherVal) + 10;
+                return x;
             }
-            // const getLabelText = d => 'Y: ' + (d.val*100).toFixed(0) 
-            //     + '% | N:' + (d.altVal*100).toFixed(0) + '%'
-            //     + ' | Δ : ' + ((d.val - d.altVal)*100).toFixed(1) + '%';
-            // const getLabelText = d => (d.val > d.altVal? '+':'-') + ' ' + Math.abs((d.val - d.altVal)*100).toFixed(1) + '%';
 
-            // const getLabelText = d => (100*d.val).toFixed(1) + '%'
-            // svg.selectAll('.valLabels')
-            //     .data(rectData.filter(d=>d.val > 0))
-            //     .enter().append('text')
-            //     .attr('class','valLabels')
-            //     .attr('text-anchor','start')
-            //     .attr('y',d=>d.y+barWidth*.75)
-            //     .attr('font-weight','bold')
-            //     .attr('stroke','white')
-            //     .attr('stroke-width',.01)
-            //     .attr('x',getLabelX)
-            //     .attr('font-size',barWidth*.9)
-            //     .attr('lengthAdjust','spacingAndGlyphs')
-            //     .text(getLabelText);
+
+            const getLabelText = d => (100*d.val).toFixed(1) + '%'
+            svg.selectAll('.valLabels')
+                .data(rectData.filter(d=>d.val > 0))
+                .enter().append('text')
+                .attr('class','valLabels')
+                .attr('text-anchor','start')
+                .attr('y',d=>d.y+barWidth*.75)
+                .attr('font-weight','bold')
+                .attr('stroke','white')
+                .attr('stroke-width',.01)
+                .attr('x',getLabelX)
+                .attr('font-size',barWidth*.9)
+                .attr('lengthAdjust','spacingAndGlyphs')
+                .text(getLabelText);
 
             var decisionName = constants.DECISIONS_SHORT[props.state];
             var legendData = [];

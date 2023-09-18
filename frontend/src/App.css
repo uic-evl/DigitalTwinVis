@@ -14,6 +14,24 @@ b
   margin: .5em!important; */
 }
 
+.tooltip {	
+  position: absolute;
+  z-index: 10;
+  opacity: 1!important;			
+  text-align: center;			
+  width: auto;		
+  max-width: 50vw;			
+  height: auto;					
+  padding: 10px;				
+  font: 12px sans-serif;		
+  background: rgb(172, 173, 173);	
+  border: 0px;		
+  border-radius: 8px;			
+  pointer-events: none;	
+  font-size: .7em!important;		
+}
+
+
 .d3-component{
   height: 100%!important;
   width: 100%!important;

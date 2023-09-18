@@ -63,7 +63,9 @@ function App() {
   const neighborsToShow = 7;
 
   //will be ['all','endpoints','response','dlts','no dlts]
-  const [outcomesView, setOutcomesView] = useState('no dlts')
+  const [outcomesView, setOutcomesView] = useState('no dlts');
+
+  const [cursor, setCursor] = useState('default')
 
   function getSimulation(){
     if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
@@ -149,6 +151,7 @@ function App() {
 
   async function fetchPatientSimulation(){
     if(patientSimLoading){ return }
+    setCursor('wait')
     setPatientSimLoading(true);
     const sim = await api.getPatientSimulation(patientFeatures);
     setSimulation(undefined);
@@ -156,8 +159,10 @@ function App() {
       console.log('patient simulation',sim);
       setSimulation(sim.data);
       setPatientSimLoading(false);
+      setCursor('default')
     } else{
       console.log('error setting patient simulation');
+      setCursor('default');
     }
   }
 
@@ -362,7 +367,7 @@ function App() {
 
       return (
         <div className={'fillSpace centerText'}>
-            {makeN(meanTreated,'n',false,true,false)}
+            {makeN(meanTreated,'n',false,false,false)}
             {makeN(meanUntreated,'cf',false,false,false)}
         </div>);
     } else{
@@ -750,6 +755,7 @@ function App() {
         h='1000px'
         w='100px'
         className={'fillSpace'}
+
       >
         <GridItem w='100%' h='100%' colSpan={2} rowSpan={1}>
           <Button 
@@ -857,6 +863,7 @@ function App() {
         templateRows='2em repeat(2,1fr)'
         templateColumns='25em repeat(4,1fr) 1em'
         gap={1}
+        style={{'cursor':cursor}}
       >
         <GridItem rowSpan={1} colSpan={6} className={'shadow'}>
           {makeButtonToggle()}
