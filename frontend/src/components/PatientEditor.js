@@ -4,7 +4,14 @@ import Utils from '../modules/Utils.js';
 import * as d3 from 'd3';
 import * as constants from "../modules/Constants.js";
 
-
+function getProgressionVars(state){
+    if(state < 1){
+        return []
+    } if(state == 1){
+        return Object.keys(constants.progressionVars).filter(d=>d.includes('IC'));
+    }
+    return Object.keys(constants.progressionVars).filter(d=>d.includes('CC'));
+}
 
 export default function PatientEditor(props){
 
@@ -13,11 +20,7 @@ export default function PatientEditor(props){
 
     const [varScales,setVarScales] = useState();
     const [meanVals,setMeanVals]= useState();
-    // const [encodedCohort,setEncodedCohort] = useState();
-    const showNeighbors = props.showNeighbors === undefined? false:props.showNeighbors;
-    const showAverage = props.showAverage === undefined? false:props.showAverage;
-    const showCfs = props.showCfs === undefined? false:props.showCfs;
-    const maxNeighbors = props.neighborsToShow === undefined? 5: props.neighborsToShow;
+
     const topMargin = Math.min(height/15,60);
     const bottomMargin = 40;
     const xMargin = 40;
@@ -29,7 +32,8 @@ export default function PatientEditor(props){
 
     const allVars = Object.keys(ordinalVars)
     .concat(continuousVars)
-    .concat(booleanVars);
+    .concat(booleanVars)
+    .concat(getProgressionVars(props.currState))
     // .concat(['placeholder'])
     // .concat(constants.DECISIONS);
     // .concat(['placeholder2'])
@@ -106,6 +110,12 @@ export default function PatientEditor(props){
                 .range(range);
             means[key] = 0
         }
+        for(const [key,entry] of Object.entries(constants.progressionVars)){
+            const s = d3.scaleLinear()
+                .domain([0,entry.length - 1])
+                .range(xRange);
+            scales[key] = s;
+        }
         return [scales, means]
     }
 
@@ -155,12 +165,29 @@ export default function PatientEditor(props){
                 values[key] = val;
             }
         }
+        for(let [key,entry] of Object.entries(constants.progressionVars)){
+            let i = 0;
+            let val = -1;
+            let currPct = 0;
+            for(let n of entry){
+                if(p[n] > currPct){
+                    val = i;
+                    currPct = p[n];
+                }
+                i+=1
+            }
+            if(val < 0){
+                // console.log('bad val',p)
+                val = 0;
+            }
+            values[key] = val;
+        }
+        // console.log('enocded values',values,p);
         return values;
     }
 
     function makePanel(){
         //pass
-        
         let mainPatient = encodePatient(props.patientFeatures,true);
 
         const simResults = props.simulation[props.modelOutput];
@@ -227,146 +254,7 @@ export default function PatientEditor(props){
             })
         }
 
-        let nPaths = [];
-        let decisionName = constants.DECISIONS[props.currState];
-        const mainDecisionProbability = getSim();
-        //props.simulation[props.modelOutput]['decision'+(props.currState+1)];
-        const mainDecision = (mainDecisionProbability > .5) + 0;
-
-        const isCf = id => {
-            let val = props.cohortData[id+''];
-            return parseInt(val[decisionName] + 0) !== parseInt(mainDecision + 0)
-        }
-        const neighbors = props.currEmbeddings['neighbors'].filter(d=>!isCf(d)).slice(0,maxNeighbors);
-        const counterfactuals = props.currEmbeddings['neighbors'].filter(d=>isCf(d)).slice(0,maxNeighbors);
-
-        const objKeys = Object.keys(encodedCohort[0]);
-        function makeTemplate(){
-            let obj = {}
-            for(let key of objKeys){
-                obj[key] = [];
-            }
-            return obj
-        }
-
-        let neighborMeans = makeTemplate();
-        let cfMeans = makeTemplate();
-        let allMeans = makeTemplate();
-        let neighborEntries = [];
-        let cfEntries = [];
-        for(let entry of encodedCohort){
-            let isNeighbor = neighbors.indexOf(entry.id) > -1;
-            let isCounterFact = counterfactuals.indexOf(entry.id) > -1;
-            if(isNeighbor){
-                neighborEntries.push(entry);
-            } else if(isCounterFact){
-                cfEntries.push(entry);
-            }
-        }
-
-        
-
-        function meanitize(entryList){
-            const keys = Object.keys(entryList[0]);
-            let obj = {};
-            for(let key of keys){
-                let vals = entryList.map(d=>d[key]);
-                let sum = 0;
-                for(let v of vals){
-                    sum += v;
-                }
-                obj[key] = sum/vals.length
-            }
-            return obj
-        }
-        neighborMeans = meanitize(neighborEntries);
-        cfMeans = meanitize(cfEntries);
-        allMeans = meanitize(encodedCohort);
-
-
-        function formatPath(entry,id,className,
-            lineColor='black',
-            opacity=.001,similarity=0){
-
-            let pathPoints = [];
-            let markerPoints = [];
-            let decision = entry[decisionName];
-            for(let key of allVars){
-                if(key.includes('placeholder') | key === undefined){continue}
-                let val = entry[key];
-                let x = getX(val,key);
-                let y = getY(key);
-                pathPoints.push([x,y]);
-                markerPoints.push({
-                    'x': x,
-                    'y': y,
-                    'name': key,
-                    'value': val,
-                    'id': id,
-                    'class': className,
-                    'fill': lineColor,
-                    'attention': 0,
-                    'radius': getRadius(id),
-                });
-    
-            }
-            let path = d3.line()(pathPoints);
-            let pathEntry = {
-                'path': path,
-                'similarity': similarity,
-                'decision': decision,
-                'id': id,
-                'opacity': opacity,
-                'stroke': lineColor,
-                'data': entry,
-            }
-            return [pathEntry, markerPoints]
-        }
-
-        if(props.brushedId !== undefined){
-            let bData = encodedCohort.filter(d=> parseInt(d.id) === parseInt(props.brushedId))[0];
-            // console.log(bData);
-            let [bPath, bDots] = formatPath(bData,'brushedDude','patientMarker brushedMarker','black',.8,0);
-            nPaths.push(bPath);
-            // console.log(bDots);
-            pData = pData.concat(bDots);
-        } else{
-            svg.selectAll('.brushedMarker').remove();
-        }
-        const [allPath, allDots] = formatPath(allMeans,
-            'cohort avg','patientMarker meanMarker','black',.5,'');
-        //want decision = yes to be blue
-        const cfColor = mainDecision > 0? constants.noColor: constants.yesColor;
-        const nColor = mainDecision > 0? constants.yesColor:constants.noColor;
-        const [nPath, nDots] = formatPath(neighborMeans,
-            'neighbors','patientMarker meanMarker',nColor,.5,'');
-        const [cfPath, cfDots] = formatPath(cfMeans,
-            'counterfactuals','patientMarker meanMarker',cfColor,.5,'');
-
-        if(showCfs){
-            nPaths.push(cfPath);
-            pData = pData.concat(cfDots);
-        }
-        if(showAverage){ 
-            nPaths.push(allPath); 
-            pData = pData.concat(allDots);
-        }
-        if(showNeighbors){
-            nPaths.push(nPath);
-            pData = pData.concat(nDots);
-        }
-
-        //if I bring this back do also cf entries
-        // for(let nEntry of neighborEntries){
-        //     let nPos = neighbors.indexOf(nEntry.id);
-        //     let sim = 0;
-        //     if(nPos > -1){ sim =  props.currEmbeddings['similarities'][nPos]; }
-        //     nPaths.push( formatPath(nEntry,nEntry.id,'patientMarker','grey',.01,sim)[0] );
-        // }
-
         var getFill = (d)=>{return d.fill;}
-
-        var getPathColor= (d)=>{ return d.stroke; }
 
         function getOpacity(d){
             if(d.id === -1){
@@ -375,27 +263,6 @@ export default function PatientEditor(props){
             return .7;
         }
 
-        svg.selectAll('.patientLines').remove();
-        svg.selectAll('.patientLines')
-            .data(nPaths).enter()
-            .append("path").attr('class','patientLines')
-            .attr('d',d=>d.path)
-            .attr('opacity',d=>d.opacity)
-            .attr('fill','none')
-            .attr('stroke-width',3)
-            .attr('stroke',getPathColor)
-            .on('mouseover',function(e,d){
-                let string = d.id + '</br>';
-                for(let [key,value] of Object.entries(d.data)){
-                    if(key === 'id'){continue}
-                    string += key + ': ' + (0+value).toFixed(2) + '</br>'
-                }
-                tTip.html(string);
-            }).on('mousemove', function(e){
-                Utils.moveTTipEvent(tTip,e);
-            }).on('mouseout', function(e){
-                Utils.hideTTip(tTip);
-            });
         
         svg.selectAll('.patientMarker').remove();
         let pCircles = svg.selectAll('.patientMarker')
@@ -437,7 +304,6 @@ export default function PatientEditor(props){
                     .transition()
                     .duration(duration)
                     .attr('cx',newX);
-                // console.log('value',newVal);
                 tTip.html(d.name +': ' + newVal)
                 Utils.moveTTip(tTip,newX+d.radius,e.y);
             }).on('end',function(e,d){
@@ -445,23 +311,33 @@ export default function PatientEditor(props){
                 let px  = e.x;
                 let newX = Math.min(Math.max(xMargin+textSpacing,px),width-xMargin);
                 let newVal = scale.invert(newX);
+                const isResponse = constants.progressionVars[d.name] !== undefined
                 if(booleanVars.indexOf(d.name) > -1){
                     newVal = newVal > .5;
                     newX= scale(newVal);
-                } else if(ordinalVars[d.name] !== undefined | d.name === 'hpv'){
+                } else if(isResponse | ordinalVars[d.name] !== undefined | d.name === 'hpv'){
                     newVal = Math.round(newVal);
                     newX = scale(newVal);
-                }
+                } 
                 let fQue = Object.assign({},props.featureQue);
                 if(ordinalVars[d.name] !== undefined){
                     for(let val of ordinalVars[d.name]){
                         fQue[d.name+'_'+val] = (val == newVal) + 0;
                     }
-                }else{
+                } else if(isResponse){
+                    let names = constants.progressionVars[d.name];
+                    for(let i in names){
+                        let n = names[i];
+                        fQue[n] = (Math.abs(i - newVal) < .001)? 1: 0;
+                    }
+                } else{
                     let oldVal = d.value;
                     if(Math.abs(oldVal - newVal) > .00001){
                         fQue[d.name] = newVal;
                     }
+                }
+                if(isResponse){
+                    console.log(fQue,d.name,newVal);
                 }
                 d3.select(this)
                     .attr('cx',newX)
@@ -476,28 +352,14 @@ export default function PatientEditor(props){
                 let string = d.name + ': ' + d.value;
                 tTip.html(string);
                 Utils.moveTTip(tTip,d.x+d.radius,e.y-d.radius);
-            })
-            // .on('mousemove', function(e,d){
-            //     Utils.moveTTip(tTip,d.x+d.radius,d.y);
-            //     // Utils.moveTTipEvent(tTip,e);
-            // })
-            .on('mouseout', function(e){
+            }).on('mouseout', function(e){
                 Utils.hideTTip(tTip);
             })
             mP.filter('.moveable').call(dragHandler);
         }
     }
 
-    const encodedCohort = useMemo(function processCohort(){
-        if(props.cohortData === undefined){return}
-        let patients = [];
-        for(let [id,entry] of Object.entries(props.cohortData)){
-            let pEntry = encodePatient(entry);
-            pEntry['id'] = parseInt(id);
-            patients.push(pEntry);
-        }
-        return patients 
-    },[props.cohortData]);
+
 
     // useEffect(()=>{
     //     if(svg === undefined){ return;}
@@ -547,6 +409,12 @@ export default function PatientEditor(props){
                 }  else if(continuousVars.indexOf(key) > -1 ){
                     let weights = key === 'hpv'? [0,.5,1]: [0,.25,.5,.75,1];
                     xTicks = weights.map(w => x0*w + (x1*(1-w)));
+                } else if(constants.progressionVars[key] !== undefined){
+                    let tRange = constants.progressionVars[key].map((d,i)=>i);
+                    xTicks = [];
+                    for(let t of tRange){
+                        xTicks.push(scale(t));
+                    }
                 }
                 for(let xx of xTicks){
                     let val = scale.invert(xx);
@@ -561,6 +429,9 @@ export default function PatientEditor(props){
                     }
                     else if(ordinalVars[key] !== undefined){
                         val = val.toFixed(0);
+                    } else if(constants.progressionVars[key] !== undefined){
+                        val = constants.progressionVars[key][Math.round(val)];
+                        val = val.replace('Nodal','').replace('Primary','').replace(' ','');
                     }
                     markers.push({
                         'x': xx,
@@ -636,7 +507,7 @@ export default function PatientEditor(props){
                 .text(d=>Utils.getFeatureDisplayName(d.name));
 
         }
-    },[props.cohortData,svg]) 
+    },[props.cohortData,svg,props.currState]) 
 
     useEffect(()=>{
         if(svg!== undefined){
@@ -667,7 +538,6 @@ export default function PatientEditor(props){
 
     useEffect(()=>{
         if(!Utils.allValid([svg,props.patientFeatures,
-            encodedCohort,
             props.currEmbeddings,
             props.simulation,
             varScales])){return}
@@ -675,7 +545,7 @@ export default function PatientEditor(props){
     },[props.patientFeatures,
         svg,
         props.simulation,
-        encodedCohort,
+        allVars,
         props.fixedDecisions,
         props.brushedId,
         props.currState,props.modelOutput,

@@ -76,6 +76,7 @@ export default function OutcomePlots(props){
                 nBars += 4*entry.length;
                 nOutcomes+= entry.length;
             }
+            console.log('outcomes',props.sim)
             //what width it would need to be to actually fit everything, in the worst case (CC)
             //I actually still cant get this to work good but also it never fits anyway
             const idealBarWidth = (height -  2*margin - titleSpacing - (4)*outcomeSpacing - nOutcomes*modelSpacing)/nBars;

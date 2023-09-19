@@ -8,6 +8,7 @@ import {NeighborVisD3,NeighborVisLabels} from './NeighborVisD3';
 import LNVisD3 from './LNVisD3';
 import DLTVisD3 from './DLTVisD3';
 import SubsiteVisD3 from './SubsiteVisD3.js';
+import AttributionLegend from './AttributionLegend.js';
 import {Spinner} from '@chakra-ui/react'
 
 export default function AuxillaryViews(props){
@@ -183,7 +184,12 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
                 />
                 </div>
                 <div style={{'height':'6em','width': '100%'}}>
-                    {'legend'}
+                    <AttributionLegend
+                      simulation={props.simulation}
+                      currState={props.currState}
+                      modelOutput={props.modelOutput}
+                      fixedDecisions={props.fixedDecisions}
+                    />
                 </div>
             </div>
             

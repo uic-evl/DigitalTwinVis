@@ -32,10 +32,20 @@ export const continuousVars = [
 'hpv',
 'total_dose','dose_fraction','packs_per_year']
 
-export const primaryDiseaseProgressions = ['CR Primary','PR Primary','SD Primary'];
-export const nodalDiseaseProgressions = ['CR Nodal', 'PR Nodal', 'SD Nodal'];
+//order used in the model and returned values
+const progressions = ['CR','PR','SD']
+//ordre used for the user interface
+const progressionsOrdinal = ['PD','SD','PR','CR'];
+export const primaryDiseaseProgressions = progressions.map(s => s + ' Primary');
+export const nodalDiseaseProgressions = progressions.map(s => s + ' Nodal')
 export const primaryDiseaseProgressions2 = primaryDiseaseProgressions.map(d=> d + ' 2')
 export const nodalDiseaseProgressions2 = nodalDiseaseProgressions.map(d=> d + ' 2')
+export const progressionVars = {
+        'Primary_Response_IC': progressionsOrdinal.map(s => s + ' Primary'),
+        'Nodal_Response_IC': progressionsOrdinal.map(s => s + ' Nodal'),
+        'Primary_Response_CC': progressionsOrdinal.map(s => s + ' Primary 2'),
+        'Nodal_Response_CC': progressionsOrdinal.map(s => s + ' Nodal 2'),
+}
 export const dlts1 = [
         'DLT_Vascular',
         'DLT_Infection (Pneumonia)',

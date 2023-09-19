@@ -18,6 +18,7 @@ import OutcomePlots from './components/OutcomePlots';
 import AttributionPlotD3 from './components/AttributionPlotD3';
 import * as d3 from 'd3';
 import AuxillaryViews from './components/AuxillaryViews';
+import DistanceHistogramD3 from './components/DistanceHistogramD3';
 
 function App() {
 
@@ -550,7 +551,7 @@ function App() {
   function makeThing(){
     return (
         <Grid
-        templateRows='1.6em 1.6em 1fr 13.5em'
+        templateRows='1.6em 1.6em 1fr 10em'
         templateColumns='1fr 1fr'
         h='1000px'
         w='100px'
@@ -675,12 +676,24 @@ function App() {
           <Grid
             h="100%"
             w="100%"
-            templateRows='6em 1fr'
+            templateRows='6em 8em 1fr'
           >
-            <GridItem rowSpan={1} className={'shadow'}>
+            <GridItem className={'shadow'}>
               {Recommendation}
             </GridItem>
-            <GridItem rowSpan={1} colSpan={1} className={'shadow scroll'} >
+            <GridItem className={'shadow'}>
+              <div style={{'height': '1.5em','width':'100%'}} className={'title'}>
+                {'Dist. From Training Cohort'}
+              </div>
+              <div style={{'height': 'calc(100% - 1.5em)','width':'100%'}} >
+                <DistanceHistogramD3
+                  mDists={mDists}
+                  currState={currState}
+                  currEmbeddings={currEmbeddings}
+                />
+              </div>
+            </GridItem>
+            <GridItem  className={'shadow scroll'} >
               <AuxillaryViews
                 cohortData={cohortData}
                 cohortEmbeddings={cohortEmbeddings}

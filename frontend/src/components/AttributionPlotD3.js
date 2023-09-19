@@ -3,7 +3,6 @@ import useSVGCanvas from './useSVGCanvas.js';
 import Utils from '../modules/Utils.js';
 import * as d3 from 'd3';
 import * as constants from "../modules/Constants.js";
-import { position } from '@chakra-ui/react';
 
 
 
@@ -34,6 +33,13 @@ export default function AttributionPlotD3(props){
         return string
     }
 
+    function formatText(v){
+        let t = (v*100).toFixed(0) + '%';
+        if(v > 0){
+            t = '+' + t;
+        }
+        return t;
+    }
     // useMemo(()=>{
     //     if(props.defaultPredictions !== undefined){
     //         const defaultP = props.defaultPredictions[props.modelOutput][constants.DECISIONS[props.currState]]
@@ -97,7 +103,7 @@ export default function AttributionPlotD3(props){
                         vkey = 'other';
                         otherEntries.push(key2)
                     } else if(isPd){
-                        vkey = 'Primary Resonse';
+                        vkey = 'Primary Response';
                     } else if(isNd){
                         vkey = 'Nodal Response';
                     }
@@ -193,7 +199,7 @@ export default function AttributionPlotD3(props){
                 .attr('stroke','black')
                 .on('mouseover',function(e,d){
                     let string = d.name + '</br>'
-                        + 'attribution: ' + d.val;
+                        + 'attribution: ' + formatText(d.val);
                     if(d.name === 'other'){
                         string += '</br>' + 'features:';
                         for(let v of otherEntries){
@@ -201,7 +207,6 @@ export default function AttributionPlotD3(props){
                         }
                     }
                     tTip.html(string);
-                    console.log('brush',d)
                 }).on('mousemove', function(e){
                     Utils.moveTTipEvent(tTip,e);
                 }).on('mouseout', function(e){
