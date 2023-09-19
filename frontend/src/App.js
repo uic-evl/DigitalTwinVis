@@ -138,6 +138,14 @@ function App() {
     }
   }
 
+  const [mDists,setMDists] = useState();
+  async function fetchMahalanobisHistograms(){
+    setMDists(undefined)
+    const mData = await api.getMahalanobisHistogram()
+    console.log("m dists",mData);
+    setMDists(mData);
+  }
+
   async function fetchDefaultPredictions(){
     if(defaultPredictions !== undefined){ return }
     const pred = await api.getDefaultPredictions();
@@ -151,7 +159,7 @@ function App() {
     if(patientSimLoading){ return }
     setCursor('wait')
     setPatientSimLoading(true);
-    const sim = await api.getPatientSimulation(patientFeatures);
+    const sim = await api.getPatientSimulation(patientFeatures,currState);
     setSimulation(undefined);
     if(sim.data !== undefined){
       console.log('patient simulation',sim);
@@ -219,6 +227,7 @@ function App() {
     fetchCohort();
     fetchCohortEmbeddings();
     fetchDefaultPredictions();
+    fetchMahalanobisHistograms();
     //this one gives prediction confidences for all stuff in case I need it for calibration?
     // fetchCohortPredictions();
   },[]);
@@ -226,7 +235,8 @@ function App() {
   useEffect(() => {
     fetchPatientNeighbors();
     fetchPatientSimulation();
-  },[patientFeatures]);
+  },[patientFeatures,currState]);
+
 
   function wrapTitle(item,text){
     return (

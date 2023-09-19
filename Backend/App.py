@@ -10,6 +10,7 @@ DATA = load_dataset()
 decision_model,transition_model1,transition_model2,outcome_model = load_models()
 PCAS = get_embedding_pcas(DATA,decision_model,components=10)
 embedding_df = get_embedding_df(DATA,decision_model,pcas=PCAS)
+m_dists = [test_mahalanobis_distances(DATA,decision_model,s,embedding_df).tolist() for s in [0,1,2]]
 DEFAULT_DECISIONS = get_default_prediction_json(decision_model)
 print('stuff loaded')
 
@@ -35,6 +36,11 @@ def get_default_predictions():
     res = responsify(DEFAULT_DECISIONS)
     return res
 
+@app.route('/mahalanobis_histogram',methods=['GET'])
+def get_mdists():
+    res = {i: v for i,v in enumerate(m_dists)}
+    res = responsify(res)
+    return res 
 
 @app.route('/patientdata',methods=['GET'])
 def get_patient_data():
@@ -58,11 +64,12 @@ def get_patient_embeddings():
 
 @app.route('/newpatient',methods=['POST'])
 def get_newpatient_stuff():
+    state = request.args.get('state')
     patient_dict = request.get_json(force=True)
     print('_new patient simulation request_')
     print(patient_dict)
     print('---')
-    return_vals = get_stuff_for_patient(patient_dict,DATA,transition_model1,transition_model2,outcome_model,decision_model)
+    return_vals = get_stuff_for_patient(patient_dict,DATA,transition_model1,transition_model2,outcome_model,decision_model,state=state)
     # print(return_vals)
     print('-------')
     return responsify(return_vals)
@@ -81,12 +88,13 @@ def get_patient_neighbors():
     print('_new patient neibhors request_')
     print(patient_dict)
     print('---')
-    neighbors,similarities,embedding,pca = get_neighbors_and_embedding(patient_dict,DATA,decision_model,embedding_df=embedding_df,state=state,max_neighbors=n,pcas=PCAS)
+    neighbors,similarities,embedding,pca,mDist = get_neighbors_and_embedding(patient_dict,DATA,decision_model,embedding_df=embedding_df,state=state,max_neighbors=n,pcas=PCAS)
     return_vals = {
         'neighbors': neighbors.astype(int).tolist(),
         'similarities': similarities.tolist(),
         'embedding': embedding.tolist(),
-        'pca': pca.tolist()
+        'pca': pca.tolist(),
+        'mahalanobisDistance': mDist,
     }
     # print(return_vals)
     print('-------')

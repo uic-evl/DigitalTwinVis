@@ -257,6 +257,16 @@ def dict_to_model_input(dataset,fdict,state=0,ttype=torch.FloatTensor,concat=Tru
     #currently at this line its baseline, dlt1, dlt2, pd, nd, cc, modifications
     return inputs
 
+def calculateMahalanobis(y=None, data=None, cov=None):
+  
+    y_mu = y - np.mean(data)
+    if not cov:
+        cov = np.cov(data.T)
+    inv_covmat = np.linalg.inv(cov)
+    left = np.dot(y_mu, inv_covmat)
+    mahal = np.dot(left, y_mu.T)
+    return mahal.diagonal()
+
 def get_neighbors_and_embedding(pdata,dataset,decisionmodel,embedding_df=None,state=2,max_neighbors=10,pcas=None):
     decisionmodel.eval()
     if embedding_df is None:
@@ -265,11 +275,12 @@ def get_neighbors_and_embedding(pdata,dataset,decisionmodel,embedding_df=None,st
     
     cat = lambda x: torch.cat(x,axis=1)
     
-    inputs = dict_to_model_input(dataset,pdata,state=state)
+    inputs = dict_to_model_input(dataset,pdata,state=state,zero_transition_states=False)
     
     
     embedding = decisionmodel.get_embedding(inputs,position=state,use_saved_memory=True)[0].view(1,-1).cpu().detach().numpy()
 
+    mDist = calculateMahalanobis(embedding,embeddings)
     dists = cdist(embedding,embeddings).ravel()
     
     max_neighbors = min(len(dists),max_neighbors)
@@ -280,15 +291,21 @@ def get_neighbors_and_embedding(pdata,dataset,decisionmodel,embedding_df=None,st
     # similarities /= similarities.max() #adjust for rounding errors, self sim should be the max
     if pcas is not None:
         pPca = pcas[state].transform(embedding)[0]
-        return neighbor_ids, similarities,embedding[0],pPca
-    return neighbor_ids, similarities, embedding[0]
+        return neighbor_ids, similarities,embedding[0],pPca, mDist[0]
+    return neighbor_ids, similarities, embedding[0], mDist[0]
 
+def test_mahalanobis_distances(dataset=None,decision_model=None,state=1,embedding_df=None):
+    if embedding_df is None:
+        embedding_df = get_embedding_df(dataset,decision_model)
+    embeddings = np.stack(embedding_df['embeddings_state'+str(state)].values)
+    dists =calculateMahalanobis(embeddings,embeddings) 
+    return np.array(dists)
 
 
 def dictify(keys,values):
     return {k:v for k,v in zip(keys,values)}
 
-def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisionmodel):
+def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisionmodel,state=0):
     #this takes a patient dict and returns the results for a full treatment simulation
     #currently this is only the baseline and I need to think more about what to do with fixed values?
     pdata = format_patient(data,patient_dict)
@@ -425,7 +442,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
                     if name != 'outcomes':
                         v = v[0]
                     #because of softmax the model will output 33% for pd and nd with no ic when it should be fixed to 0
-                    if entry['decision1'] < .5 and 'pd1' in name or 'nd1' in name:
+                    if entry['decision1'] < .5 and ('pd1' in name or 'nd1' in name):
                         v = np.zeros(v.shape)
                     entry[name+suffix] = v
         add_to_entry(ytransition,['pd1','nd1','modifications','dlt1'])

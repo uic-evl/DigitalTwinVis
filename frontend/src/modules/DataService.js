@@ -25,6 +25,12 @@ export default class DataService {
         return paramQuery
     }
 
+    async getMahalanobisHistogram(){
+        let qstring = '/mahalanobis_histogram'
+        let response = await this.api.get(qstring)
+        return response.data;
+    }
+    
     async getPatientData(patientIds,fields){
         try{
             var params = {
@@ -87,8 +93,8 @@ export default class DataService {
         }
     }
 
-    async getPatientSimulation(patientFeatures){
-        let goodPostData = {}
+    async getPatientSimulation(patientFeatures,state=0){
+        let goodPostData = {'state': state}
         for(let key of Object.keys(patientFeatures)){
             let entry = patientFeatures[key];
             if(entry !== undefined & entry !== null){
