@@ -212,19 +212,21 @@ export default function OutcomePlots(props){
                 return .5;
             }
 
-            svg.selectAll('.rect').remove();
-            svg.selectAll('.rect').data(rectData,d=> d.name + d.model)
-                .enter().append('rect')
+            const rects = svg.selectAll('.rect').data(rectData,d=> d.name + d.model);
+            rects.enter().append('rect')
                 .attr('class',d=> isTreatment(d)? 'rect': 'rect activeRect')
-                .attr('width',d=>xScale(d.val)-xScale(0))
-                .attr('y',d=>d.y)
+                .merge(rects)
                 .attr('height',(barWidth-2))
                 .attr('fill',getFill)
                 .attr('stroke','black')
                 .attr('stroke-width',getStrokeWidth)
                 .attr('opacity',getOpacity)
                 .attr('x',xScale(0))
-                .on('mouseover',function(e,d){
+                .transition(1000)
+                .attr('y',d=>d.y)
+                .attr('width',d=>xScale(d.val)-xScale(0))
+                
+            rects.on('mouseover',function(e,d){
                     const string = d.name + '</br>' + d.model + '</br>' + d.val.toFixed(4);
                     tTip.html(string);
                 }).on('mousemove', function(e){
@@ -233,6 +235,7 @@ export default function OutcomePlots(props){
                     Utils.hideTTip(tTip);
                 });
 
+            rects.exit().remove();
             svg.selectAll('.error').remove();
             const eLineFunc = d3.line()
                 .x(d=> xScale(d[0]));

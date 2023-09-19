@@ -233,9 +233,11 @@ function App() {
     // fetchCohortPredictions();
   },[]);
 
+  useEffect(()=>{
+    fetchPatientSimulation();
+  },[patientFeatures])
   useEffect(() => {
     fetchPatientNeighbors();
-    fetchPatientSimulation();
   },[patientFeatures,currState]);
 
 
