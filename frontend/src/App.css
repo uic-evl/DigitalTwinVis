@@ -2,9 +2,9 @@
   text-align: center;
   height: 100vh!important;
   width: 100vw;
+  --scroll-bar-color: #c5c5c5;
+  --scroll-bar-bg-color: #f6f6f6;
 }
-
-b
 
 .chakra-select, option{
   /* width: !important; */
@@ -128,6 +128,16 @@ hr:after {
   font-size: 1em;
   font-weight: bold!important;
   font-family: Georgia!important;
+} 
+
+/* Works on Chrome, Edge, and Safari */
+*::-webkit-scrollbar {
+  width: 6px;
+  background-color: black;
+}
+*::-webkit-scrollbar-thumb {
+  width: 6px;
+  background-color: grey;
 }
 
 .lightGutter {

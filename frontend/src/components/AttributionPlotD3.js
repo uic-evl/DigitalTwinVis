@@ -63,8 +63,13 @@ export default function AttributionPlotD3(props){
 
     useMemo(()=>{
         if(svg !== undefined & props.simulation !== undefined){
-            const simKey = getSimulationKey();
-            const res = props.simulation[simKey]['decision'+(props.currState+1)+'_attention'];
+            var simKey = getSimulationKey();
+            var res = props.simulation[simKey]['decision'+(props.currState+1)+'_attention'];
+            //when we have a fixed decision for the current state, or a bug
+            if(res === undefined | res === 0){
+                simKey = props.modelOutput; //otherwise we find a 
+                res = props.simulation[props.modelOutput]['decision'+(props.currState+1)+'_attention'];
+            }
             var validKeys = ['baseline','dlt1','dlt2','nd','pd'];
             // so commenting this will let me see if I get attributions it should get
             if(props.currState == 1){
@@ -151,6 +156,10 @@ export default function AttributionPlotD3(props){
                 .range([width/2,width-margin]);
             // const centerX = negativeTotal > positiveTotal? labelSpacing + xScale(negativeTotal) - xScale(positiveTotal): labelSpacing;
             const centerX = width/2;
+            if(res.range === undefined){
+                console.log('nooo',res)
+                return
+            }
             const colorScale = Utils.getColorScale('attributions',res.range[0],res.range[1]);
 
             const barWidth = (height - bottomMargin - topMargin)/(attributions.length);
@@ -261,7 +270,9 @@ export default function AttributionPlotD3(props){
             // let leftMost = Math.min(currX, centerX);
             // group.attr('transform','translate(' +  -1*(leftMost - labelSpacing) + ')');
             const bounds = group.node().getBBox();
-            group.attr('transform','translate(' +  -1*(bounds.x - margin) + ')');
+            if(bounds.x > margin){
+                group.attr('transform','translate(' +  -1*(bounds.x - margin) + ')');
+            }
         }
     },[svg,props.simulation,props.modelOutput,props.currState,width,height,props.defaultPredictions,props.fixedDecisions]);
 

@@ -38,8 +38,13 @@ export default function AttributionLegend(props){
 
     useMemo(()=>{
         if(svg !== undefined & props.simulation !== undefined){
-            const simKey = getSimulationKey();
-            const res = props.simulation[simKey]['decision'+(props.currState+1)+'_attention'];
+            var simKey = getSimulationKey();
+            var res = props.simulation[simKey]['decision'+(props.currState+1)+'_attention'];
+            //for the case of a fixed decision on the current attribution view
+            if(res === undefined | res === 0){
+                simKey = props.modelOutput;
+                res = props.simulation[props.modelOutput]['decision'+(props.currState+1)+'_attention'];
+            }
             const colorScale = Utils.getColorScale('attributions',res.range[0],res.range[1]);
             
             const increments = [.01,.25,.5,.75,.99];

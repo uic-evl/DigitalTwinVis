@@ -34,7 +34,7 @@ function App() {
   const api = new DataService();
   const maxStackSize = 4;
   const [patientFeatures,setPatientFeatures] = useState(defaultPatient);
-  const [featureQue,setFeatureQue] = useState({});
+  const [featureQue,setFeatureQue] = useState({'T-category_4':0,'T-category_3': 1,'hpv': -1,'subsite_BOT':0,'subsite_Tonsil':1,'total_dose': 71});
   const [previousPatientStack,setPreviousPatientStack] = useState([]);
   const [simulation,setSimulation] = useState();
   const [currEmbeddings,setCurrEmbeddings] = useState();
@@ -46,7 +46,6 @@ function App() {
 
   const [cohortPredictions,setCohortPredictions] = useState();
 
-  const [upperRightView,setUpperRightView] = useState('scatter')
   const [cohortLoading,setCohortLoading] = useState(false);
   const [cohortEmbeddingsLoading,setCohortEmbeddingsLoading] = useState(false);
   const [patientSimLoading,setPatientSimLoading]= useState(false);
@@ -439,7 +438,7 @@ function App() {
       <div style={{'height': '1.5em','width':'100%'}}>
             {makeOutcomeToggle()}
       </div>
-      <div style={{'height': 'calc(100% - 1.5em','width':'100%'}} className={'noGutter'}>
+      <div style={{'height': 'calc(100% - 1.5em)','width':'100%'}} className={'noGutter'}>
         <OutcomePlots
           sim={sim}
           altSim={altSim}
@@ -553,7 +552,7 @@ function App() {
   function makeThing(){
     return (
         <Grid
-        templateRows='1.6em 1.6em 1fr 10em'
+        templateRows='1.6em 1.4em 1fr 10em'
         templateColumns='1fr 1fr'
         h='1000px'
         w='100px'
@@ -576,20 +575,19 @@ function App() {
         <GridItem colSpan={2} rowSpan={1} className={'title'}>
           {'Patient Features'}
         </GridItem>
-        <GridItem colSpan={2} rowSpan={1}>
-          <div className={'fillSpace noGutter'}>
+        <GridItem colSpan={2} rowSpan={1} className={'scroll'}>
             <PatientEditor
                 cohortData={cohortData}
                 cohortEmbeddings={cohortEmbeddings}
-                patientFeatures={patientFeatures}
-                featureQue={featureQue}
-                setPatientFeatures={setPatientFeatures}
-                setFeatureQue={setFeatureQue}
                 currEmbeddings={currEmbeddings}
                 simulation={simulation}
                 modelOutput={modelOutput}
                 currState={currState}
                 updatePatient={updatePatient}
+                patientFeatures={patientFeatures}
+                featureQue={featureQue}
+                setPatientFeatures={setPatientFeatures}
+                setFeatureQue={setFeatureQue}
 
                 patientEmbeddingLoading={patientEmbeddingLoading}
                 patientSimLoading={patientSimLoading}
@@ -603,9 +601,8 @@ function App() {
 
                 neighborsToShow={neighborsToShow}
             ></PatientEditor>
-            </div>
         </GridItem>
-        <GridItem  colSpan={1} rowSpan={1}>
+        <GridItem>
           <div className={'title'} style={{'height': '1.5em'}}>{'Subsite'}</div>
           <div style={{'height': 'calc(100% - 1.5em)'}}>
           <SubsiteVisD3
@@ -695,7 +692,7 @@ function App() {
                 />
               </div>
             </GridItem>
-            <GridItem  className={'shadow scroll'} >
+            <GridItem  className={'shadow'} style={{'overflowY':'hidden'}}>
               <AuxillaryViews
                 cohortData={cohortData}
                 cohortEmbeddings={cohortEmbeddings}
