@@ -401,7 +401,7 @@ export default class Utils {
             if(displayNames !== undefined){
                 displayName = displayNames[i];
             }
-            return <div className={className} onClick={onClick}>{displayName}</div>
+            return <div key={displayName} className={className} onClick={onClick}>{displayName}</div>
         });
     }
 

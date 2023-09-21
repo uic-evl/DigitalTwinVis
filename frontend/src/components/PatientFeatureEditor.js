@@ -15,26 +15,46 @@ export default function PatientFeatureEditor(props){
         if(svg === undefined | props.data === undefined){return}
         // console.log('editor',props)
         const data = props.data;
-        const barWidth = (width - 2*margin)/data.ticks.length;
+
+        //features + 1 for the ? variable, hpv already have a hard-coded unknnown option
         var currX = margin;
         var rectData = [];
         const key = data.name;
         var queVal = props.encodedFeatureQue[data.name];
         queVal = queVal === undefined? -2: queVal;
-        for(let i in data.ticks){
+        var ticks = data.ticks.map(i=>i);
+
+        //this bit lets you add a "?" varaible that is basically 0. Doesn't work well since 0 makes the model sad
+        //kind of works with discrete vars? idk
+        // if(constants.ordinalVars[data.name] !== undefined){
+        //     ticks = [ticks[0]-1].concat(ticks)
+        // } 
+        //doesn't work fo cont vars
+        // else if(constants.continuousVars.indexOf(data.name) > -1 & data.name !== 'hpv'){
+        //     ticks = [0].concat(ticks);
+        //     if(ticks[1] < .00001){
+        //         ticks[1] = Math.min(ticks[2]/4,.0001);
+        //     }
+        // }
+        
+        const barWidth = (width - 2*margin)/(ticks.length);
+        for(let i in ticks){
             i = parseInt(i);
-            let xx = data.ticks[i];
+            let xx = ticks[i];
             let val = xx;
-            if(constants.booleanVars.indexOf(key) > -1){
+            
+            if(i === 0 & ticks.length !== data.ticks.length){
+                val = '?'
+            }else if(constants.booleanVars.indexOf(key) > -1){
                 val = val > 0? 'Y':'N';
             } else if(key == 'hpv'){
                 val = val > 0? 'Y': val < 0? '?':'N';
             }
             else if(constants.continuousVars.indexOf(key) > -1){
-                let minVal = data.ticks[i];
+                let minVal = ticks[i];
                 let fixVal = minVal > 10? 0:1;
                 if(i+ 1 < data.ticks.length){
-                    let maxVal =  data.ticks[i+1] - .1;
+                    let maxVal =  ticks[i+1] - .1;
                     val = '[' +  (0+minVal).toFixed(fixVal) + '-' + (0+maxVal).toFixed(fixVal) + ')';
                 } else{
                     val = (0+minVal).toFixed(fixVal) + '+'
@@ -45,17 +65,25 @@ export default function PatientFeatureEditor(props){
             } else if(constants.progressionVars[key] !== undefined){
                 val = constants.progressionVars[key][Math.round(val)];
                 val = val.replace('Nodal','').replace('Primary','').replace(' ','');
+                //delete this if you add in PD (progressive disease) to the model possible disease states on the backend
+                //all zero works on the backend as "input"
+                if(val === 'PD'){
+                    val = '?';
+                }
             }
-            const xNext = i < data.ticks.length-1? data.ticks[i+1]: Infinity;
-            const isActive = data.currValue >= xx & data.currValue < xNext;
-            const isQueued = queVal >= xx & queVal < xNext;
+
+            let xNext = i < ticks.length-1? ticks[i+1]: Infinity;
+            let isActive = data.currValue >= xx & data.currValue < xNext;
+            let isQueued = queVal >= xx & queVal < xNext;
+
+
             rectData.push({
                 'x': currX,
                 'width': barWidth,
                 'value': xx,
                 'displayValue': val,
                 'active': isActive,
-                'queued': isQueued,
+                'queued':isQueued,
                 'name':key,
             })
             currX+=barWidth;
@@ -87,6 +115,7 @@ export default function PatientFeatureEditor(props){
             .on('click',(e,d)=>{
                 if(d.active){return}
                 const newQ = Object.assign({},props.featureQue)
+                //iterate through ordinal vars to map to onehot, if value is invalid it will just zero them all
                 if(constants.ordinalVars[data.name] !== undefined){
                     let vals = constants.ordinalVars[data.name];
                     for(let v of vals){
@@ -102,7 +131,7 @@ export default function PatientFeatureEditor(props){
                 else{
                     newQ[data.name] = d.value;
                 }
-                console.log('click',e,d,data.name,props.featureQue,newQ);
+                console.log('click',props.featureQue,newQ,props.encodedFeatureQue);
                 props.setFeatureQue(newQ);
             })
         rectLabels.exit().remove();

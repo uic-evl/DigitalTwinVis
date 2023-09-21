@@ -31,7 +31,7 @@
   font-size: .7em!important;		
 }
 
-.rounded, .shadow, .shadow >* {
+.rounded, .shadow >* {
   border-radius: 1em!important;
 }
 

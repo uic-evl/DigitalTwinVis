@@ -133,14 +133,23 @@ export default function PatientEditor(props){
     }
 
     function encodeOrdinal(p,key,values){
-        let val = values[0];
+        //maps onehot encoded ordinal values to a discrete integer
+        //defaults to lowest value -1 if missing or invalid 
+        //if no keys of the rigth name are there it returns null so we know to do "all zero" vs "not there"
+        let val = values[0]-1;
         let isMissing=true;
         for(let i of values){
+            //check if there are actually values here
+            if(p[key+'_'+i] !== undefined){
+                isMissing=false
+            }
             if(p[key+'_'+i] > 0){
                 val = i;
-                isMissing = false;
                 break;
             }
+        }
+        if(isMissing){
+            return null
         }
         return val
     }
@@ -156,8 +165,8 @@ export default function PatientEditor(props){
     function encodeFeatureQue(p){
         let values = {}
         for(const [key,v] of Object.entries(ordinalVars)){
-            let val = encodeOrdinal(p,key,[-1].concat(v));
-            if(val > -1){
+            let val = encodeOrdinal(p,key,v);
+            if(val !== null){
                 values[key] = val
             }
         }

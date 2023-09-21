@@ -7,13 +7,6 @@ import * as constants from "../modules/Constants.js";
 
 const margin = [[20,0],[20,0]];
 
-function drawDiamond(radius){
-    let string = 'M 0,' + radius + ' '
-        + radius + ',0' + ' '
-        + '0,' + (-radius) + ' '
-        + (-radius)+ ',0' + ' z'
-    return string;
-}
 
 export function NeighborVisD3(props){
 
@@ -25,16 +18,18 @@ export function NeighborVisD3(props){
     const booleanVars = constants.booleanVars;
     const continuousVars = constants.continuousVars;
 
-    const vargroupSeperation = Math.min(width/20,10);
+    const colorVar = 'similarity';
 
-    const diamondVars = ['similarity','decision'];
+    const margin = 10;
 
     //actually rectangle vars
-    const allVars = Object.keys(ordinalVars)
+    const baselineVars = Object.keys(ordinalVars)
         .concat(continuousVars)
         .concat(booleanVars.filter(d=> !d.includes('subsite')));
     
-    const circleVars = constants.OUTCOMES.map(i=>i);
+    const outcomes = constants.OUTCOMES.map(i=>i);
+
+    const allVars = props.version === 'baseline'?  baselineVars: outcomes;
 
     function encodeOrdinal(p,key,values,scale=false){
         let val = values[0];
@@ -79,29 +74,33 @@ export function NeighborVisD3(props){
         return values;
     }
 
-    const yScale = useMemo(()=>{
-        return d3.scaleLinear()
-            .domain([0,1])
-            .range([0, height - margin[1][1] - margin[0][1]]);
-    },[height])
+    function radToCartesian(r,t){
+        const x = width/2 + r*Math.cos(t);
+        const y = height/2 + r*Math.sin(t);
+        return [x,y];
+    };
 
     useEffect(()=>{
         if(svg !== undefined & props.data !== undefined){
             var data = encodePatient(props.data);
             var refData = encodePatient(props.referenceData);
-            const showLabels = props.showLabels === undefined? true: props.showLabels;
-            const hasRef = refData !== undefined;
-            const nVars = allVars.length + circleVars.length + diamondVars.length;
-            const barWidth = (width - margin[0][0] - margin[1][0] - 2*vargroupSeperation)/(nVars);
-            var currX = margin[0][0];
+            const nVars = allVars.length;
 
-            function getData(key,useRef){
-                if(key === constants.DECISIONS[0] | key === constants.OUTCOMES[0]){
-                    currX += vargroupSeperation;
-                }
-                let val = data[key];
-                let trueVal = val;
-                let minval = 0;
+            const thetaScale = d3.scaleLinear()
+                .domain([0,nVars])
+                .range([0,2*Math.PI]);
+
+            const rScale = d3.scaleLinear()
+                .domain([0,1])
+                .range([5,width/2 - margin]);
+
+            var pathPoints = [];
+            var refPoints = [];
+            var outlinePoints = [];
+            var plotData = []
+
+            function scaleVal(key,val){
+                let minval =0;
                 let maxval = 1;
                 if(continuousVars.indexOf(key) >= 0){
                     [minval, maxval] = props.valRanges[key];
@@ -110,205 +109,78 @@ export function NeighborVisD3(props){
                     minval = ranges[0];
                     maxval = ranges[ranges.length-1];
                 }
-                let scaledVal = (val - minval)/(maxval - minval);
-                if(hasRef & useRef){
-                    let rVal = refData[key];
-                    rVal = (rVal - minval)/(maxval - minval);
-                    scaledVal = scaledVal - rVal;
-                }
+                let sVal = (val - minval)/(maxval - minval);
+                return sVal
+            }
+            for(let i in allVars){
+                let key = allVars[i];
+                let val = data[key];
+                let trueVal = val;
+                let scaledVal = scaleVal(key,val);
+                let theta = thetaScale(i);
+                let radius = rScale(scaledVal);
+                let [x,y] = radToCartesian(radius,theta);
+
                 let entry = {
                     'name': key,
-                    'min': minval,
-                    'max': maxval,
                     'value': val,
                     'trueValue': trueVal,
                     'scaledVal': scaledVal,
-                    'height': Math.min(barWidth,height),//yScale(scaledVal),
-                    'x': currX,
-                    'isRelative': useRef,
+                    'x': x,
+                    'y': y,
                 }
-                currX += barWidth
-                return entry;
-            }
-
-            let diamondData = diamondVars.map(d=>getData(d,false));
-            currX  += vargroupSeperation;
-            let rectData = allVars.map(d=>getData(d,hasRef));
-            currX  += vargroupSeperation;
-            let outcomeData = circleVars.map(d=>getData(d,false));
-            var colorScale = d3.interpolateGreys;
-            var refColorScale = d3.scaleDiverging()
-                    .domain([-1,0,1])
-                    .range(['green','white','blue'])
-        
-
-            function getFill(d){
-                if(d.isRelative){
-                    return refColorScale(d.scaledVal);
+                pathPoints.push([x,y]);
+                outlinePoints.push(radToCartesian(rScale(1),theta))
+                plotData.push(entry);
+                if(refData !== undefined){
+                    let rVal = refData[key];
+                    let trueVal = rVal;
+                    let rScaled = scaleVal(key,rVal);
+                    let [rx,ry] = radToCartesian(rScale(rScaled),theta);
+                    refPoints.push([rx,ry])
                 }
-                return colorScale(d.scaledVal);
+                
             }
 
-            function getWidth(d){
-                let name = Utils.getFeatureDisplayName(d.name);
-                if(name.length >= 6){
-                    return barWidth-4;
-                }
-                return barWidth*name.length/6;
+            pathPoints.push(pathPoints[0]);
+            outlinePoints.push(outlinePoints[0])
+            if(props.version === 'baseline'){
+                console.log('nVis',data.similarity,d3.interpolateGreys(data.similarity));
             }
 
-            const centerY = height/2;
-            svg.selectAll('.valRect').remove();
-            const rectY =  d => {
-                if(showLabels){
-                    return height - d.height - margin[1][1];
-                }
-                return centerY - d.height/2;
+            const pathData = [
+                {
+                    'path': pathPoints,
+                    'fill': d3.interpolateGreys(data.similarity**.3),
+                    'stroke': 'black',
+                    'sw':3,
+                },
+                {
+                    'path': outlinePoints,
+                    'fill':'none',
+                    'stroke': 'grey',
+                    'sw': 1,
+                },
+            ];
+            if(refData !== undefined){
+                pathData.push({
+                    'path': refPoints,
+                    'fill': 'none',
+                    'stroke': 'blue',
+                    'sw': 3,
+                })
             }
 
-            function getCX(d){
-                return d.x+(barWidth/2)
-            }
-            function getCY(d){
-                return showLabels? height - d.height/2: centerY;
-            }
-
-            svg.selectAll('.diamond').remove();
-            svg.selectAll('.diamond')
-                .data(diamondData).enter()
-                .append('path').attr('class','diamond')
-                .attr('d',d=>drawDiamond(d.height/2))
-                .attr('transform',d=>'translate(' + getCX(d) + ',' + getCY(d) + ')')
-                .attr('fill',getFill)
-                .attr('stroke-width',.1)
-                .attr('stroke','black')
-                .on('mouseover',function(e,d){
-                    const string = d.name + '</br>' + d.value + '</br>' + d.scaledVal;
-                    tTip.html(string);
-                }).on('mousemove', function(e){
-                    Utils.moveTTipEvent(tTip,e);
-                }).on('mouseout', function(e){
-                    Utils.hideTTip(tTip);
-                });
-
-            svg.selectAll('.valRect').remove();
-            svg.selectAll('.valRect')
-                .data(rectData).enter()
-                .append('rect').attr('class','valRect')
-                .attr('x',d=>d.x)
-                .attr('y',rectY)
-                .attr('height',d=>d.height)
-                .attr('fill',getFill)
-                .attr('stroke-width',.1)
-                .attr('stroke','grey')
-                .attr('width',barWidth-4)
-                .attr('fill',getFill)
-                .on('mouseover',function(e,d){
-                    const string = d.name + '</br>' + d.value + '</br>' + d.scaledVal;
-                    tTip.html(string);
-                }).on('mousemove', function(e){
-                    Utils.moveTTipEvent(tTip,e);
-                }).on('mouseout', function(e){
-                    Utils.hideTTip(tTip);
-                });
-
-            svg.selectAll('.outcome').remove();
-            svg.selectAll('.outcome')
-                .data(outcomeData).enter()
-                .append('circle').attr('class','outcome')
-                .attr('cx',getCX)
-                .attr('cy',getCY)
-                .attr('r',d=>d.height/2)
-                .attr('fill',getFill)
-                .attr('stroke-width',.1)
-                .attr('stroke','grey')
-                .attr('fill',getFill)
-                .on('mouseover',function(e,d){
-                    const string = d.name + '</br>' + d.value + '</br>' + d.scaledVal;
-                    tTip.html(string);
-                }).on('mousemove', function(e){
-                    Utils.moveTTipEvent(tTip,e);
-                }).on('mouseout', function(e){
-                    Utils.hideTTip(tTip);
-                });
-
-            svg.selectAll('.d3label').remove();
-            if(showLabels){
-                const fontsize = Math.min(barWidth,10);
-                const labelData = diamondData.concat(rectData).concat(outcomeData)
-                svg.selectAll('.d3label')
-                    .data(labelData).enter()
-                    .append('text').attr('class','d3label')
-                    .attr('text-anchor','middle')
-                    .attr('y', d=> height -d.height -fontsize)
-                    .attr('textLength',getWidth)
-                    .attr('lengthAdjust','spacingAndGlyphs')
-                    .attr('x',d=>d.x+(barWidth*.5))
-                    .attr('fontSize',fontsize)
-                    .text(d=>Utils.getFeatureDisplayName(d.name));
-            }
+            var kPath = svg.selectAll('.kiviatPath').data(pathData)
+            kPath.enter()
+                .append('path').attr('class','kiviatPath')
+                .merge(kPath)
+                .attr('d',d=>d3.line()(d.path))
+                .attr('stroke',d=>d.stroke).attr('stroke-width',d=>d.sw)
+                .attr('fill',d=>d.fill);
+            
         }
     },[svg,props.data]);
-
-    return (
-        <div
-            className={"d3-component"}
-            style={{'height':'95%','width':'95%'}}
-            ref={d3Container}
-        ></div>
-    );
-}
-
-export function NeighborVisLabels(props){
-
-    const d3Container = useRef(null);
-    const [svg, height, width, tTip] = useSVGCanvas(d3Container);
-
-    const ordinalVars = constants.ordinalVars;
-    const booleanVars = constants.booleanVars;
-    const continuousVars = constants.continuousVars;
-
-    const vargroupSeperation = Math.min(width/20,10);
-
-    const allVars = Object.keys(ordinalVars)
-        .concat(continuousVars)
-        .concat(booleanVars.filter(d=> !d.includes('subsite')));
-
-    useEffect(()=>{
-        if(svg !== undefined){
-            const barWidth = (width - margin[0][0] - margin[1][0] - vargroupSeperation)/(allVars.length + constants.OUTCOMES.length);
-            var currX = margin[0][0];
-            const fontsize = props.fontSize === undefined? Math.min(barWidth,height/2): props.fontSize;
-            function getData(key){
-                if(key === constants.DECISIONS[0] | key === constants.OUTCOMES[0]){
-                    currX += vargroupSeperation;
-                }
-                let entry = {
-                    'name': key,
-                    'x': currX,
-                }
-                currX += barWidth
-                return entry;
-            }
-
-            let baselineData = allVars.map(d=>getData(d));
-            currX  += vargroupSeperation
-            let outcomeData = constants.OUTCOMES.map(d=>getData(d));
-
-            const centerY = height/2;
-            svg.selectAll('.label').remove();
-            svg.selectAll('.label')
-                .data(baselineData.concat(outcomeData)).enter()
-                .append('text').attr('class','label')
-                .attr('x',d=>d.x)
-                .attr('y',centerY + fontsize/2)
-                .attr('font-size',fontsize)
-                .attr('text-anchor','start')
-                .attr('textLength',barWidth-4)
-                .text(d=>Utils.getFeatureDisplayName(d.name))
-
-        }
-    },[svg]);
 
     return (
         <div

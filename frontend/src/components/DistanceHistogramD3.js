@@ -113,14 +113,26 @@ export default function DistanceHistogram(props){
             const labelSize = Math.min(12,topMargin/2);
             svg.selectAll('.label').remove();
 
-            
+            function getLabel(cp){
+                let string = ordinalSuffix(cp) + ' percentile';
+                if(cp > .95){
+                    string += '⚠';
+                } else if(cp < .5){
+                    string += '☺'
+                } else if(cp > .75){
+                    string += '☹';
+                } else{
+                    string += '😐';
+                }
+                return string
+            }
             svg.append('text').attr('class','label')
                 .attr('x', patientX > width/2? patientX - 5: patientX + 5).attr('y',topMargin+labelSize+5)
                 .attr('text-anchor',patientX > width/2? 'end':'start')
                 .attr('fontSize',labelSize)
                 .attr('font-weight','bold')
                 .attr('stroke','white').attr('stroke-width',.01)
-                .text(ordinalSuffix(currPercentile) + ' percentile')
+                .text(getLabel(currPercentile))
 
             pLine.raise();
         }

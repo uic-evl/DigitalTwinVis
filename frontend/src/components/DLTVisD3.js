@@ -67,7 +67,7 @@ export default function DLTisD3(props){
                 .data(pathData).enter()
                 .append('path').attr('class','dltOutline')
                 .attr('d',d=>d.path)
-                .attr('opacity',d=>d.val>.01? 1:.1)
+                .attr('opacity',d=>d.val**.25)
                 .attr('style',d=>d.style);
 
             let box = svg.node().getBBox();

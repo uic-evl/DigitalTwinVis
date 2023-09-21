@@ -94,7 +94,8 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
           const dltWidth = '4em'
           const lnWidth = '5em';
           const subsiteWidth = '4em';
-          const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
+          const nWidth = '8em';
+        //   const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
           function makeN(d,i,useReference=true,showLabels=false,bottomBorder=false,brushable=true){
             const borderColor = d[dString] > .5? constants.yesColor: constants.noColor;
             const bBorder = bottomBorder? '.4em solid black':'';
@@ -108,16 +109,18 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
               }
             }
             return (
-            <div key={d.id} 
+            <div key={d.id+'-'+i} 
                style={{'margin':'.2em','height': thingHeight,
-               'width': '100%','diplay': 'block','borderStyle':'solid',
+               'width': 'auto',
+               'diplay': 'inline-flex',
+               'borderStyle':'solid',
               'borderColor': borderColor,'borderWidth':'.2em',
               'marginBottom': marginBottom,
               'borderBottom': bBorder,
               }}
               onClick={()=>brush()}
               >
-              <div style={{'width': dltWidth,'height':'100%','display':'inline-block'}}>
+              <div style={{'width': dltWidth,'height':'100%','display':'inline-flex'}}>
               <DLTVisD3
                 dltSvgPaths={dltSvgPaths}
                 data={d}
@@ -125,14 +128,14 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
                 isMainPatient={false}
               />
               </div >
-              <div style={{'width': lnWidth,'height':'100%','display':'inline-block'}}>
+              <div style={{'width': lnWidth,'height':'100%','display':'inline-flex'}}>
                 <LNVisD3
                   lnSvgPaths={lnSvgPaths}
                   data={d}
                   isMainPatient={false}
                 ></LNVisD3>
               </div>
-              <div style={{'width':subsiteWidth,'height':'100%','display':'inline-block'}}>
+              <div style={{'width':subsiteWidth,'height':'100%','display':'inline-flex'}}>
                 <SubsiteVisD3
                   subsiteSvgPaths={props.subsiteSvgPaths}
                   data={d}
@@ -140,17 +143,30 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
                   featureQue={{}}
                 ></SubsiteVisD3>
               </div>
-              <div style={{'width':nWidth,'height':'100%','display':'inline-block'}}>
+              <div style={{'width':nWidth,'height':'100%','display':'inline-flex'}}>
                 <NeighborVisD3
                   data={d}
-                  referenceData={undefined}
-                  referenceQue={undefined}
+                  referenceData={props.patientFeatures}
                   key={d.id+i}
                   lnSvgPaths={lnSvgPaths}
                   valRanges={ranges}
                   dltSvgPaths={dltSvgPaths}
                   currState={currState}
                   showLabels={showLabels}
+                  version={'baseline'}
+                ></NeighborVisD3>
+              </div>
+              <div style={{'width':nWidth,'height':'100%','display':'inline-flex'}}>
+                <NeighborVisD3
+                  data={d}
+                  referenceData={props.patientFeatures}
+                  key={d.id+i+'outcomes'}
+                  lnSvgPaths={lnSvgPaths}
+                  valRanges={ranges}
+                  dltSvgPaths={dltSvgPaths}
+                  currState={currState}
+                  showLabels={showLabels}
+                  version={'outcomes'}
                 ></NeighborVisD3>
               </div>
             </div>
@@ -159,12 +175,15 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
           const nStuff = p.map((d,i) => makeN(d,i,true,false));
     
           return (
-            <div className={'fillSpace centerText scroll'}>
+            
+            <div className={'centerText scroll'} style={{'width':'100%!important','height':'auto',
+                    'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
                 {makeN(meanTreated,'n',false,false,false)}
                 {makeN(meanUntreated,'cf',false,false,false)}
-                <hr></hr>
+                <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
                 {nStuff}
-            </div>);
+            </div>
+            );
         } else{
           return <Spinner>{'No'}</Spinner>
         }
@@ -173,7 +192,7 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
 
     function makeAttributionPlot(props){
         const attr = (
-            <div className={'fillSpace'} >
+            <div  className={'fillSpace'} >
                 <div style={{'height':'calc(100% - 6em)','width': '100%'}}>
                 <AttributionPlotD3
                     simulation={props.simulation}
@@ -200,7 +219,7 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
 
     function makeScatterplot(props){
         return (
-            <div className={'fillSpace'} >
+            <div key={'no'} className={'fillSpace'} >
                 <div style={{'height':'calc(100% - 6em)','width': '100%'}}>
                 <ScatterPlotD3
                     cohortData={props.cohortData}

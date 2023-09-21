@@ -54,7 +54,7 @@ export default function RecommendationPlot(props){
                 'x': xScale(props.decision),
                 'y': height/2,
                 'radius': radius,
-                'fill': 'teal',
+                'fill':   props.decision >= .5? constants.dnnColor: constants.dnnColorNo,
                 'value': props.decision,
                 'title': 'Rec.'
             }
@@ -63,7 +63,7 @@ export default function RecommendationPlot(props){
                 'x': xScale(nProb),
                 'y': height/2,
                 'radius': radius,
-                'fill': 'goldenrod',
+                'fill': nProb >= .5? constants.knnColor: constants.knnColorNo,
                 'value': nProb,
                 'title': 'Sim. Patients'
             }
@@ -88,6 +88,7 @@ export default function RecommendationPlot(props){
                 .attr('font-size',labelSize)
                 .attr('stroke','white')
                 .attr('stroke-width',.01)
+                .style('fill',d=> d.value >= .5? 'white':'black')
                 .attr('font-weight','bold')
                 .attr('y',d=> d.y + labelSize/4)// - d.radius - labelSize/2)
                 .text(d=> (d.value*100).toFixed(0) + '%');

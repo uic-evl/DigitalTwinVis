@@ -241,64 +241,6 @@ function App() {
   }
   
 
-  // const confidenceCalibration = useMemo(()=>{
-  //   if(Utils.allValid([simulation,cohortData,currEmbeddings,cohortEmbeddings])){
-  //     const getNeighbor = id => Object.assign(Object.assign({},cohortData[id+'']),cohortEmbeddings[id+'']);
-  //     var performances = [];
-  //     for(let state in constants.DECISIONS){
-  //       const predictionString = 'decision' + state + '_' + modelOutput;
-  //       var tpr = 0;
-  //       var fpr = 0;
-  //       var tnr = 0;
-  //       var fnr = 0;
-  //       var acc = 0;
-  //       let n = 0;
-  //       for(let i in currEmbeddings.neighbors){
-  //         var id = currEmbeddings.neighbors[i];
-  //         var sim = currEmbeddings.similarities[i];
-  //         var nData = getNeighbor(id);
-  //         const prediction = (nData[predictionString] > .5) + 0;
-  //         const trueOutcome = nData[constants.DECISIONS[state]] + 0;
-  //         const correct = prediction - trueOutcome < .01;
-  //         if(correct){
-  //           acc += 1;
-  //           if(trueOutcome > .001){
-  //             tpr += 1;
-  //           } else{
-  //             tnr +=1
-  //           }
-  //         } else{
-  //           if(trueOutcome > .001){
-  //             fnr += 1;
-  //           } else{
-  //             fpr += 1
-  //           }
-  //         }
-  //         n+=1;
-  //         if(n > neighborsToShow){
-  //           break;
-  //         }
-  //       }
-  //       tpr /= n;
-  //       fpr /= n;
-  //       tnr /= n;
-  //       fnr /= n;
-  //       acc /= n;
-  //       const entry = {
-  //         'tpr': tpr,
-  //         'fpr': fpr,
-  //         'tnr': tnr,
-  //         'fnr': fnr,
-  //         'acc': acc,
-  //       }
-  //       performances.push(entry);
-  //     }
-
-  //     return performances
-  //   }
-  //   return false
-  // },[simulation,cohortData,currEmbeddings,cohortEmbeddings]);
-
   function getSimulation(){
     if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
     let key = modelOutput;
@@ -504,6 +446,7 @@ function App() {
       let btns = [0,-1,1].map((bval,ii) => {
         return (
           <Button
+          key={names[ii]}
             onClick={()=>fixDecision(i,bval)}
             variant={getVariant(bval)}
             colorScheme={getColor(bval)}
@@ -511,6 +454,7 @@ function App() {
         )
       })
       return (<ButtonGroup 
+        key={'fixedB'+i}
         isAttached
         style={{'display':'inline','margin':10}}
         spacing={0}
@@ -523,13 +467,13 @@ function App() {
 
     return (
       <>
-        <Button>{"Model:"}</Button>
+        <Button key={'modelB'}>{"Model:"}</Button>
         {ModelToggle}
         <div style={{'display': 'inline','width':'auto'}}>{' | '}</div>
-        <Button>{"Decision:"}</Button>
+        <Button key={'decisionB'}>{"Decision:"}</Button>
         {tempButtons}
         <div style={{'display': 'inline','width':'auto'}}>{' | '}</div>
-        <Button>{'Fix Decisions'}</Button>
+        <Button key={'fixB'}>{'Fix Decisions'}</Button>
         {radioButtons}
       </>
     )
@@ -539,26 +483,11 @@ function App() {
   function makeThing(){
     return (
         <Grid
-        templateRows='1.6em 1.4em 1fr 10em'
+        templateRows='1.4em 1fr 10em 2em'
         templateColumns='1fr 1fr'
-        h='1000px'
-        w='100px'
         className={'fillSpace'}
 
       >
-        <GridItem w='100%' h='100%' colSpan={2} rowSpan={1}>
-          <Button 
-            onClick={()=>updatePatient(featureQue)}
-            variant={'outline'}
-            colorScheme={'grey'}
-            disabled={featureQue === undefined | Object.keys(featureQue).length < 1}
-          >{'Run Changes'}</Button>
-          <Button
-            onClick={()=>setFeatureQue({})}
-            variant={'outline'}
-            colorScheme={'red'}
-          >{'Reset'}</Button>
-        </GridItem>
         <GridItem colSpan={2} rowSpan={1} className={'title'}>
           {'Patient Features'}
         </GridItem>
@@ -622,6 +551,19 @@ function App() {
           />
           </div>
         </GridItem>
+        <GridItem w='100%' h='100%' colSpan={2} rowSpan={1} mt={2}>
+          <Button 
+            onClick={()=>updatePatient(featureQue)}
+            variant={'outline'}
+            colorScheme={'grey'}
+            disabled={featureQue === undefined | Object.keys(featureQue).length < 1}
+          >{'Run Changes'}</Button>
+          <Button
+            onClick={()=>setFeatureQue({})}
+            variant={'outline'}
+            colorScheme={'red'}
+          >{'Reset'}</Button>
+        </GridItem>
         {/* <GridItem colSpan={1} rowSpan={1}>
           <div className={'title'} style={{'height': '1.5em'}}>{'DLTs'}</div>
           <div style={{'height': 'calc(100% - 1.5em)'}}>
@@ -645,7 +587,7 @@ function App() {
   return (
     <ChakraProvider>
       <Grid
-        h='95%'
+        h='99%'
         w='100%'
         templateRows='2em repeat(2,1fr)'
         templateColumns='25em repeat(4,1fr) 1em'
@@ -715,7 +657,7 @@ function App() {
             h="100%"
             w="100%"
             templateRows='1fr 6em'
-            templateCols='1fr'
+            templateColumns='1fr'
           >
             <GridItem rowSpan={2} style={{'overflowY':'scroll'}}>
               {Outcomes}
