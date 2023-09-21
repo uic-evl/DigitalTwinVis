@@ -64,12 +64,14 @@ def get_patient_embeddings():
 
 @app.route('/newpatient',methods=['POST'])
 def get_newpatient_stuff():
-    state = request.args.get('state')
     patient_dict = request.get_json(force=True)
     print('_new patient simulation request_')
     print(patient_dict)
     print('---')
-    return_vals = get_stuff_for_patient(patient_dict,DATA,transition_model1,transition_model2,outcome_model,decision_model,state=state)
+    state = patient_dict.get('state',0)
+    if 'state' in patient_dict:
+        del patient_dict['state']
+    return_vals = get_stuff_for_patient(patient_dict,DATA,transition_model1,transition_model2,outcome_model,decision_model,state=state,pcas=PCAS,embedding_df=embedding_df)
     # print(return_vals)
     print('-------')
     return responsify(return_vals)

@@ -78,6 +78,13 @@ export default function AttributionPlotD3(props){
                 validKeys = ['baseline','dlt1','nd','pd']
             }
             var data = {'other':0,'dlt': 0,'Ipsilateral LNs':0,'Contralateral LNs': 0,'Nodal Response': 0,'Primary Response': 0};
+            var ordinalLookup = {}
+            for(let [variable,options] of Object.entries(constants.ordinalVars)){
+                data[variable] = 0;
+                for(let o in options){
+                    ordinalLookup[variable+'_'+o] = variable
+                }
+            }
             var otherEntries = [];
             
             function addAttribution(d,key,value){
@@ -100,7 +107,9 @@ export default function AttributionPlotD3(props){
                 }
                 for(const [key2,val] of Object.entries(newData)){
                     let vkey = isDlt? 'DLT': key2;
-                    if(key2.includes('_ipsi')){
+                    if(ordinalLookup[key2] !== undefined){
+                        vkey = ordinalLookup[key2];
+                    }else if(key2.includes('_ipsi')){
                         vkey = 'Ipsilateral LNs';
                     } else if(key2.includes('contra')){
                         vkey = 'Contralateral LNs';

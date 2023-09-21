@@ -163,7 +163,8 @@ function App() {
     setSimulation(undefined);
     if(sim.data !== undefined){
       console.log('patient simulation',sim);
-      setSimulation(sim.data);
+      setSimulation(sim.data.simulation);
+      setCurrEmbeddings(sim.data.embeddings[currState])
       setPatientSimLoading(false);
       setCursor('default')
     } else{
@@ -180,20 +181,6 @@ function App() {
       setCohortPredictions(pred.data)
     } else{
       console.log('error setting cohort predictions');
-    }
-  }
-
-  async function fetchPatientNeighbors(){
-    if(patientEmbeddingLoading){ return }
-    setPatientEmbeddingLoading(true);
-    const embed = await api.getPatientNeighbors(patientFeatures);
-    setCurrEmbeddings(undefined);
-    if(embed.data !== undefined){
-      console.log('patient embedding and neighbors',embed.data);
-      setCurrEmbeddings(embed.data);
-      setPatientEmbeddingLoading(false);
-    } else{
-      console.log('error setting patient embedding and neighbors');
     }
   }
 
@@ -232,12 +219,12 @@ function App() {
     // fetchCohortPredictions();
   },[]);
 
+  //todo: ask about this. Currstate will update for every change and is slower, but only is needed for small edge cases 
+  // i.e. (fixed outcomes in higher state, query with lower state, then swich back  without updating anything)
   useEffect(()=>{
     fetchPatientSimulation();
-  },[patientFeatures])
-  useEffect(() => {
-    fetchPatientNeighbors();
-  },[patientFeatures,currState]);
+  },[patientFeatures,currState])
+
 
 
   function wrapTitle(item,text){

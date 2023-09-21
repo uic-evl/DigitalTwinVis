@@ -7,12 +7,14 @@ import PatientFeatureEditor from './PatientFeatureEditor.js';
 import { Input,Spinner } from '@chakra-ui/react';
 
 function getProgressionVars(state){
-    if(state < 1){
-        return []
-    } if(state == 1){
-        return Object.keys(constants.progressionVars).filter(d=>d.includes('IC'));
+    var vars = [];
+    if(state > 0){
+        vars = Object.keys(constants.progressionVars).filter(d=>d.includes('IC'));
+        if(state > 1){
+            vars = vars.concat(Object.keys(constants.progressionVars).filter(d=>d.includes('CC')))
+        }
     }
-    return Object.keys(constants.progressionVars).filter(d=>d.includes('CC'));
+    return vars
 }
 
 export default function PatientEditor(props){
@@ -233,7 +235,7 @@ export default function PatientEditor(props){
     function handleFeatureInput(e,n){
         if(e.target.nodeName=== 'INPUT' & e.keyCode === 13){
             var value = e.target.value;
-            console.log('event!',e,n,value,props.featureQue);
+            // console.log('event!',e,n,value,props.featureQue);
             if(value === '' | value === null | value === undefined){
                 return;
             }
@@ -247,7 +249,7 @@ export default function PatientEditor(props){
                 value = value === 'N'? 0: value;
                 value = parseInt(value);
                 if(value !== 0 & value !== 1){ return; }
-                console.log('good bool val!',value,n)
+                // console.log('good bool val!',value,n)
                 var newQ = Object.assign(props.featureQue);
                 newQ[n] = parseInt(value);
                 props.setFeatureQue(newQ);
@@ -366,7 +368,7 @@ export default function PatientEditor(props){
         }
 
 
-        console.log('update',props.featureQue);
+        // console.log('update',props.featureQue);
         function makeEditorRow(data,i){
             return (
             <div  key={i+data.name+props.featureQue[data.name]} style={{'height':'3em','width':'100%','marginTop':'.1em'}}>
@@ -420,7 +422,7 @@ export default function PatientEditor(props){
         props.patientFeatures,
         props.simulation,
         props.featureQue,
-        allVars,
+        // allVars,
         props.fixedDecisions,
         props.modelOutput]) 
 

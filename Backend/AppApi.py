@@ -228,7 +228,8 @@ def get_default_input(dataset,state=0,ids=None):
 def format_patient(dataset,input_dict):
     #converts patient input features into data input type
     baselines = dataset.processed_df.median().to_dict()
-    for k in Const.primary_disease_states + Const.nodal_disease_states:
+    #set all basline transition states to 0 so my lazy way of checking for fixed values works
+    for k in Const.primary_disease_states + Const.nodal_disease_states + list(Const.modification_types.values()) + list(Const.cc_types.values()):
         baselines[k] = 0
         baselines[k+' 2'] = 0
     for k,v in input_dict.items():
@@ -305,9 +306,51 @@ def test_mahalanobis_distances(dataset=None,decision_model=None,state=1,embeddin
 def dictify(keys,values):
     return {k:v for k,v in zip(keys,values)}
 
-def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisionmodel,state=0):
+def get_neighbors_and_embeddings_from_sim(embeddings,dataset,decisionmodel,
+                                         embedding_df=None,max_neighbors=100,
+                                          pcas=None,
+                                          pca_components=2,
+                                         ):
+    #this is get_embeddings_and_neighbors, but uses the optimal model from get_stuff_For_patient embeddings
+    #instead of just kinda not simulation anyhting. adds 1 second on my UIC workstation to the simulation
+    if embedding_df is None:
+        embedding_df = get_embedding_df(dataset,decisionmodel)
+    cat = lambda x: torch.cat(x,axis=1)
+    
+    embed_arrays = [np.stack(embedding_df['embeddings_state'+str(s)].values) for s in embeddings.keys()]
+    if pcas is None:
+        pcas = [PCA(pca_components,whiten=True).fit(e) for e in embed_arrays]
+    i = 0
+    results = {}
+    for state, embedding in embeddings.items():
+        embedding_array = embed_arrays[i]
+        mdist = calculateMahalanobis(embedding.reshape(1,-1),embedding_array)
+        
+        dists = cdist(embedding,embedding_array).ravel()
+        max_neighbors = min(len(dists),max_neighbors)
+        min_positions = np.argsort(dists)[:max_neighbors]
+        neighbor_ids = dataset.processed_df.index.values[min_positions]
+        min_dists = dists[min_positions]
+        similarities = 1/(1+min_dists)
+        # similarities /= similarities.max() #adjust for rounding errors, self sim should be the max
+        pPca = pcas[i].transform(embedding)[0]
+        entry = {
+            'neighbors': neighbor_ids, 
+            'similarities': similarities,
+            'embedding': embedding[0],
+            'pca': pPca, 
+            'mahalanobisDistance': mdist[0]
+        }
+        results[state] = entry
+        i+=1
+        
+    return results
+
+
+def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisionmodel,state=0,**kwargs):
     #this takes a patient dict and returns the results for a full treatment simulation
-    #currently this is only the baseline and I need to think more about what to do with fixed values?
+    #currently if state > 0 it will check if prior transition states are all zero and if not, will input them
+    #currently works with categorical, might have to experiment with passing like -1 for fixed "no" with fixed no dlts
     pdata = format_patient(data,patient_dict)
     baseline_inputs = dict_to_model_input(data,pdata,state=0,concat=False) 
     
@@ -325,7 +368,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     outcomemodel.set_device(device)
     decisionmodel.set_device(device)
     results = {}
-    
+    embeddings = {}
     #do a loop for imitation and a loop for optimal decision making, mod = 3 is imitation
     format_transition = lambda x: x.view(1,-1).to(device)
     #inputs are order baseline, dlt1, dlt2, pd, nd, cc type, dose modifications
@@ -363,7 +406,33 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     o1 = decisionmodel(cat(baseline_inputs),position=0)[0]
     
     thresh = lambda x: torch.gt(x,.5).type(torch.FloatTensor)
+    
+    def get_fixed_transitions():
+        
+        [base, dlt1,_,pd1,nd1,_,mod] =dict_to_model_input(data,pdata,state=1,
+                                                          concat=False,zero_transition_states=False)
+        [base, _,dlt2,pd2,nd2,cc,_] =dict_to_model_input(data,pdata,state=2,
+                                                          concat=False,zero_transition_states=False)
+        isfixed = lambda d: not (torch.sum(d) < .00001)
+        results = {
+            'dlt1': isfixed(dlt1),
+            'dlt2': isfixed(dlt2),
+            'pd1': isfixed(pd1),
+            'pd2': isfixed(pd2),
+            'nd1': isfixed(nd2),
+            'nd2': isfixed(nd2),
+            'cc': isfixed(cc),
+            'mod': isfixed(mod)
+        }
+        return results
+    fixed_transitions = get_fixed_transitions()
+    print('fixed_decisions',fixed_transitions)
     def run_simulation(modifier,decision1=None,decision2=None,decision3=None):
+        #do this to track malahanobis distances?
+        is_default = (modifier == 0 and decision1 is None and decision2 is None and decision3 is None)
+        if is_default:
+            embeddings[0] = decisionmodel.get_embedding(cat(baseline_inputs),position=0,use_saved_memory=True)
+            
         #transition 1 model uses usebaline + decision
         if decision1 is not None:
             d1 = torch.tensor([[decision1]]).type(torch.FloatTensor)
@@ -383,19 +452,37 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         ypd1[:,0:2] = ypd1[:,0:2]*d1_thresh
         ynd1[:,0:2] = ynd1[:,0:2]*d1_thresh
         
-        oinput2 = dict_to_model_input(data,pdata,state=1,concat=False)
-        oinput2[1] = ydlt1.view(1,-1)
-        oinput2[3] = ypd1
-        oinput2[4] = ynd1
-        oinput2[6] = ymod
+        oinput2 = dict_to_model_input(data,pdata,state=1,concat=False,zero_transition_states=False)
+        #if the input stuff has a value for transition states and state passed is > 0, fix them
         
+        #check if I should actually use the transition states
+        if state > 0 and fixed_transitions['dlt1']:
+            ydlt1 = torch.clone(oinput2[1])
+        else:
+            oinput2[1] = ydlt1.view(1,-1)
+        if state > 0 and fixed_transitions['pd1']:
+            ypd1 = torch.clone(oinput2[3])
+        else:
+            oinput2[3] = ypd1
+        if state > 0 and fixed_transitions['nd1']:
+            ynd1 = torch.clone(oinput2[4])
+        else:
+            oinput2[4] = ynd1
+        if state > 0 and fixed_transitions['mod']:
+            ymod = torch.clone(oinput2[6])
+        else:
+            oinput2[6] = torch.clone(ymod)
+            
+            
         if decision2 is not None:
             d2 = torch.tensor([[decision2]]).type(torch.FloatTensor)
             d2_attention=0
         else:
             d2 = decisionmodel(cat(oinput2),position=1)[0,1+modifier].view(1,-1)
             d2_attention = get_attention(cat(oinput2),1,modifier)
-        
+        if is_default:
+            embeddings[1] = decisionmodel.get_embedding(cat(oinput2),position=1,use_saved_memory=True)
+            
         #transition 2 modle uses baseline + pd1 + nd1 + modification + dlt1 + decision 1 + deicsion 2
         tinput2 = [baseline_inputs[0], ypd1, ynd1, ymod,ydlt1, thresh(d1),thresh(d2)]
 
@@ -406,18 +493,33 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         [ypd2, ynd2, ycc] = [format_transition(i) for i in [ypd2,ynd2,ycc]]
         
         oinput3 = oinput2[:]
-        oinput3[2] = ydlt2.view(1,-1)
-        oinput3[3] = ypd2
-        oinput3[4] = ynd2
-        oinput3[5] = ycc
-        
+        #check if I should use the transition states again
+        if state > 1 and fixed_transitions['dlt2']:
+            ydlt2 = torch.clone(oinput3[2])
+        else:
+            oinput3[2] = ydlt2.view(1,-1)
+        if state > 1 and fixed_transitions['pd2']:
+            ypd2 = torch.clone(oinput3[3])
+        else:
+            oinput3[3] = ypd2
+        if state > 1 and fixed_transitions['nd2']:
+            ynd2 = torch.clone(oinput3[4])
+        else:
+            oinput3[4] = ynd2
+        if state > 1 and fixed_transitions['cc']:
+            ycc = torch.clone(oinput3[5])
+        else:
+            oinput3[5] = torch.clone(ycc)
+
+            
         if decision3 is not None:
             d3 = torch.tensor([[decision3]]).type(torch.FloatTensor)
             d3_attention=0
         else:
             d3 = decisionmodel(cat(oinput3),position = 2)[0,2+modifier].view(1,-1)
             d3_attention = get_attention(cat(oinput3),2,modifier)
-        
+        if is_default:
+            embeddings[2] =decisionmodel.get_embedding(cat(oinput3),position=2,use_saved_memory=True)
         #outcomes uses baseline + pd2 + nd2 + cc type + dlt2 + decision 1,2,3
         tinput3 = [baseline_inputs[0], ypd2, ynd2, ycc, ydlt2, thresh(d1), thresh(d2), thresh(d3)]
         tinput3 = cat(tinput3)
@@ -431,7 +533,6 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
             'decision2_attention': d2_attention,
             'decision3_attention': d3_attention,
         }
-        
         def add_to_entry(tmodel_output,names):
             pred = tmodel_output['predictions']
             lower = tmodel_output['5%']
@@ -456,6 +557,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         if decision3 is not None:
             key += '_decision3-'+str(decision3)
         results[key] = entry
+
     with torch.no_grad():
         for modifier in [0,3]:
             for d1_fixed in [None,0,1]:
@@ -465,4 +567,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
                         if d1_fixed is not None and d2_fixed is not None and d3_fixed is not None and modifier > 0:
                             continue
                         run_simulation(modifier,d1_fixed,d2_fixed,d3_fixed)
-    return results
+    for k,v in embeddings.items():
+        embeddings[k] = v.cpu().detach().numpy()
+    embedding_results = get_neighbors_and_embeddings_from_sim(embeddings,data,decisionmodel,**kwargs)
+    return {'simulation': results,'embeddings': embedding_results}

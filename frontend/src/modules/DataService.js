@@ -101,7 +101,6 @@ export default class DataService {
                 goodPostData[key] = entry;
             }
         }
-    
         try{
             var response = await this.api.post('/newpatient',goodPostData);
             response.postData = goodPostData;
