@@ -26,6 +26,7 @@ export const booleanVars = [
         'bilateral',
         'gender',
         'subsite_BOT','subsite_Tonsil',
+        'White/Caucasion','African American/Black','Hispanic/Latino',
 ]
 export const continuousVars = [
 'age',

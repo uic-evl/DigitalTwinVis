@@ -13,8 +13,10 @@ import {Spinner} from '@chakra-ui/react'
 
 export default function AuxillaryViews(props){
 
-const auxViewOptions = ['attributions','scatterplot','neighbors']
-  const [auxView,setAuxView] = useState('attributions');
+    const container = useRef();
+
+    const auxViewOptions = ['attributions','scatterplot','neighbors']
+    const [auxView,setAuxView] = useState('attributions');
 
     function wrapTitle(item,text){
         return (
@@ -29,6 +31,48 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
         )
     }
 
+    function encodeOrdinal(p,key,values,scale=false){
+      let val = values[0];
+      let isMissing=true;
+      for(let i of values){
+          if(p[key+'_'+i] > 0){
+              val = i;
+              isMissing = false;
+              break;
+          }
+      }
+      return val
+  }
+
+    function encodePatient(p){
+      if(p === undefined){
+          return undefined;
+      }
+      let values = {
+          'similarity': p['similarity'],
+          'decision': p['decision'],
+      }
+      for(const [key,v] of Object.entries(constants.ordinalVars)){
+          values[key] = encodeOrdinal(p,key,v);
+      }
+      for(let key of constants.continuousVars){
+          let val = p[key] === undefined? 0:p[key];
+          values[key] = val;
+      }
+      for(let key of constants.booleanVars){
+          let val = p[key] === undefined? 0:p[key];
+          values[key] = val;
+      }
+      for(let key of constants.DECISIONS){
+          let val = p[key] === undefined? 0:p[key];
+          values[key] = val;
+      }
+      for(let key of constants.OUTCOMES){
+          let val = p[key] === undefined? 0:p[key];
+          values[key] = val;
+      }
+      return values;
+  }
 
     function makeNeighborView(currEmbeddings,currState,cohortData,simulation,fixedDecisions,modelOutput,brushedId){
         if(Utils.allValid([currEmbeddings,cohortData,simulation])){
@@ -43,7 +87,7 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
             decision = (sim['decision'+(currState+1)] > .5)? 1: 0;
           }
           const dString = constants.DECISIONS[currState];
-          const getNeighbor = id => Object.assign({},cohortData[id+'']);
+          const getNeighbor = id => encodePatient(Object.assign({},cohortData[id+'']));
           var neighbors = [];
           var cfs = [];
           for(let i in currEmbeddings.neighbors){
@@ -90,11 +134,14 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
             let extent = d3.extent(Object.values(cohortData).map(d=>d[key]));
             ranges[key] = extent;
           }
-          const thingHeight = '8em';
-          const dltWidth = '4em'
-          const lnWidth = '5em';
-          const subsiteWidth = '4em';
-          const nWidth = '8em';
+          const width = container.current.clientWidth;
+          const nPerRow = width > 1000? 2:1;
+          const thingHeight = width/(nPerRow*5.6);
+          const dltWidth = thingHeight/2;
+          const lnWidth = thingHeight;
+          const subsiteWidth = thingHeight;
+          const nWidth = thingHeight;
+          const encodedRef = encodePatient(props.patientFeatures);
         //   const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
           function makeN(d,i,useReference=true,showLabels=false,bottomBorder=false,brushable=true){
             const borderColor = d[dString] > .5? constants.yesColor: constants.noColor;
@@ -113,6 +160,7 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
                style={{'margin':'.2em','height': thingHeight,
                'width': 'auto',
                'diplay': 'inline-flex',
+               'justifyContent':'flex-start',
                'borderStyle':'solid',
               'borderColor': borderColor,'borderWidth':'.2em',
               'marginBottom': marginBottom,
@@ -120,46 +168,77 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
               }}
               onClick={()=>brush()}
               >
-              <div style={{'width': dltWidth,'height':'100%','display':'inline-flex'}}>
-              <DLTVisD3
-                dltSvgPaths={dltSvgPaths}
-                data={d}
-                currState={currState}
-                isMainPatient={false}
-              />
-              </div >
-              <div style={{'width': lnWidth,'height':'100%','display':'inline-flex'}}>
-                <LNVisD3
-                  lnSvgPaths={lnSvgPaths}
-                  data={d}
-                  isMainPatient={false}
-                ></LNVisD3>
+              <div style={{'margin':0,'width': dltWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
+                <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"DLTs"}</div>
+                <div style={{'width':'100%','height':'calc(100% - 1em)'}}>
+                  <DLTVisD3
+                    dltSvgPaths={dltSvgPaths}
+                    data={d}
+                    currState={currState}
+                    isMainPatient={false}
+                  />
+                </div>
+                
               </div>
-              <div style={{'width':subsiteWidth,'height':'100%','display':'inline-flex'}}>
-                <SubsiteVisD3
-                  subsiteSvgPaths={props.subsiteSvgPaths}
-                  data={d}
-                  isSelectable={false}
-                  featureQue={{}}
-                ></SubsiteVisD3>
+              <div style={{'margin':0,'width': lnWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
+                <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"LN"}</div>
+                <div style={{'width':'100%','height':'calc(100% - 1em - 10px)','marginTop':'10px'}}>
+                  <LNVisD3
+                    lnSvgPaths={lnSvgPaths}
+                    data={d}
+                    isMainPatient={false}
+                  ></LNVisD3>
+                </div>
               </div>
-              <div style={{'width':nWidth,'height':'100%','display':'inline-flex'}}>
+              <div style={{'margin':0,'width': subsiteWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
+                <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"Subsite"}</div>
+                <div style={{'width':'100%','height':'calc(100% - 1em - 10px)','marginTop':'10px'}}>
+                  <SubsiteVisD3
+                    subsiteSvgPaths={props.subsiteSvgPaths}
+                    data={d}
+                    isSelectable={false}
+                    featureQue={{}}
+                  ></SubsiteVisD3>
+                </div>
+              </div>
+              <div style={{'margin':0,'width': nWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
+                <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"Staging"}</div>
+                <div style={{'width':'100%','height':'calc(100% - 1em - 10px)','marginTop':'10px'}}>
                 <NeighborVisD3
                   data={d}
-                  referenceData={props.patientFeatures}
+                  referenceData={encodedRef}
                   key={d.id+i}
                   lnSvgPaths={lnSvgPaths}
                   valRanges={ranges}
                   dltSvgPaths={dltSvgPaths}
                   currState={currState}
                   showLabels={showLabels}
-                  version={'baseline'}
+                  version={'staging'}
                 ></NeighborVisD3>
+                </div>
               </div>
-              <div style={{'width':nWidth,'height':'100%','display':'inline-flex'}}>
+              <div style={{'margin':0,'width': nWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
+                <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"Baseline"}</div>
+                <div style={{'width':'100%','height':'calc(100% - 1em - 10px)','marginTop':'10px'}}>
                 <NeighborVisD3
                   data={d}
-                  referenceData={props.patientFeatures}
+                  referenceData={encodedRef}
+                  key={d.id+i}
+                  lnSvgPaths={lnSvgPaths}
+                  valRanges={ranges}
+                  dltSvgPaths={dltSvgPaths}
+                  currState={currState}
+                  showLabels={showLabels}
+                  version={'useful'}
+                ></NeighborVisD3>
+                </div>
+              </div>
+              <div style={{'margin':0,'width': nWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
+                <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"Outcomes"}</div>
+                <div style={{'width':'100%','height':'calc(100% - 1em - 10px)','marginTop':'10px'}}>
+                <NeighborVisD3
+                  data={d}
+                  referenceData={undefined}
                   key={d.id+i+'outcomes'}
                   lnSvgPaths={lnSvgPaths}
                   valRanges={ranges}
@@ -168,23 +247,42 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
                   showLabels={showLabels}
                   version={'outcomes'}
                 ></NeighborVisD3>
+                </div>
               </div>
             </div>
             )
           }
           const nStuff = p.map((d,i) => makeN(d,i,true,false));
     
-          return (
-            
-            <div className={'centerText scroll'} style={{'width':'100%!important','height':'auto',
-                    'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
-                {makeN(meanTreated,'n',false,false,false)}
-                {makeN(meanUntreated,'cf',false,false,false)}
-                <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
-                {nStuff}
-            </div>
-            );
-        } else{
+          if(nPerRow < 2){
+            return (
+              <div className={'centerText scroll'} style={{'width':'100%!important','height':'100%',
+                      'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
+                  {makeN(meanTreated,'n',false,false,false)}
+                  {makeN(meanUntreated,'cf',false,false,false)}
+                  <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
+                  {nStuff}
+              </div>
+              );
+          } else{
+            return (<div className={'fillSpace'}>
+              <div className={'scroll'} style={{'width':'49%','height':'100%',
+                      'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
+                  {makeN(meanUntreated,'cf',false,false,false)}
+                  <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
+                  {nStuff}
+              </div>
+              <div className={'scroll'} style={{'width':'49%','height':'100%',
+                      'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
+                  {makeN(meanUntreated,'cf',false,false,false)}
+                  <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
+                  {nStuff}
+              </div>
+            </div>)
+          }
+          
+        } 
+        else{
           return <Spinner>{'No'}</Spinner>
         }
     }
@@ -268,7 +366,7 @@ const auxViewOptions = ['attributions','scatterplot','neighbors']
     },[props,auxView])
 
     return (
-            <div className={'fillSpace'}>
+            <div className={'fillSpace'} ref={container}>
             <div style={{'height':'2.5em','width':'100%'}}>
                 {outcomeToggle()}
             </div>

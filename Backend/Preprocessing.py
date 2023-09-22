@@ -108,8 +108,10 @@ def merge_editions(row,basecol='AJCC 8th edition',fallback='AJCC 7th edition'):
 
 def preprocess_dt_data(df,extra_to_keep=None):
     
-    to_keep = ['id','hpv','age','packs_per_year','smoking_status','gender','Aspiration rate Pre-therapy','total_dose','dose_fraction'] 
-    to_onehot = ['T-category','N-category','AJCC','Pathological Grade','subsite','treatment','laterality','ln_cluster']
+    to_keep = ['id','hpv','age','packs_per_year','smoking_status','gender',
+               'Aspiration rate Pre-therapy','total_dose','dose_fraction'] 
+    to_onehot = ['T-category','N-category','AJCC','Pathological Grade',
+                 'subsite','treatment','laterality','ln_cluster']
     
     df['AJCC'] = df.apply(lambda row: merge_editions(row,'ajcc8','ajcc7'),axis=1)
     
@@ -140,7 +142,8 @@ def preprocess_dt_data(df,extra_to_keep=None):
         3: 'cc_others',
     }
 
-    races_shortened = ['White/Caucasian','Hispanic/Latino','African American/Black']
+    #they mispelled caucasian in the data
+    races_shortened = ['White/Caucasion','Hispanic/Latino','African American/Black',"Asian"]
     for race in races_shortened:
         df[race] = df['Race'].apply(lambda x: x.strip() == race)
         to_keep.append(race)
@@ -176,7 +179,7 @@ def preprocess_dt_data(df,extra_to_keep=None):
     for col in yn_to_binary:
         df[col] = df[col].apply(lambda x: int(x == 'Y'))
         
-    to_keep = to_keep + [c for c in df.columns if 'DLT' in c]
+    to_keep = to_keep + [c for c in df.columns if 'DLT_' in c and c != 'DLT_Grade']
     
     for statelist in [Const.state2,Const.state3,Const.decisions,Const.outcomes]:
         toadd = [c for c in statelist if c not in to_keep]
@@ -248,7 +251,7 @@ class DTDataset():
         df.index = df.index.astype(int)
         if ids is not None:
             df = df[df.id.apply(lambda x: x in ids)]
-        processed_df = preprocess_dt_data(df,self.ln_cols).fillna(0).drop(['DLT_Type','DLT 2'],axis=1)
+        processed_df = preprocess_dt_data(df,self.ln_cols).fillna(0).drop(['DLT_Type'],axis=1)
         processed_df = fix_ln_laterality(processed_df)
         self.processed_df= processed_df.drop(['laterality_L','laterality_R','laterality_Bilateral'],axis=1)
           

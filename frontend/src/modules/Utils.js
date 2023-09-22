@@ -11,6 +11,7 @@ export default class Utils {
         'N-category': 'N-cat',
         'T-category': 'T-cat',
         'Pathological_grade':'Path.</br>Grade',
+        'Pathological Grade':'Path. Grade',
         'Overall Survival (4 Years)': 'OS',
         'dlt1': 'Dose-Limiting Toxicities',
         'dlt2': 'Dose-Limiting Toxicities',
@@ -22,7 +23,12 @@ export default class Utils {
         'PR': "Partial",
         'SD': "Stable",
         'PD': "Progressive",
-        'gender':"Male"
+        'gender':"Male",
+        'White/Caucasion':'Caucasian',
+        'African American/Black':'AA/Black',
+        'Hispanic/Latino': 'Hispanic',
+        'dose_fraction': 'Dose Frac.',
+        'packs_per_year': 'Packs/Year'
     }
 
     static getColorScale(name,min,max){

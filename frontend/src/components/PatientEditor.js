@@ -32,7 +32,10 @@ export default function PatientEditor(props){
         }
     },[container,wSize]);
 
-    const [patientViews,setPatientViews] = useState(<Spinner></Spinner>)
+    const [patientViews,setPatientViews] = useState(<Spinner></Spinner>);
+
+    const [, updateState] = React.useState();
+    const forceUpdate = React.useCallback(() => updateState({}), []);
 
     const topMargin = Math.min(height/15,60);
     const bottomMargin = 40;
@@ -241,6 +244,7 @@ export default function PatientEditor(props){
         return values;
     }
 
+    //For some reason setting the feature que here doesn't tirgger and update so I call draw explicity
     function handleFeatureInput(e,n){
         if(e.target.nodeName=== 'INPUT' & e.keyCode === 13){
             var value = e.target.value;
@@ -253,6 +257,8 @@ export default function PatientEditor(props){
                 var newQ = Object.assign(props.featureQue);
                 newQ[n] = Number(value);
                 props.setFeatureQue(newQ);
+                console.log("UPDATEEEE")
+                draw()
             } else if(constants.booleanVars.indexOf(n) > -1){
                 value = value === 'Y'? 1:value;
                 value = value === 'N'? 0: value;
@@ -262,6 +268,7 @@ export default function PatientEditor(props){
                 var newQ = Object.assign(props.featureQue);
                 newQ[n] = parseInt(value);
                 props.setFeatureQue(newQ);
+                draw();
             } else if(constants.ordinalVars[n] !== undefined){
                 let validVals  = constants.ordinalVars[n];
                 value = parseInt(value);
@@ -271,6 +278,7 @@ export default function PatientEditor(props){
                     newQ[n+'_'+v] = (value === parseInt(v)) + 0;
                 }
                 props.setFeatureQue(newQ);
+                draw();
             } else if(constants.progressionVars[n] !== undefined){
                 let validVals = constants.progressionVars[n];
                 let entry = validVals[parseInt(value)];
@@ -284,11 +292,12 @@ export default function PatientEditor(props){
                     newQ[validVals[i]] = (i === parseInt(value)) + 0
                 }
                 props.setFeatureQue(newQ);
+                draw();
             }
         }
     }
 
-    useEffect(()=>{
+    function draw(){
         if(!Utils.allValid([
             props.patientFeatures,
             props.simulation,
@@ -377,7 +386,7 @@ export default function PatientEditor(props){
         }
 
 
-        // console.log('update',props.featureQue);
+        console.log('update',props.featureQue);
         function makeEditorRow(data,i){
             return (
             <div  key={i+data.name+props.featureQue[data.name]} style={{'height':'3em','width':'100%','marginTop':'.1em'}}>
@@ -426,6 +435,10 @@ export default function PatientEditor(props){
 
         const views = markers.map((d,i)=>makeEditorRow(d,i));
         setPatientViews(views);
+    };
+
+    useEffect(()=>{
+        draw();
     },[props.cohortData,
         props.currState,
         props.patientFeatures,

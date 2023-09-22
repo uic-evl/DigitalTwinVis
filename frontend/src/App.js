@@ -24,12 +24,17 @@ function App() {
 
   const defaultPatient = {
     'T-category_4': 1,
+    'N-category_3':1,
+    'AJCC_3': 1,
+    'Pathological_grade_2': 1,
     'age': 65,
     'bilateral': 1,
     'hpv': 1,
     'subsite_BOT': 1,
     '1A_ipsi': 1,
     '1B_ipsi': 1,
+    'total_dose':70,
+    'dose_fraction':3.3,
   }
   const api = new DataService();
   const maxStackSize = 4;
