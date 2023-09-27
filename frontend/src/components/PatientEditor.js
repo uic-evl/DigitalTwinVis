@@ -428,7 +428,7 @@ export default function PatientEditor(props){
                             className={'fillSpace'} 
                             variant='outline'
                             onKeyDown={(e)=>handleFeatureInput(e,data.name)}
-                            value={props.featureQue[data.currValue]}
+                            defaultValue={props.featureQue[data.currValue]}
                         />
                     </div>
                 </div>

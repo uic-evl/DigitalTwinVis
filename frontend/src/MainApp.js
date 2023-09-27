@@ -62,7 +62,6 @@ function MainApp({authToken}) {
 
   }
   const token = authToken? authToken: localStorage.getItem('token')
-  console.log('token',token,authToken);
   const api = new DataService(token);
   const maxStackSize = 4;
   const [patientFeatures,setPatientFeatures] = useState(defaultPatient);

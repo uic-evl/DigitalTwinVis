@@ -373,8 +373,8 @@ export default function AuxillaryViews(props){
                     setBrushedId={props.setBrushedId}
                 />
                 </div>
-                <div style={{'height':'6em','width': '100%'}}>
-                    {'legend'}
+                <div style={{'height':'6em','width': '100%','display':'flex','alignItems':'center','justifyContent':'center'}}>
+                    <img src={'scatterplot_legend.PNG'} style={{'maxHeight':'90%','maxWidth':'90%'}}/>
                 </div>
             </div>
             

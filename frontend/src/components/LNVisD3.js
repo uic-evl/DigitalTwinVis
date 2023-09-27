@@ -25,11 +25,11 @@ export default function LNVisD3(props){
     useEffect(()=>{
         if(Utils.allValid([svg,props.lnSvgPaths,props.data])){
             let getColorVal = (name,d) => {
-                if(props.featureQue !== undefined){
-                    if(props.featureQue[name] !== undefined){
-                        return props.featureQue[name];
-                    }
-                }
+                // if(props.featureQue !== undefined){
+                //     if(props.featureQue[name] !== undefined){
+                //         return props.featureQue[name];
+                //     }
+                // }
                 let val = d[name];
                 val = val === undefined? 0: val;
                 return val

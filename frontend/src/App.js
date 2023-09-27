@@ -31,7 +31,7 @@ async function loginUser(username,password) {
   } catch (error) {
     console.log('login error',error);
     if (error.response.status === 401) {
-      return {error: true, payload: null, message: 'Please, re-authenticate'}
+      return {error: true, payload: null, message: 'Username or password is incorrect.\n The cleaners have been dispatched to your location.'}
     }
     return {error: true, payload: null, message: error.message};
   }
