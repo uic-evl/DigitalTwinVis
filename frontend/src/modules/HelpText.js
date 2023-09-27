@@ -4,12 +4,12 @@ import * as d3 from 'd3';
 import Utils from './Utils.js';
 import * as constants from './Constants.js';
 
-export default function HelpButton({height,width,image,imageHeight,imageWidth}){
+export default function HelpText({height,width,text}){
     const d3Container = useRef(null);
 
     let [hgt,setH] = useState(0);
     let [wth,setW] = useState(0);
-    const minR = 10;
+    const minR = 20;
 
     useEffect(function makeSvg(){
         if(d3Container.current){
@@ -17,19 +17,24 @@ export default function HelpButton({height,width,image,imageHeight,imageWidth}){
             d3.select(d3Container.current).selectAll('svg').remove();
             let h = (height !== undefined)? height : d3Container.current.clientHeight;
             h = Math.max(minR,h);
-            let w = width? width : h;
-            w = Math.max(minR,w)
+            let w = width !== undefined? width : d3Container.current.clientWidth;
+            w = Math.max(minR,w,h/1.5)
             var canvas = d3.select(d3Container.current)
                 .append('svg')
                 .attr('class','frameEntryD3')
                 .attr('width',w)
-                .attr('height',h);
+                .attr('height',h)
+                .style('margin','auto').style('display','block')
 
-            var circle = canvas.append('circle')
-                .attr('cx',w/2)
-                .attr('cy',h/2)
-                .attr('r',Math.min(w/2,h/2))
-                .attr('fill','grey')
+            var circle = canvas.append('rect')
+                .attr('x',1)
+                .attr('y',1)
+                .attr('width',w-2)
+                .attr('height',h-2)
+                .attr('fill','none')
+                .attr('strokeWidth',2)
+                .attr('stroke','black')
+                .attr('rx',20);
 
             var q = canvas.append('text')
                 .attr('x',w/2)
@@ -46,17 +51,16 @@ export default function HelpButton({height,width,image,imageHeight,imageWidth}){
                     .style('visibility','hidden');
             }
             var tip = d3.select('body').select('.tooltip');
-
-            if(image){
-                canvas.on('mouseover', function(e){
-                    Utils.ttipShowImage(tip, image,imageHeight,imageWidth);
-                }).on('mousemove', function(e){
-                    Utils.moveTTip(tip,e);
-                }).on('mouseout', function(e){
-                    Utils.hideTTip(tip);
-                    // tip.node().setAttribute('background','');
-                });
-            }
+            canvas.on('mouseover', function(e){
+                tip.html(text);
+                Utils.moveTTipEvent(tip,e);
+            }).on('mousemove', function(e){
+                Utils.moveTTipEvent(tip,e);
+            }).on('mouseout', function(e){
+                tip.html('')
+                Utils.hideTTip(tip);
+                // tip.node().setAttribute('background','');
+            });
 
             setH(h);
             setW(w);
@@ -65,8 +69,8 @@ export default function HelpButton({height,width,image,imageHeight,imageWidth}){
 
     return (
         <div
-            className="helpButton"
-            style={{'display':'inline-block','height':hgt,'top':hgt/2,'width':wth}}
+            className="helpText"
+            style={{'display':'inline-block','height':'90%','width':wth,'textAlign':'center','marginTop':'5%!important'}}
             ref={d3Container}
         ></div>
     );

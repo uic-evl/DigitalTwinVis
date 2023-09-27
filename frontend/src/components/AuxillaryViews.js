@@ -15,7 +15,8 @@ export default function AuxillaryViews(props){
 
     const container = useRef();
 
-    const auxViewOptions = ['attributions','scatterplot','neighbors']
+    const auxViewOptions = ['attributions','scatterplot','neighbors'];
+    const auxViewLabels =['Feature Impact on Decision','Cohort Scatterplot', 'Similar Patients']
     const [auxView,setAuxView] = useState('attributions');
 
     function wrapTitle(item,text){
@@ -48,10 +49,11 @@ export default function AuxillaryViews(props){
       if(p === undefined){
           return undefined;
       }
-      let values = {
-          'similarity': p['similarity'],
-          'decision': p['decision'],
-      }
+      let values = Object.assign({},p)
+      // let values = {
+      //     'similarity': p['similarity'],
+      //     'decision': p['decision'],
+      // }
       for(const [key,v] of Object.entries(constants.ordinalVars)){
           values[key] = encodeOrdinal(p,key,v);
       }
@@ -77,7 +79,7 @@ export default function AuxillaryViews(props){
     function makeNeighborView(currEmbeddings,currState,cohortData,simulation,fixedDecisions,modelOutput,brushedId){
         if(Utils.allValid([currEmbeddings,cohortData,simulation])){
         const getSimulation = props.getSimulation;
-        const neighborsToShow=props.neighborsToShow;
+        const neighborsToShow= 10;
         const dltSvgPaths=props.dltSvgPaths;
         const subsiteSvgPaths=props.subsiteSvgPaths;
         const lnSvgPaths=props.lnSvgPaths;
@@ -111,6 +113,7 @@ export default function AuxillaryViews(props){
             }
           }
     
+          const dname = constants.DECISIONS_SHORT[props.currState];
           function getPatientMeans(plist){
             const meanObj = {};
             for(let obj of plist){
@@ -136,17 +139,19 @@ export default function AuxillaryViews(props){
           }
           const width = container.current.clientWidth;
           const nPerRow = width > 1000? 2:1;
-          const thingHeight = width/(nPerRow*5.6);
+          const thingHeight = width/(nPerRow*6.3);
           const dltWidth = thingHeight/2;
-          const lnWidth = thingHeight;
-          const subsiteWidth = thingHeight;
+          const lnWidth = thingHeight*.8;
+          const subsiteWidth = thingHeight*.7;
           const nWidth = thingHeight;
+          const titleWidth = thingHeight/1.5;
           const encodedRef = encodePatient(props.patientFeatures);
         //   const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
-          function makeN(d,i,useReference=true,showLabels=false,bottomBorder=false,brushable=true){
-            const borderColor = d[dString] > .5? constants.yesColor: constants.noColor;
-            const bBorder = bottomBorder? '.4em solid black':'';
+          function makeN(d,i,bottomBorder=true,name=undefined){
+            const borderColor = d[dString] > .5? constants.knnColor: constants.knnColorNo;
+            const bBorder = bottomBorder? '.4em solid ' + borderColor:'';
             const marginBottom = bottomBorder? '.4em': '.01em';
+            const showLabels = true;
             function brush(){
               let pId = parseInt(d.id)
               if(pId > 0 & pId !== brushedId){
@@ -155,19 +160,39 @@ export default function AuxillaryViews(props){
                 props.setBrushedId(undefined);
               }
             }
+            
+            if(name === undefined){
+              if(i === 'n' | i === 'cf'){
+                if(d[dString] > .5){
+                  name = dname + ' avg.'
+                } else{
+                  name = 'no ' + dname + ' avg.'
+                }
+              } else{
+                name = d.id + ': ';
+              
+                if(d[dString] > .5){
+                  name += dname;
+                } else{
+                  name += 'no ' + dname;
+                }
+              }
+              
+            }
             return (
-            <div key={d.id+'-'+i} 
+            <div key={d.id+'-'+i+props.currState} 
                style={{'margin':'.2em','height': thingHeight,
                'width': 'auto',
                'diplay': 'inline-flex',
                'justifyContent':'flex-start',
-               'borderStyle':'solid',
-              'borderColor': borderColor,'borderWidth':'.2em',
               'marginBottom': marginBottom,
               'borderBottom': bBorder,
               }}
               onClick={()=>brush()}
               >
+              <div className={'toggleButtonLabel'} style={{'display':'inline-flex','width': titleWidth,'fontSize':14,'height':'100%','justifyContent':'center','alignItems':'center'}}>
+                {name}
+              </div>
               <div style={{'margin':0,'width': dltWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
                 <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"DLTs"}</div>
                 <div style={{'width':'100%','height':'calc(100% - 1em)'}}>
@@ -187,6 +212,7 @@ export default function AuxillaryViews(props){
                     lnSvgPaths={lnSvgPaths}
                     data={d}
                     isMainPatient={false}
+                    useAttention={false}
                   ></LNVisD3>
                 </div>
               </div>
@@ -252,14 +278,14 @@ export default function AuxillaryViews(props){
             </div>
             )
           }
-          const nStuff = p.map((d,i) => makeN(d,i,true,false));
+          const nStuff = p.map((d,i) => makeN(d,i));
     
           if(nPerRow < 2){
             return (
               <div className={'centerText scroll'} style={{'width':'100%!important','height':'100%',
                       'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
-                  {makeN(meanTreated,'n',false,false,false)}
-                  {makeN(meanUntreated,'cf',false,false,false)}
+                  {makeN(meanTreated,'n')}
+                  {makeN(meanUntreated,'cf')}
                   <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
                   {nStuff}
               </div>
@@ -268,13 +294,13 @@ export default function AuxillaryViews(props){
             return (<div className={'fillSpace'}>
               <div className={'scroll'} style={{'width':'49%','height':'100%',
                       'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
-                  {makeN(meanUntreated,'cf',false,false,false)}
+                  {makeN(meanUntreated,'cf')}
                   <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
                   {nStuff}
               </div>
               <div className={'scroll'} style={{'width':'49%','height':'100%',
                       'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
-                  {makeN(meanUntreated,'cf',false,false,false)}
+                  {makeN(meanUntreated,'cf')}
                   <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
                   {nStuff}
               </div>
@@ -289,29 +315,36 @@ export default function AuxillaryViews(props){
 
 
     function makeAttributionPlot(props){
-        const attr = (
-            <div  className={'fillSpace'} >
-                <div style={{'height':'calc(100% - 6em)','width': '100%'}}>
-                <AttributionPlotD3
-                    simulation={props.simulation}
-                    currState={props.currState}
-                    defaultPredictions={props.defaultPredictions}
-                    modelOutput={props.modelOutput}
-                    fixedDecisions={props.fixedDecisions}
-                />
-                </div>
-                <div style={{'height':'6em','width': '100%'}}>
-                    <AttributionLegend
+        if(props.simulation !== undefined){
+          if(props.simulation[props.modelOutput] !== undefined){
+            const attr = (
+              <div  className={'fillSpace'} >
+                  <div style={{'height':'calc(100% - 6em)','width': '100%'}}>
+                  <AttributionPlotD3
                       simulation={props.simulation}
                       currState={props.currState}
+                      defaultPredictions={props.defaultPredictions}
                       modelOutput={props.modelOutput}
                       fixedDecisions={props.fixedDecisions}
-                    />
-                </div>
-            </div>
-            
-        )
-        return attr
+                  />
+                  </div>
+                  <div style={{'height':'6em','width': '100%'}}>
+                      <AttributionLegend
+                        simulation={props.simulation}
+                        currState={props.currState}
+                        modelOutput={props.modelOutput}
+                        fixedDecisions={props.fixedDecisions}
+                      />
+                  </div>
+              </div>
+              
+          )
+          return attr
+          }
+        }
+      else{
+        return (<Spinner/>)
+      }
     }
       
 
@@ -349,7 +382,7 @@ export default function AuxillaryViews(props){
       }
 
       function outcomeToggle(){
-        return Utils.makeStateToggles(auxViewOptions,auxView,setAuxView);
+        return Utils.makeStateToggles(auxViewOptions,auxView,setAuxView,auxViewLabels);
       }
       
       const currView = useMemo(()=>{

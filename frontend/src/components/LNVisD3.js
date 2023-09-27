@@ -40,21 +40,23 @@ export default function LNVisD3(props){
             let colorScale = d3.scaleLinear()
                 .domain([0,1]).range(['white','black']);
             if(useAttention & Utils.allValid([props.modelOutput,props.simulation])){
-                if(props.fixedDecisions[props.state] < 0){
-                    let key = props.modelOutput;
-                    for(let i in props.fixedDecisions){
-                        let d = props.fixedDecisions[i];
-                        let di = parseInt(i) + 1
-                        if(d >= 0){
-                            let suffix = '_decision'+(di)+'-'+d;
-                            key += suffix;
+                if(props.simulation[props.modelOutput] !== undefined){
+                    if(props.fixedDecisions[props.state] < 0){
+                        let key = props.modelOutput;
+                        for(let i in props.fixedDecisions){
+                            let d = props.fixedDecisions[i];
+                            let di = parseInt(i) + 1
+                            if(d >= 0){
+                                let suffix = '_decision'+(di)+'-'+d;
+                                key += suffix;
+                            }
                         }
-                    }
-                    const attributions = props.simulation[key]['decision'+(props.state + 1)+'_attention'];
-                    colorScale = Utils.getColorScale('attributions',attributions.range[0],attributions.range[1]);
-                    getAttention = name => attributions.baseline[name];
-                    getColorVal = (name,d) =>{
-                        return aScale(getAttention(name));
+                        const attributions = props.simulation[key]['decision'+(props.state + 1)+'_attention'];
+                        colorScale = Utils.getColorScale('attributions',attributions.range[0],attributions.range[1]);
+                        getAttention = name => attributions.baseline[name];
+                        getColorVal = (name,d) =>{
+                            return aScale(getAttention(name));
+                        }
                     }
                 }
             }
@@ -101,17 +103,20 @@ export default function LNVisD3(props){
                 .attr('stroke-width',getStrokeWidth)
                 .attr('fill',getColor)
                 .on('dblclick',(e,d)=>{
-                    if(d.name === 'outline'){ return; }
+                    if(d.name === 'outline' | !props.isMainPatient){ return; }
                     let val = d.queVal === -1? d.value: d.queVal;
                     let newVal = val < 1? 1: 0;
                     let pFeatures = Object.assign({},props.featureQue);
                     pFeatures[d.name] = newVal;
                     props.setFeatureQue(pFeatures)
                 }).on('mouseover',function(e,d){
-                    let string = d.name + '</br>'
+                    let string = d.name + ': ' + (100*d.value).toFixed(0) + '%';
+                    if(useAttention){
+                        string = d.name + '</br>'
                         + 'attribution: '+ d.attention.toFixed(3) + '</br>'
                         + 'current value:' + d.value + '</br>'
                         + 'queued value:' + d.queVal;
+                    } 
                     tTip.html(string);
                 }).on('mousemove', function(e){
                     Utils.moveTTipEvent(tTip,e);

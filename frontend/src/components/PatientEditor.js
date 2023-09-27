@@ -66,6 +66,7 @@ export default function PatientEditor(props){
     function getSim(){
         //get simulation but inside call so it doesn't break the drag stuff
             if(!Utils.allValid([props.simulation,props.modelOutput,props.fixedDecisions])){return undefined}
+            if(props.simulation[props.modelOutput] === undefined){return undefined}
             let key = props.modelOutput;
             let allFixed = true;
             for(let i in props.fixedDecisions){
@@ -78,10 +79,11 @@ export default function PatientEditor(props){
                     allFixed = false;
                 }
             }
+            //note: this was before I changed it to only do the current model in the api call to save time
             //I only saved 'optimal' if all are fixed to avoid repitition for when all decisions are fixed since its the same
-            if(allFixed){
-                key = key.replace('imitation','optimal')
-            }
+            // if(allFixed){
+            //     key = key.replace('imitation','optimal')
+            // }
             return props.simulation[key]
         }
 
@@ -304,6 +306,7 @@ export default function PatientEditor(props){
             props.cohortData])){
                 return
             }
+        if(props.simulation[props.modelOutput] === undefined){ return }
         let [s,means] = makeScales(props.cohortData);
         //quick correction to adapt vestigial code
         const meanVals = means;
@@ -421,7 +424,7 @@ export default function PatientEditor(props){
                     </div>
                     <div style={{'display':'inline-flex','width':'2.8em','height':'100%','marginTop':'0px'}}>
                         <Input 
-                            placeholder={data.currValue} 
+                            placeholder={data.currValue? data.currValue.toString(): 0} 
                             className={'fillSpace'} 
                             variant='outline'
                             onKeyDown={(e)=>handleFeatureInput(e,data.name)}

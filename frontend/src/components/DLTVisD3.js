@@ -65,10 +65,20 @@ export default function DLTisD3(props){
             let outlineGroup = svg.append('g').attr('class','dltGroup');
             outlineGroup.selectAll('.dltOutline')
                 .data(pathData).enter()
-                .append('path').attr('class','dltOutline')
+                .append('path').attr('class',d=> d.val > .0001? 'dltOutline dltActive':'dltOutline')
                 .attr('d',d=>d.path)
                 .attr('opacity',d=>d.val**.25)
-                .attr('style',d=>d.style);
+                .attr('style',d=>d.style)
+                
+            svg.selectAll('.dltActive').on('mouseover',function(e,d){
+                    let string = d.name + ': ' + (100*d.val).toFixed(0) + '%';
+                    tTip.html(string);
+                }).on('mousemove', function(e){
+                    Utils.moveTTipEvent(tTip,e);
+                }).on('mouseout', function(e){
+                    tTip.html('')
+                    Utils.hideTTip(tTip);
+                });;;
 
             let box = svg.node().getBBox();
             let translate = 'translate(' + (-box.x)*(width/box.width)  + ',' + (-box.y)*(height/box.height) + ')'

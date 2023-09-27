@@ -28,16 +28,22 @@ export default function ScatterPlotD3(props){
 
     function getFill(d){
         if(d.id < 0){
-            return d.imitationDecision > .5? 'green':'blue'
+            return d.modelDecision > .5? constants.dnnColor:constants.dnnColorNo;
+        }
+        if(d.isNeighbor){
+            return d.trueDecision > .5? constants.knnColor: constants.knnColorNo;
         }
         return d.trueDecision > .5? 'black': 'grey';
     }
 
     function getStroke(d){
         if(d.id < 0){
-            return d.optimalDecision > .5? 'green':'blue'
+            return 'none'
         }
-        return d[modelOutput+'Decision'] > .5? 'black': 'grey';
+        if(d.isNeighbor){
+            return d.modelDecision > .5? constants.knnColor: constants.knnColorNo;
+        }
+        return d.modelDecision > .5? 'black': 'grey';
     }
 
     function plotPCA(cohortEmbeddings,currEmbeddings,cohortData,patientFeatures,simulation,state){
@@ -67,7 +73,7 @@ export default function ScatterPlotD3(props){
 
         function getOpacity(id){
             if(id === -1){ return 1}
-            return isNeighbor(id)? .9: .7;
+            return isNeighbor(id)? 1: .25;
         }
 
         function getRadius(id){
@@ -106,16 +112,15 @@ export default function ScatterPlotD3(props){
                 'radius': getRadius(id),
                 'className': getClass(id),
                 'id': parseInt(id),
+                'isNeighbor': isNeighbor(id),
                 'data': cohortData[id+''],
             }
             if(id > 0){
-                entry['imitationDecision'] = cohortEmbeddings[id+'']['decision'+state+'_imitation'];
+                entry['modelDecision'] = cohortEmbeddings[id+'']['decision'+state+'_'+props.modelOutput];
                 entry['trueDecision'] =cohortData[id+''][constants.DECISIONS[state]];
-                entry['optimalDecision'] = cohortEmbeddings[id+'']['decision'+state+'_optimal'];
             } 
             else{
-                entry['imitationDecision'] = simulation['imitation']['decision'+(state+1)];
-                entry['optimalDecision'] = simulation['optimal']['decision'+(state+1)];
+                entry['modelDecision'] = simulation[props.modelOutput]['decision'+(state+1)];
                 entry['trueDecision'] = -1;
             }
             data.push(entry);
@@ -202,6 +207,7 @@ export default function ScatterPlotD3(props){
         let toTest = [props.cohortEmbeddings,
             props.cohortData,props.patientFeatures,props.currEmbeddings,props.simulation];
         if(Utils.allValid(toTest)){
+            if(props.simulation[props.modelOutput] === undefined){return}
             plotPCA(
                 props.cohortEmbeddings,props.currEmbeddings,
                 props.cohortData,props.patientFeatures,props.simulation,state);
@@ -216,7 +222,7 @@ export default function ScatterPlotD3(props){
         props.cohortEmbeddings,
         props.currEmbeddings,
         props.cohortData,
-        // props.modelOutput,
+        props.modelOutput,
         props.currState,
         state])
 

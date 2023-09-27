@@ -20,15 +20,16 @@
   opacity: 1!important;			
   text-align: center;			
   width: auto;		
-  max-width: 50vw;			
+  max-width: 20vw;			
   height: auto;					
   padding: 10px;				
-  font: 12px sans-serif;		
-  background: rgb(172, 173, 173);	
-  border: 0px;		
+  font-style: monaco;		
+  background: rgb(231, 245, 245);	
+  border: 2px solid black;		
+  font-weight: bold;
   border-radius: 8px;			
   pointer-events: none;	
-  font-size: .7em!important;		
+  font-size: .9em!important;		
 }
 
 .rounded, .shadow >* {
@@ -70,6 +71,28 @@ hr:after {
   font-weight: bold;
   cursor: pointer;
   box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.25);
+}
+
+.toggleButtonLabel, .helpText{
+  height: auto;
+  font-size: 1em;
+  color: black;
+  background-color: #ffffff;
+  width: auto;
+  display: inline-flex;
+  padding: .5em;
+  padding-top: .2em;
+  padding-bottom: .2em;
+  border-radius: .2em!important;
+  margin: 0em;
+  font-weight: bold;
+  cursor: default;
+}
+
+.helpText {
+  background: none;
+  margin: 0!important;
+  padding: 0!important;
 }
 
 .toggleButtonActive {

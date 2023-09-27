@@ -347,7 +347,7 @@ def get_neighbors_and_embeddings_from_sim(embeddings,dataset,decisionmodel,
     return results
 
 
-def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisionmodel,state=0,**kwargs):
+def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisionmodel,state=0,model_type='optimal',**kwargs):
     #this takes a patient dict and returns the results for a full treatment simulation
     #currently if state > 0 it will check if prior transition states are all zero and if not, will input them
     #currently works with categorical, might have to experiment with passing like -1 for fixed "no" with fixed no dlts
@@ -407,6 +407,10 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     
     thresh = lambda x: torch.gt(x,.5).type(torch.FloatTensor)
     
+    modifiers = [3] if model_type == 'imitation' else [0]
+    if model_type == 'both':
+        modifiers = [0,3]
+        
     def get_fixed_transitions():
         
         [base, dlt1,_,pd1,nd1,_,mod] =dict_to_model_input(data,pdata,state=1,
@@ -429,7 +433,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     print('fixed_decisions',fixed_transitions)
     def run_simulation(modifier,decision1=None,decision2=None,decision3=None):
         #do this to track malahanobis distances?
-        is_default = (modifier == 0 and decision1 is None and decision2 is None and decision3 is None)
+        is_default = (modifier == modifiers[0] and decision1 is None and decision2 is None and decision3 is None)
         if is_default:
             embeddings[0] = decisionmodel.get_embedding(cat(baseline_inputs),position=0,use_saved_memory=True)
             
@@ -558,13 +562,14 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
             key += '_decision3-'+str(decision3)
         results[key] = entry
 
+    
     with torch.no_grad():
-        for modifier in [0,3]:
+        for modifier in modifiers:
             for d1_fixed in [None,0,1]:
                 for d2_fixed in [None,0,1]:
                     for d3_fixed in [None,0,1]:
                         #we only need to do all fixed outcomes once
-                        if d1_fixed is not None and d2_fixed is not None and d3_fixed is not None and modifier > 0:
+                        if d1_fixed is not None and d2_fixed is not None and d3_fixed is not None and modifier != modifiers[0]:
                             continue
                         run_simulation(modifier,d1_fixed,d2_fixed,d3_fixed)
     for k,v in embeddings.items():

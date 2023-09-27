@@ -2,9 +2,15 @@ import axios from 'axios';
 import * as constants from './Constants';
 export default class DataService {
 
-    constructor(args){
+    constructor(token){
+        const headers = token? {
+            Authorization: token ? `Bearer ${token}` : undefined,
+            'Content-Type': 'application/json',
+          } : {};
+
         this.api = axios.create({
             baseURL: constants.API_URL,
+            headers: headers,
         })
     }
 
@@ -93,8 +99,8 @@ export default class DataService {
         }
     }
 
-    async getPatientSimulation(patientFeatures,state=0){
-        let goodPostData = {'state': state}
+    async getPatientSimulation(patientFeatures,currModel,state=0){
+        let goodPostData = {'state': state,'model': currModel}
         for(let key of Object.keys(patientFeatures)){
             let entry = patientFeatures[key];
             if(entry !== undefined & entry !== null){
