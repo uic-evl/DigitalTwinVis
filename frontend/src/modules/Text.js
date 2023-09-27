@@ -19,10 +19,23 @@ export const LNHelpText = 'Map of affected lymph node regions. Left indicates ip
         +'</br> Double Click to add/remove a node.'
         +'</br> Colors indicate the impact of an affected LN on the model decision';
 
-export const subsiteHelpText = "Subsite of the main tumor. Double click to change/remove tumor. </br> Deselect all to indicate a tumor not otherwise specificied"
+export const subsiteHelpText = "Subsite of the main tumor. Double click to change/remove site. </br> Deselect all to indicate a tumor not otherwise specificied"
         + '</br> Available Subsites: '
         + "</br> BOT (Base of Tongue)" 
         + '</br> Tonsil'
         + '</br> Soft Palate'
         + '</br> GPS (Glossalpharyngeal Sulcus)'
         + '</br> Pharnygeal Wall';
+export const outcomeHelpText = "This shows the predicted outcomes for the patient using the cohort with and without undergoing the selected treatment."
+        + "</br> Blue bars are outcome predictions using the neural network and include 95% confidence intervals using models trained on subsets of the cohort."
+        + "</br> Green bars are outcome predictions using similar patients in the cohort that recieved or didn't recieved treatment. Patients are selected to minimize the effects of confounders using the imitation model.";
+
+export const attributionHelpText = 'Estimated impact of each feature on the model decision. Numbers are relative to the median features of the training cohort.'
+
+export const scatterplotHelpText = "Model activations for the training cohort embedded into 2 dimensions. Inner circle color represents the true decision while outer color represents the model decision."
+        + "</br> The main patient is the largest circle in blue while the most similar patients are shown in green. All other patients are shown in greyscale.";
+
+export const simHelpText = "Summary of featurs of the most similar patients that did and didn't receive treatment."
+        + "</br>The top two rows are averages of the treated and untreated groups, respectively."
+        + "</br> The remaining patients are shown in order of similarity."
+        + "</br>The DLT row shows images for potential dose-limiting toxicities. Blue outlines show the features for the current patient."

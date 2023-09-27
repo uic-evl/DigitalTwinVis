@@ -438,6 +438,7 @@ function MainApp({authToken}) {
       return [(
       <>
       <div style={{'height': '1.5em','width':'100%'}}>
+        <HelpText text={HelpTexts.outcomeHelpText}/>
             {makeOutcomeToggle()}
       </div>
       <div style={{'height': 'calc(100% - 1.5em)','width':'100%'}} className={'noGutter'}>

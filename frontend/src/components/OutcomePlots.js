@@ -12,6 +12,7 @@ export default function OutcomePlots(props){
     const [svg, height, width, tTip] = useSVGCanvas(d3Container);
     
     const margin = 10;
+    const topMargin = 15;
     const labelSpacing = 60;
     const titleSpacing = Math.max(height*.075,50);
     const modelSpacing = 5;
@@ -328,7 +329,7 @@ export default function OutcomePlots(props){
             var legendData = [];
             let ii = 0;
             // pos -= 2*barWidth;
-            let lBarHeight = ((titleSpacing-10)/2) - margin;
+            let lBarHeight = ((titleSpacing-10)/2) - topMargin;
             for(let model of ['model','neighbors']){
                 for(let treated of [true,false]){
                     let color = treated? constants.dnnColor: constants.dnnColorNo;

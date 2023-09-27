@@ -9,7 +9,10 @@ import LNVisD3 from './LNVisD3';
 import DLTVisD3 from './DLTVisD3';
 import SubsiteVisD3 from './SubsiteVisD3.js';
 import AttributionLegend from './AttributionLegend.js';
-import {Spinner} from '@chakra-ui/react'
+import {Spinner} from '@chakra-ui/react';
+
+import * as HelpTexts from '../modules/Text';
+import HelpText from '../modules/HelpText';
 
 export default function AuxillaryViews(props){
 
@@ -382,9 +385,18 @@ export default function AuxillaryViews(props){
       }
 
       function outcomeToggle(){
-        return Utils.makeStateToggles(auxViewOptions,auxView,setAuxView,auxViewLabels);
+        var htext = HelpTexts.attributionHelpText;
+        if(auxView === 'scatterplot'){
+          htext = HelpTexts.scatterplotHelpText
+        } else if(auxView === 'neighbors'){
+          htext = HelpTexts.simHelpText;
+        }
+        return (<>
+          {Utils.makeStateToggles(auxViewOptions,auxView,setAuxView,auxViewLabels)}
+          <HelpText key={auxView} text={htext}/>
+        </>);
       }
-      
+
       const currView = useMemo(()=>{
         switch(auxView){
             case 'neighbors':
