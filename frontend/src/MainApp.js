@@ -64,7 +64,8 @@ function MainApp({authToken}) {
   const token = authToken? authToken: localStorage.getItem('token')
   const api = new DataService(token);
   const maxStackSize = 4;
-  const [patientFeatures,setPatientFeatures] = useState(defaultPatient);
+  //load patient from localstorage if its there
+  const [patientFeatures,setPatientFeatures] = useState(localStorage.getItem('patientFeatures') !== null? JSON.parse(localStorage.getItem('patientFeatures')): defaultPatient);
   const [featureQue,setFeatureQue] = useState({});
   const [previousPatientStack,setPreviousPatientStack] = useState([]);
   const [simulation,setSimulation] = useState();
@@ -99,12 +100,11 @@ function MainApp({authToken}) {
 
   function queDefaultPatient(){
     let newQ = Object.assign({},defaultPatient);
-    for(let [key,val] in Object.entries(patientFeatures)){
+    for(let [key,val] of Object.entries(patientFeatures)){
       if(newQ[key] === undefined & val !== 0){
         newQ[key] = 0
       }
     }
-    console.log('default que',patientFeatures,newQ);
     setFeatureQue(newQ)
   }
 
@@ -142,6 +142,7 @@ function MainApp({authToken}) {
     setPatientFeatures(newPatient);
     setPreviousPatientStack(newStack);
     setFeatureQue({});
+    
   };
 
   async function fetchCohort(){
@@ -265,6 +266,12 @@ function MainApp({authToken}) {
     fetchPatientSimulation();
   },[patientFeatures,currState,modelOutput])
 
+  useEffect(()=>{
+    if(patientFeatures!== undefined & patientFeatures !== null){
+      console.log('saving patient features',patientFeatures);
+      localStorage.setItem('patientFeatures',JSON.stringify(patientFeatures));
+    }
+  },[patientFeatures])
 
 
   function wrapTitle(item,text){

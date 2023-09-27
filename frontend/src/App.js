@@ -26,12 +26,12 @@ async function loginUser(username,password) {
       url: constants.API_URL + 'login',
       params: {username: username, password: password},
     })
-    console.log('login resposne for',username,password,response)
+    console.log('login response for',username,response)
     return {error: false, payload: response.data, message: null}
   } catch (error) {
     console.log('login error',error);
     if (error.response.status === 401) {
-      return {error: true, payload: null, message: 'Username or password is incorrect.\n The cleaners have been dispatched to your location.'}
+      return {error: true, payload: null, message: 'Username or password is incorrect. The cleaners have been dispatched to your location.'}
     }
     return {error: true, payload: null, message: error.message};
   }
@@ -39,7 +39,6 @@ async function loginUser(username,password) {
 
 function App(){
 
-  console.log('here')
   const [authToken,setAuthToken] = useState(false);
   const [authenticated, setAuthenticated] = useState(false);
   const [authMessage, setAuthMessage] = useState('');

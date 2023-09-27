@@ -1,6 +1,8 @@
 from flask import Flask, jsonify, request
 from flask_cors import CORS
 import simplejson
+from datetime import timedelta
+
 from Security import check_password, load_secret_key
 
 from flask_jwt_extended import create_access_token
@@ -13,6 +15,8 @@ from AppApi import *
 app = Flask(__name__)
 
 app.config["JWT_SECRET_KEY"] = load_secret_key()
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=.1)
+
 jwt = JWTManager(app)
 CORS(app)
 print('code start')
