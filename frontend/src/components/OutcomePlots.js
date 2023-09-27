@@ -23,18 +23,6 @@ export default function OutcomePlots(props){
             .range([margin+labelSpacing, width- 2*margin - labelSpacing])
     },[width])
 
-    // const outcomeKey = useMemo(()=>{
-    //     var outcomes = constants.OUTCOMES;
-    //     if(currState == 0){
-    //         outcomes = outcomes.concat(constants.dlts1);
-    //         outcomes = outcomes.concat(constants.primaryDiseaseProgressions);
-    //         outcomes = outcomes.concat(constants.nodalDiseaseProgressions);
-    //     } else if(currState == 1){
-    //         outcomes = outcomes.concat(constants.dlts2);
-    //         outcomes = outcomes.concat(constants.primaryDiseaseProgressions2);
-    //         outcomes = outcomes.concat(constants.nodalDiseaseProgressions2);
-    //     }
-    // })
     //get dict of the keys in the simulation results and the corresponding file names for neigbhor stuff
     const simStates = useMemo(()=>{
         var keys = {'outcomes': constants.OUTCOMES};
@@ -78,7 +66,6 @@ export default function OutcomePlots(props){
             }
             //what width it would need to be to actually fit everything, in the worst case (CC)
             //I actually still cant get this to work good but also it never fits anyway
-            console.log('updating outcomes')
             const idealBarWidth = (height -  2*margin - titleSpacing - (4)*outcomeSpacing - nOutcomes*modelSpacing)/nBars;
             const barWidth = Math.max(Math.min(idealBarWidth,20),10);
             var pos = margin+titleSpacing;

@@ -34,11 +34,10 @@ function MainApp({authToken}) {
     'AJCC_2': 0,
     'AJCC_3': 0,
     'AJCC_4': 0,
-    'Pathological_grade_3': 1,
-    'Pathological_grade_0': 0,
-    "Pathological_grade_1": 0,
-    "Pathological_grade_2": 0,
-    "Pathological_grade_3": 0,
+    'Pathological Grade_3': 1,
+    'Pathological Grade_0': 0,
+    "Pathological Grade_1": 0,
+    "Pathological Grade_2": 0,
     'age': 55,
     'bilateral': 0,
     'hpv': 1,
@@ -102,7 +101,12 @@ function MainApp({authToken}) {
     let newQ = Object.assign({},defaultPatient);
     for(let [key,val] of Object.entries(patientFeatures)){
       if(newQ[key] === undefined & val !== 0){
-        newQ[key] = 0
+        if(constants.continuousVars.indexOf(key) > -1){
+          newQ[key] = -Infinity;
+        } else{
+          newQ[key] = 0;
+        }
+        
       }
     }
     setFeatureQue(newQ)
@@ -124,8 +128,14 @@ function MainApp({authToken}) {
 
   function getUpdatedPatient(features,clear=false){
     let p = clear? {}: Object.assign({},patientFeatures);
-    for(let key of Object.keys(features)){
-      p[key] = features[key];
+    for(let [key,value] of Object.entries(features)){
+      if(value === -Infinity){
+        if(p[key] !== undefined){
+          delete p[key];
+        }
+      } else{
+        p[key] = value;
+      }
     }
     return p;
   }
@@ -245,7 +255,6 @@ function MainApp({authToken}) {
   useEffect(()=>{
     fetch('subsite_diagrams.json').then(paths=>{
       paths.json().then(data=>{
-        console.log('subsites',data)
         setSubsiteSvgPaths(data);
       })
     })
@@ -268,7 +277,6 @@ function MainApp({authToken}) {
 
   useEffect(()=>{
     if(patientFeatures!== undefined & patientFeatures !== null){
-      console.log('saving patient features',patientFeatures);
       localStorage.setItem('patientFeatures',JSON.stringify(patientFeatures));
     }
   },[patientFeatures])

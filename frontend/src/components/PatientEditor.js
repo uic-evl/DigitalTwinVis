@@ -250,7 +250,6 @@ export default function PatientEditor(props){
     function handleFeatureInput(e,n){
         if(e.target.nodeName=== 'INPUT' & e.keyCode === 13){
             var value = e.target.value;
-            // console.log('event!',e,n,value,props.featureQue);
             if(value === '' | value === null | value === undefined){
                 return;
             }
@@ -259,14 +258,12 @@ export default function PatientEditor(props){
                 var newQ = Object.assign(props.featureQue);
                 newQ[n] = Number(value);
                 props.setFeatureQue(newQ);
-                console.log("UPDATEEEE")
                 draw()
             } else if(constants.booleanVars.indexOf(n) > -1){
                 value = value === 'Y'? 1:value;
                 value = value === 'N'? 0: value;
                 value = parseInt(value);
                 if(value !== 0 & value !== 1){ return; }
-                // console.log('good bool val!',value,n)
                 var newQ = Object.assign(props.featureQue);
                 newQ[n] = parseInt(value);
                 props.setFeatureQue(newQ);
@@ -389,7 +386,6 @@ export default function PatientEditor(props){
         }
 
 
-        console.log('update',props.featureQue);
         function makeEditorRow(data,i){
             return (
             <div  key={i+data.name+props.featureQue[data.name]} style={{'height':'3em','width':'100%','marginTop':'.1em'}}>

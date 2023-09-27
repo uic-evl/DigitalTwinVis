@@ -13,18 +13,11 @@ export default function ScatterPlotD3(props){
     const [svg, height, width, tTip] = useSVGCanvas(d3Container);
     const [pcaComponents,setPCAComponents] = useState([0,3]);
     const [formattedData,setFormattedData] =useState();
-    // const [pcaFit,setPcaFit] = useState();
     const state = (props.currState === undefined)? 2: props.currState;
     const modelOutput = props.modelOutput === undefined? 'imitation': props.modelOutput;
-    // console.log('model output',modelOutput)
     const nNeighbors = 10;
     const margin = 10;
 
-    // function fitPCA(cohortEmbeddings){
-    //     const embeddings = Object.values(cohortEmbeddings).map(x=> x[embedkey]);
-    //     const pcaFit = PCA.getEigenVectors(embeddings);
-    //     setPcaFit(pcaFit);
-    // }
 
     function getFill(d){
         if(d.id < 0){
@@ -169,7 +162,6 @@ export default function ScatterPlotD3(props){
             }
             let string = d.id;
             tTip.html(string);
-            console.log('brush',d)
         }).on('mousemove', function(e){
             Utils.moveTTipEvent(tTip,e);
         }).on('mouseout', function(e){
@@ -177,6 +169,7 @@ export default function ScatterPlotD3(props){
             props.setBrushedId();
         }).on('dblclick',(e,d)=>{
             let pData = props.cohortData[d.id+''];
+            console.log('scatterplot click',pData)
             if(pData !== undefined){
                 //second argument clears the previous stuff
                 props.updatePatient(pData,true);
