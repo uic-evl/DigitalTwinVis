@@ -23,13 +23,30 @@ function MainApp({authToken}) {
 
   const defaultPatient = {
     'T-category_1': 1,
+    'T-category_2': 0,
+    'T-category_3': 0,
+    'T-category_4': 0,
     'N-category_1':1,
+    'T-category_0': 0,
+    'T-category_2': 0,
+    'T-category_3': 0,
     'AJCC_1': 1,
+    'AJCC_2': 0,
+    'AJCC_3': 0,
+    'AJCC_4': 0,
     'Pathological_grade_3': 1,
+    'Pathological_grade_0': 0,
+    "Pathological_grade_1": 0,
+    "Pathological_grade_2": 0,
+    "Pathological_grade_3": 0,
     'age': 55,
     'bilateral': 0,
     'hpv': 1,
     'subsite_BOT': 1,
+    'subsite_Tonsil': 0,
+    'subsite_GPS': 0,
+    'subsite_Pharyngeal_wall': 0,
+    'subsite_Soft_palate': 0,
     '2A_ipsi': 1,
     '2B_ipsi': 1,
     'total_dose':66,
@@ -44,7 +61,9 @@ function MainApp({authToken}) {
     "Hispanic/Latino": false,
 
   }
-  const api = new DataService(authToken);
+  const token = authToken? authToken: localStorage.getItem('token')
+  console.log('token',token,authToken);
+  const api = new DataService(token);
   const maxStackSize = 4;
   const [patientFeatures,setPatientFeatures] = useState(defaultPatient);
   const [featureQue,setFeatureQue] = useState({});
@@ -79,6 +98,16 @@ function MainApp({authToken}) {
 
   const [cursor, setCursor] = useState('default');
 
+  function queDefaultPatient(){
+    let newQ = Object.assign({},defaultPatient);
+    for(let [key,val] in Object.entries(patientFeatures)){
+      if(newQ[key] === undefined & val !== 0){
+        newQ[key] = 0
+      }
+    }
+    console.log('default que',patientFeatures,newQ);
+    setFeatureQue(newQ)
+  }
 
   function getSimulation(){
     if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
@@ -603,6 +632,11 @@ function MainApp({authToken}) {
             variant={'outline'}
             colorScheme={'red'}
           >{'Reset'}</Button>
+          <Button 
+            variant={'outline'}
+            colorScheme={'grey'}
+            onClick={()=>queDefaultPatient()}
+            >{'Default'}</Button>
         </GridItem>
         {/* <GridItem colSpan={1} rowSpan={1}>
           <div className={'title'} style={{'height': '1.5em'}}>{'DLTs'}</div>

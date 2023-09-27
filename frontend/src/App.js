@@ -5,6 +5,7 @@ import * as constants from "./modules/Constants.js";
 import {useState, useEffect} from 'react';
 import axios from 'axios';
 
+//I took this from juans amino thing IDK what it does
 import {QueryClient, QueryClientProvider} from 'react-query';
 
 const queryClient = new QueryClient({
@@ -15,6 +16,8 @@ const queryClient = new QueryClient({
   },
 });
 
+
+//log into the flask api and get an authentication token used to query the tdata in the app
 async function loginUser(username,password) {
 
   try {
@@ -36,10 +39,12 @@ async function loginUser(username,password) {
 
 function App(){
 
+  console.log('here')
   const [authToken,setAuthToken] = useState(false);
-  const [authenticated, setAuthenticated] = useState(false)
-  const [authMessage, setAuthMessage] = useState('')
+  const [authenticated, setAuthenticated] = useState(false);
+  const [authMessage, setAuthMessage] = useState('');
 
+  //pased to login page to log in
   const login = async (username, password) => {
     const response = await loginUser(username, password);
     if(!response.error & response.payload !== null){
@@ -50,8 +55,15 @@ function App(){
     }
   }
 
+  useEffect(()=>{
+    if(authToken){
+      localStorage.setItem('token',authToken);
+    }
+  },[authToken])
+
+  //if we have a real authentication token continue to the main app
   function Renderer({authToken,authenticated,login,message}){
-    if(authenticated & authToken !== undefined){
+    if(authToken){
       return (<MainApp authToken={authToken}/>)
     } else{
       return (<LoginPage login={login} message={message}/>)
@@ -59,9 +71,7 @@ function App(){
   }
 
   return (
-    <QueryClientProvider client={queryClient}>
       <Renderer authToken={authToken} authenticated={authenticated} login={login} message={authMessage}/>
-    </QueryClientProvider>
   )
 } 
 
