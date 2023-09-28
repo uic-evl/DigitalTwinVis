@@ -26,7 +26,7 @@ async function loginUser(username,password) {
       url: constants.API_URL + 'login',
       params: {username: username, password: password},
     })
-    console.log('login response for',username,response)
+    console.log('login response for',username,response);
     return {error: false, payload: response.data, message: null}
   } catch (error) {
     console.log('login error',error);
@@ -63,7 +63,7 @@ function App(){
   //if we have a real authentication token continue to the main app
   function Renderer({authToken,authenticated,login,message}){
     if(authToken){
-      return (<MainApp authToken={authToken}/>)
+      return (<MainApp authToken={authToken} setAuthToken={setAuthToken}/>)
     } else{
       return (<LoginPage login={login} message={message}/>)
     }

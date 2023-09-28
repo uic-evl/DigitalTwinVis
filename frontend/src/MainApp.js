@@ -8,7 +8,6 @@ import { ChakraProvider, Grid, GridItem,  Button, ButtonGroup, Spinner} from '@c
 import DataService from './modules/DataService';
 import Utils from './modules/Utils';
 import * as constants from "./modules/Constants.js";
-import * as HelpTexts from './modules/Text';
 import PatientEditor from './components/PatientEditor';
 import LNVisD3 from './components/LNVisD3';
 import SubsiteVisD3 from './components/SubsiteVisD3';
@@ -16,10 +15,10 @@ import RecommendationPlot from './components/RecommendationsPlot';
 import OutcomePlots from './components/OutcomePlots';
 import AuxillaryViews from './components/AuxillaryViews';
 import DistanceHistogramD3 from './components/DistanceHistogramD3';
-import HelpButton from './modules/HelpButton';
+import * as HelpTexts from './modules/Text';
 import HelpText from './modules/HelpText';
 
-function MainApp({authToken}) {
+function MainApp({authToken,setAuthToken}) {
 
   const defaultPatient = {
     'T-category_1': 1,
@@ -61,7 +60,7 @@ function MainApp({authToken}) {
 
   }
   const token = authToken? authToken: localStorage.getItem('token')
-  const api = new DataService(token);
+  const api = new DataService(token,setAuthToken);
   const maxStackSize = 4;
   //load patient from localstorage if its there
   const [patientFeatures,setPatientFeatures] = useState(localStorage.getItem('patientFeatures') !== null? JSON.parse(localStorage.getItem('patientFeatures')): defaultPatient);
@@ -212,12 +211,14 @@ function MainApp({authToken}) {
     setPatientSimLoading(true);
     const sim = await api.getPatientSimulation(patientFeatures,modelOutput,currState);
     setSimulation(undefined);
-    if(sim.data !== undefined){
-      console.log('patient simulation',sim);
-      setSimulation(sim.data.simulation);
-      setCurrEmbeddings(sim.data.embeddings[currState])
-      setPatientSimLoading(false);
-      setCursor('default')
+    if(sim !== undefined ){
+      if(sim.data !== undefined){
+        console.log('patient simulation',sim);
+        setSimulation(sim.data.simulation);
+        setCurrEmbeddings(sim.data.embeddings[currState])
+        setPatientSimLoading(false);
+        setCursor('default');
+      }
     } else{
       console.log('error setting patient simulation');
       setCursor('default');

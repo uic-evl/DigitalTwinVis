@@ -15,7 +15,7 @@ from AppApi import *
 app = Flask(__name__)
 
 app.config["JWT_SECRET_KEY"] = load_secret_key()
-app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=3)
+app.config["JWT_ACCESS_TOKEN_EXPIRES"] = timedelta(hours=5)
 
 jwt = JWTManager(app)
 CORS(app)

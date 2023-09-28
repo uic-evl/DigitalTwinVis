@@ -2,7 +2,7 @@ import axios from 'axios';
 import * as constants from './Constants';
 export default class DataService {
 
-    constructor(token){
+    constructor(token,setAuthToken){
         const headers = token? {
             Authorization: token ? `Bearer ${token}` : undefined,
             'Content-Type': 'application/json',
@@ -11,7 +11,8 @@ export default class DataService {
         this.api = axios.create({
             baseURL: constants.API_URL,
             headers: headers,
-        })
+        });
+        this.resetToken = ()=>setAuthToken(false);
     }
 
     getParamList(pObj){
@@ -33,8 +34,15 @@ export default class DataService {
 
     async getMahalanobisHistogram(){
         let qstring = '/mahalanobis_histogram'
-        let response = await this.api.get(qstring)
-        return response.data;
+        try{
+            let response = await this.api.get(qstring)
+            return response.data;
+        }
+        catch(error){
+            if(error.response.status == 401){
+                this.resetToken();
+            }
+        }
     }
     
     async getPatientData(patientIds,fields){
@@ -49,8 +57,12 @@ export default class DataService {
             const response = await this.api.get(qstring);
             return response.data;
         } catch(error){
-            console.log('error in getPatientData');
-            console.log(error);
+            if(error.response.status == 401){
+                this.resetToken();
+            } else{
+                console.log('error in getPatientData');
+                console.log(error);
+            }
         }
         
     }
@@ -67,8 +79,12 @@ export default class DataService {
             const response = await this.api.get(qstring);
             return response.data;
         } catch(error){
-            console.log('error in getPatientEmbeddings');
-            console.log(error);
+            if(error.response.status == 401){
+                this.resetToken();
+            } else{
+                console.log('error in getPatientEmbeddings');
+                console.log(error);
+            }
         }
         
     }
@@ -78,8 +94,12 @@ export default class DataService {
             const response = await this.api.get('/defaultPredictions');
             return response.data;
         } catch(error){
-            console.log('error in get default predictions');
-            console.log(error);
+            if(error.response.status == 401){
+                this.resetToken();
+            } else{
+                console.log('error in getDefaultPredictions');
+                console.log(error);
+            }
         }
     }
 
@@ -94,8 +114,12 @@ export default class DataService {
             const response = await this.api.get(qstring);
             return response.data;
         } catch(error){
-            console.log('error in getCohortPredictions');
-            console.log(error);
+            if(error.response.status == 401){
+                this.resetToken();
+            } else{
+                console.log('error in getcohortPredictions');
+                console.log(error);
+            }
         }
     }
 
@@ -112,8 +136,12 @@ export default class DataService {
             response.postData = goodPostData;
             return response;
         } catch(error){
-            console.log('error in getPatientSimulation');
-            console.log(error)
+            if(error.response.status == 401){
+                this.resetToken();
+            } else{
+                console.log('error in getPatientSimulation');
+                console.log(error);
+            }
         }
     }
 
@@ -137,8 +165,12 @@ export default class DataService {
             response.postData = goodPostData;
             return response;
         } catch(error){
-            console.log('error in getPatientNeighbors');
-            console.log(error)
+            if(error.response.status == 401){
+                this.resetToken();
+            } else{
+                console.log('error in getPatientNeighbors');
+                console.log(error);
+            }
         }
     }
 
