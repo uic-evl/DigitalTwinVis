@@ -35,7 +35,7 @@ export const attributionHelpText = 'Estimated impact of each feature on the mode
 export const scatterplotHelpText = "Model activations for the training cohort embedded into 2 dimensions. Inner circle color represents the true decision while outer color represents the model decision."
         + "</br> The main patient is the largest circle in blue while the most similar patients are shown in green. All other patients are shown in greyscale.";
 
-export const simHelpText = "Summary of featurs of the most similar patients that did and didn't receive treatment."
+export const simHelpText = "Summary of features of the most similar patients that did and didn't receive treatment."
         + "</br>The top two rows are averages of the treated and untreated groups, respectively."
         + "</br> The remaining patients are shown in order of similarity."
         + "</br>The DLT row shows images for potential dose-limiting toxicities. Blue outlines show the features for the current patient."

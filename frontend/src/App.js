@@ -5,17 +5,6 @@ import * as constants from "./modules/Constants.js";
 import {useState, useEffect} from 'react';
 import axios from 'axios';
 
-//I took this from juans amino thing IDK what it does
-import {QueryClient, QueryClientProvider} from 'react-query';
-
-const queryClient = new QueryClient({
-  defaultOptions: {
-    queries: {
-      refetchOnWindowFocus: false,
-    },
-  },
-});
-
 
 //log into the flask api and get an authentication token used to query the tdata in the app
 async function loginUser(username,password) {
