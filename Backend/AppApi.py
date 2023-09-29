@@ -258,12 +258,20 @@ def dict_to_model_input(dataset,fdict,state=0,ttype=torch.FloatTensor,concat=Tru
     #currently at this line its baseline, dlt1, dlt2, pd, nd, cc, modifications
     return inputs
 
+def inv(m):
+    a, b = m.shape
+    if a != b:
+        raise ValueError("Only square matrices are invertible.")
+
+    i = np.eye(a, a)
+    return np.linalg.lstsq(m, i)[0]
+
 def calculateMahalanobis(y=None, data=None, cov=None):
   
     y_mu = y - np.mean(data)
     if not cov:
         cov = np.cov(data.T)
-    inv_covmat = np.linalg.inv(cov)
+    inv_covmat = inv(cov)
     left = np.dot(y_mu, inv_covmat)
     mahal = np.dot(left, y_mu.T)
     return mahal.diagonal()
