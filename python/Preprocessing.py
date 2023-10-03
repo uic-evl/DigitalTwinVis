@@ -108,7 +108,7 @@ def merge_editions(row,basecol='AJCC 8th edition',fallback='AJCC 7th edition'):
 
 def preprocess_dt_data(df,extra_to_keep=None):
     
-    to_keep = ['id','hpv','age','packs_per_year','smoking_status','gender',
+    to_keep = ['id','hpv','age','packs_per_year','gender','smoking_status',
                'Aspiration rate Pre-therapy','total_dose','dose_fraction'] 
     to_onehot = ['T-category','N-category','AJCC','Pathological Grade',
                  'subsite','treatment','laterality','ln_cluster']

@@ -117,6 +117,10 @@ class SimulatorAttentionBase(SimulatorBase):
         self.norms = torch.nn.ModuleList(norms)
         self.final_layer = torch.nn.Linear(hidden_layers[-1],len(Const.decisions))
         self.activation = torch.nn.ReLU()
+        self.register_buffer('memory',None)
+
+    def save_memory(self,newmemory):
+        self.memory= newmemory
 
 class OutcomeSimulator(SimulatorBase):
     
@@ -166,11 +170,11 @@ class OutcomeSimulator(SimulatorBase):
         #this only kind of works since I think it can end up all zero and softmaxes to .33% flat
         if self.state == 1:
             #pd and nd, shrink complete and partial response columns if decision is 0
-            scale = xin[:,-1].view(-1,1)
+            scale = torch.gt(xin[:,-1].view(-1,1),.5)
             x_pd= torch.mul(x_pd,scale)
             x_nd= torch.mul(x_nd,scale)
             #shrink all but "no modifications"
-#             x_mod[:,1:]  = torx_mod[:,1:] *scale
+            x_mod[:,1:]  = torch.mul(x_mod[:,1:],scale)
         x_pd = self.softmax(x_pd)
         x_nd = self.softmax(x_nd)
         x_mod = self.softmax(x_mod)
@@ -578,22 +582,50 @@ class OutcomeAttentionSimulator(SimulatorAttentionBase):
             #we only have dlt yes or no for the second state?
 #             self.dlt_layers = torch.nn.ModuleList([torch.nn.Linear(hidden_layers[-1],2) for i in Const.dlt2])
             self.treatment_layer = torch.nn.Linear(hidden_layers[-1],len(Const.ccs))
-
         
-    def forward(self,x):
+        
+    def forward(self,x,memory=None,use_saved_memory=False):
+        decision = x[:,-1]
         x = self.normalize(x)
         x = self.input_dropout(x)
         x = self.activation(self.resize_layer(x))
+        
+        if use_saved_memory:
+            memory = self.memory
+            if memory is None:
+                print('passed bad memory argument to transition model ',self.state)
+        if memory is not None:
+            memory = self.normalize(memory)
+            memory = self.activation(self.resize_layer(memory))
+        i = len(self.attentions)
         for attention,layer,norm in zip(self.attentions,self.layers,self.norms):
-            x2, attention_weights = attention(x,x,x)
+            if memory is not None:
+                x2, attention_weights = attention(x,memory,memory)
+            else:
+                x2, attention_weights = attention(x,x,x)
             x2 = norm(x2+x)
             x2 = self.activation(x2)
             x = layer(x2)
             x = self.activation(x)
+            if i > 1:
+                memory2, _ = attention(memory,memory,memory)
+                memory = norm(memory2+memory)
+                memory = self.activation(memory)
+                memory = layer(memory)
+                memory = self.activation(memory)
+                i -= 1
         x = self.dropout(x)
         x_pd = self.disease_layer(x)
         x_nd = self.nodal_disease_layer(x)
         x_mod = self.treatment_layer(x)
+        
+        if self.state == 1:
+            #pd and nd, shrink complete and partial response columns if decision is 0
+            scale = torch.gt(decision.view(-1,1),.5)
+            x_pd= torch.mul(x_pd,scale)
+            x_nd= torch.mul(x_nd,scale)
+            #shrink all but "no modifications"
+            x_mod[:,1:]  = torch.mul(x_mod[:,1:],scale)
         x_dlts = [layer(x) for layer in self.dlt_layers]
         
         x_pd = self.softmax(x_pd)
@@ -624,7 +656,7 @@ class EndpointAttentionSimulator(SimulatorAttentionBase):
                          state=state)
         
         self.outcome_layer = torch.nn.Linear(hidden_layers[-1],len(Const.outcomes))
-      
+        
         
     def forward(self,x):
         x = self.normalize(x)

@@ -3,13 +3,14 @@ import numpy as np
 import pandas as pd
 from Preprocessing import *
 
-def get_dt_ids():
-    df = load_digital_twin()
+def get_dt_ids(df=None):
+    if df is None:
+        df = load_digital_twin()
     return df.id.values
 
-def get_tt_split(ids=None,use_default_split=True,use_bagging_split=False,resample_training=False):
+def get_tt_split(ids=None,use_default_split=True,use_bagging_split=False,resample_training=False,df=None):
         if ids is None:
-            ids = get_dt_ids()
+            ids = get_dt_ids(df)
         #pre-made, stratified by decision and outcome 72:28
         if use_default_split:
             train_ids = Const.stratified_train_ids[:]
@@ -25,7 +26,7 @@ def get_tt_split(ids=None,use_default_split=True,use_bagging_split=False,resampl
             train_ids = np.random.choice(train_ids,len(train_ids),replace=True)
             test_ids = [i for i in ids if i not in train_ids]
         return train_ids,test_ids
-    
+
 def df_to_torch(df,ttype  = torch.FloatTensor):
     values = df.values.astype(float)
     values = torch.from_numpy(values)
