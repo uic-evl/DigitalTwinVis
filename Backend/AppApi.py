@@ -45,17 +45,17 @@ def np_converter(obj):
     print('np_converter cant encode obj of type', obj,type(obj))
     return obj
 
-def get_default_predictions(dm):
-    res  = []
+def get_default_predictions(dm,dataset):
+    res = []
     for state in [0,1,2]:
-        mem = dm.memory[state]
-        mem = torch.median(mem,dim=0)[0].type(torch.FloatTensor)
-        val = dm(mem.reshape(1,-1),position=state)
+        xin = get_default_input(dataset,state)[0]
+        xin = dict_to_model_input(dataset,xin,state).to(dm.get_device())
+        val = dm(xin)
         res.append(val.cpu().detach().numpy())
     return np.vstack(res)
 
-def get_default_prediction_json(dm):
-    vals = get_default_predictions(dm)
+def get_default_prediction_json(dm,dataset):
+    vals = get_default_predictions(dm,dataset)
     res={}
     for i,model in enumerate(['optimal','imitation']):
         entry = {}
@@ -64,6 +64,7 @@ def get_default_prediction_json(dm):
             entry[decision] = val
         res[model] = entry
     return res
+
 
 def jsonify_np_dict(d):
     return simplejson.dumps(d,default=np_converter)
@@ -183,9 +184,9 @@ def get_embeddings(dataset,dm,states=[0,1,2],use_saved_memory=True,decimals=2):
     decisions_imitation = [[] for i in states]
     for i,state in enumerate(states):
         x = get_decision_input(dataset,state=state)
-        x = torch.cat([df_to_torch(f) for f in x],axis=1)
-        embedding = dm.get_embedding(x,position = state,use_saved_memory=use_saved_memory)
-        inputs.append(x.detach().numpy())
+        x = torch.cat([df_to_torch(f) for f in x],axis=1).to(dm.get_device())
+        embedding = dm.get_embedding(x,position = state)
+        inputs.append(x.cpu().detach().numpy())
         decision = dm(x,position=state).cpu().detach().numpy()
         decisions_optimal[i].append(decision[:,state])
         decisions_imitation[i].append(decision[:,state+3])
@@ -194,6 +195,7 @@ def get_embeddings(dataset,dm,states=[0,1,2],use_saved_memory=True,decimals=2):
             embedding = np.round(embedding,decimals)
         embeddings.append(embedding)
     return embeddings,np.array(decisions_optimal).reshape(len(states),-1).T, np.array(decisions_imitation).reshape(len(states),-1).T, inputs
+
 
 def get_embedding_pcas(dataset,decision_model,embeddings=None,components=2):
     if embeddings is None:
@@ -271,7 +273,7 @@ def calculateMahalanobis(y=None, data=None, cov=None):
     y_mu = y - np.mean(data)
     if not cov:
         cov = np.cov(data.T)
-    inv_covmat = inv(cov)
+    inv_covmat = np.linalg.inv(cov)
     left = np.dot(y_mu, inv_covmat)
     mahal = np.dot(left, y_mu.T)
     return mahal.diagonal()
@@ -284,7 +286,7 @@ def get_neighbors_and_embedding(pdata,dataset,decisionmodel,embedding_df=None,st
     
     cat = lambda x: torch.cat(x,axis=1)
     
-    inputs = dict_to_model_input(dataset,pdata,state=state,zero_transition_states=False)
+    inputs = dict_to_model_input(dataset,pdata,state=state,zero_transition_states=False).to(decisionmodel.get_device())
     
     
     embedding = decisionmodel.get_embedding(inputs,position=state,use_saved_memory=True)[0].view(1,-1).cpu().detach().numpy()

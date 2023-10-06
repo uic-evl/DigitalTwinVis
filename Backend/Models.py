@@ -319,16 +319,21 @@ class DecisionModel(SimulatorBase):
     def __init__(self,
                  baseline_input_size,#number of baseline features used
                  hidden_layers = [100],
+                 opt_layer_size=100,
+                 imitation_layer_size=100,
                  dropout = 0.5,
                  input_dropout=0.1,
                  state = 1,
                  eps = 0.01,
+                 **kwargs,
                  ):
         #input will be all states up until treatment 3
         input_size = baseline_input_size  + 2*len(Const.dlt1) + len(Const.primary_disease_states)  + len(Const.nodal_disease_states)  + len(Const.ccs)  + len(Const.modifications) + 2
     
         super().__init__(input_size,hidden_layers=hidden_layers,dropout=dropout,input_dropout=input_dropout,eps=eps,state='decisions')
-        self.final_layer = torch.nn.Linear(hidden_layers[-1],len(Const.decisions)*2)
+        self.final_opt_layer = torch.nn.Linear(hidden_layers[-1],opt_layer_size)
+        self.final_imitation_layer = torch.nn.Linear(hidden_layers[-1],imitation_layer_size)
+        self.final_layer = torch.nn.Linear(imitation_layer_size+opt_layer_size,2*len(Const.decisions))
         self.baseline_input_size= baseline_input_size
         self.input_sizes = {
             'baseline': baseline_input_size,
@@ -338,12 +343,8 @@ class DecisionModel(SimulatorBase):
             'cc': len(Const.ccs),
             'modifications': len(Const.modifications),
         }
-
-#         self.final_layer = torch.nn.Linear(hidden_layers[-1],1)
         self.sigmoid = torch.nn.Sigmoid()
         self.dummy_param = torch.nn.Parameter(torch.empty(0))
-        
-    
         
         
     def add_position_token(self,x,position):
@@ -365,7 +366,7 @@ class DecisionModel(SimulatorBase):
             x = torch.cat([x,token1,token2],dim=1).to(self.get_device())
         return x
     
-    def get_embedding(self,x,position=0):
+    def get_embedding(self,x,position=0,concatenate=True,**kwargs):
         xbase = x[:,0:self.baseline_input_size]
         xx = x[:,self.baseline_input_size:]
         xbase = self.normalize(xbase)
@@ -373,12 +374,29 @@ class DecisionModel(SimulatorBase):
         x = self.add_position_token(x,position)
         for layer in self.layers:
             x = layer(x)
-        return x
+        x = self.dropout(x)
+        xopt = self.final_opt_layer(x)
+        xim = self.final_imitation_layer(x)
+        if concatenate:
+            return torch.cat([xopt,xim],axis=1)
+        return [xopt,xim]
     
-    def forward(self,x,position=0):
+    def get_attributions(self,x,output=-1,target=0,base=None,**kwargs):
+        device= self.get_device()
+        x = x.to(device)
+        if output == -1:
+            model = lambda x: self.forward(x,**kwargs)
+        else:
+            model = lambda x: self.forward(x,**kwargs)[output]
+        ig = IntegratedGradients(model)
+        if base is None:
+            base = torch.zeros(x.shape).to(device)
+        attributions = ig.attribute(x,base,target=target)
+        return attributions
+    
+    def forward(self,x,position=0,**kwargs):
         x = x.to(self.get_device())
         x = self.get_embedding(x,position=position)
-        x = self.dropout(x)
         x = self.final_layer(x)
         x = self.sigmoid(x)
         return x

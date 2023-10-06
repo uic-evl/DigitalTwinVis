@@ -111,10 +111,12 @@ export default function ScatterPlotD3(props){
             if(id > 0){
                 entry['modelDecision'] = cohortEmbeddings[id+'']['decision'+state+'_'+props.modelOutput];
                 entry['trueDecision'] =cohortData[id+''][constants.DECISIONS[state]];
+                entry['embeddings'] = cohortEmbeddings[id+'']
             } 
             else{
                 entry['modelDecision'] = simulation[props.modelOutput]['decision'+(state+1)];
                 entry['trueDecision'] = -1;
+                entry['embeddings'] = entry['modelDecision'];
             }
             data.push(entry);
         }
@@ -161,6 +163,9 @@ export default function ScatterPlotD3(props){
                 props.setBrushedId(parseInt(d.id));
             }
             let string = d.id;
+            string += '</br> model decision ' + d.modelDecision;
+            string += '</br> true decision ' + d.trueDecision;
+            console.log('brush',d.embeddings)
             tTip.html(string);
         }).on('mousemove', function(e){
             Utils.moveTTipEvent(tTip,e);

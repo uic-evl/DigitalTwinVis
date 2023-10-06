@@ -25,7 +25,7 @@ decision_model,transition_model1,transition_model2,outcome_model = load_models()
 PCAS = get_embedding_pcas(DATA,decision_model,components=10)
 embedding_df = get_embedding_df(DATA,decision_model,pcas=PCAS)
 m_dists = [test_mahalanobis_distances(DATA,decision_model,s,embedding_df).tolist() for s in [0,1,2]]
-DEFAULT_DECISIONS = get_default_prediction_json(decision_model)
+DEFAULT_DECISIONS = get_default_prediction_json(decision_model,DATA)
 print('stuff loaded')
 
 def responsify(dictionary,convert=True):
