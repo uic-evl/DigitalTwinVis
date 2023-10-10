@@ -121,6 +121,8 @@ export default function AuxillaryViews(props){
             const meanObj = {};
             for(let obj of plist){
               for(let [key,value] of Object.entries(obj)){
+                //skip unknown hpv
+                if(key === 'hpv' & value < 0){continue}
                 let currVal = meanObj[key] === undefined? 0: meanObj[key];
                 currVal += value/plist.length;
                 meanObj[key] = currVal
@@ -243,6 +245,7 @@ export default function AuxillaryViews(props){
                   currState={currState}
                   showLabels={showLabels}
                   version={'staging'}
+                  name={name}
                 ></NeighborVisD3>
                 </div>
               </div>
@@ -259,6 +262,7 @@ export default function AuxillaryViews(props){
                   currState={currState}
                   showLabels={showLabels}
                   version={'useful'}
+                  name={name}
                 ></NeighborVisD3>
                 </div>
               </div>
@@ -275,6 +279,7 @@ export default function AuxillaryViews(props){
                   currState={currState}
                   showLabels={showLabels}
                   version={'outcomes'}
+                  name={name}
                 ></NeighborVisD3>
                 </div>
               </div>

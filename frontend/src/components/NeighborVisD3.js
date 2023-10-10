@@ -184,6 +184,17 @@ export function NeighborVisD3(props){
                 .text(d=>Utils.getFeatureDisplayName(d.name));
 
             svg.selectAll('.kPathreference').raise();
+            svg.on('mouseover',(e,d)=>{
+                let string = props.name;
+                for(let entry of plotData){
+                    string += '</br>' + entry.name + ': ' + entry.trueValue;
+                }
+                tTip.html(string);
+            }).on('mousemove', function(e){
+                Utils.moveTTipEvent(tTip,e);
+            }).on('mouseout', function(e){
+                Utils.hideTTip(tTip);
+            })
             
         }
     },[svg,props.data]);
