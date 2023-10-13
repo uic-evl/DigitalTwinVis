@@ -610,6 +610,11 @@ function MainApp({authToken,setAuthToken}) {
             setFeatureQue={setFeatureQue}
             isSelectable={true}//this determines if you can actually use it to update the que
             subsiteSvgPaths={subsiteSvgPaths}//required
+            useAttention={true}
+            modelOutput={modelOutput}
+            simulation={simulation}
+            fixedDecisions={fixedDecisions}
+            state = {currState}
           />
           </div>
           
@@ -632,7 +637,7 @@ function MainApp({authToken,setAuthToken}) {
             simulation={simulation}
             fixedDecisions={fixedDecisions}
             state={currState}
-            useAttention={false}
+            useAttention={true}
           />
           </div>
         </GridItem>

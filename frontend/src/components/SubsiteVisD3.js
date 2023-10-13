@@ -10,7 +10,8 @@ export default function SubsiteVisD3(props){
     const d3Container = useRef(null);
     const [svg, height, width, tTip] = useSVGCanvas(d3Container);
     
-   //GPS BOT NOS Soft palate Tonsil
+    const useAttention = props.useAttention? props.useAttention : true;
+    //GPS BOT NOS Soft palate Tonsil
     function getSubsiteKey(string){
         if(string.includes('Soft')){
             return 'Soft palate'
@@ -24,6 +25,50 @@ export default function SubsiteVisD3(props){
         if(Utils.allValid([svg,props.subsiteSvgPaths,props.data])){
             let pathData = [];
             const data = props.data;
+
+            var getColor = d3.interpolateGreys;
+            var  getFill = (d) => {
+                if(d.name === 'outline'){
+                    return 'none'
+                }
+                if(!d.usable){
+                    return 'none'
+                }
+                return getColor(d.plotValue);
+            }
+            //if we do attention we use the attention color scale instead of black/white, and white for empty values
+            if(useAttention & Utils.allValid([props.modelOutput,props.simulation])){
+                if(props.simulation[props.modelOutput] !== undefined){
+                    if(props.fixedDecisions[props.state] < 0){
+                        let key = props.modelOutput;
+                        for(let i in props.fixedDecisions){
+                            let d = props.fixedDecisions[i];
+                            let di = parseInt(i) + 1
+                            if(d >= 0){
+                                let suffix = '_decision'+(di)+'-'+d;
+                                key += suffix;
+                            }
+                        }
+                        const attributions = props.simulation[key]['decision'+(props.state + 1)+'_attention'];
+                        const colorScale = Utils.getColorScale('attributions',attributions.range[0],attributions.range[1]);
+                        const getColorVal = key => attributions.baseline['subsite_'+key];
+                        getFill = d => {
+                            if(d.name === 'outline'){
+                                return 'none'
+                            }
+                            if(!d.usable){
+                                return 'none'
+                            } 
+                            let cval = getColorVal(d.key);
+                            //if zero, use white. If a value that isn't in the model (pharyngeal wall), use 0 attribution color
+                            if(cval === 0 | cval === undefined){
+                                return d.value >= 1? colorScale(0): 'white';
+                            }
+                            return colorScale(cval);
+                        }
+                    }
+                }
+            }
             for(const [name,path] of Object.entries(props.subsiteSvgPaths)){
                 // if(toDraw.indexOf(name) < 0){
                 //     continue;
@@ -48,19 +93,10 @@ export default function SubsiteVisD3(props){
                 }
                 pathData.push(entry)
             }
-            const getColor = d3.interpolateGreys;
-            function getFill(d){
-                if(d.name === 'outline'){
-                    return 'none'
-                }
-                if(!d.usable){
-                    return 'none'
-                }
-                return getColor(d.plotValue);
-            }
+            
 
             function getStroke(d){
-                return d.usable? 1: d.name === 'outline'? .4:.1;
+                return d.usable? d.queVal > .5? 1:.5: d.name === 'outline'? .4:.1;
             }
 
             svg.selectAll('.subsiteOutline').remove();

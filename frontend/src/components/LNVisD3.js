@@ -58,6 +58,7 @@ export default function LNVisD3(props){
 
             const getColor = d => {
                 if(d.name === 'outline'){ return 'none';}
+                if(d.colorVal === 0){ return 'white'}
                 return colorScale(d.colorVal);
                 // if(d.queVal > -1){
                 //     return colorScale(d.queVal);
