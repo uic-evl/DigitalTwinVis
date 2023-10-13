@@ -73,7 +73,7 @@ hr:after {
   box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.25);
 }
 
-.toggleButtonLabel, .helpText{
+.toggleButtonLabel{
   height: auto;
   font-size: 1em;
   color: black;
@@ -87,6 +87,24 @@ hr:after {
   margin: 0em;
   font-weight: bold;
   cursor: default;
+}
+
+.modalButton, .modalButton > * {
+  height: auto!important;
+  font-size: 10em!important;
+  color: grey;
+  border: .1rem solid grey;
+  background-color: #afe9af;
+  width: auto;
+  display: inline-flex;
+  padding: .5em;
+  padding-top: .2em;
+  padding-bottom: .2em;
+  border-radius: .2em!important;
+  margin: 0em!important;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 1px 1px 1px 1px rgba(0, 0, 0, 0.25);
 }
 
 .helpText {
@@ -115,7 +133,12 @@ hr:after {
 }
 
 .chakra-button{
-  height: 1.5em!important;
+  height: auto!important;
+  padding: .5em;
+  padding-top: .2em;
+  padding-bottom: .2em;
+  border-radius: .2em;
+  margin: 0em!important;
   font-size: 1em!important;
 }
 

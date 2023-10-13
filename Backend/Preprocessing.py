@@ -108,7 +108,7 @@ def merge_editions(row,basecol='AJCC 8th edition',fallback='AJCC 7th edition'):
 
 def preprocess_dt_data(df,extra_to_keep=None):
     
-    to_keep = ['id','hpv','age','packs_per_year','smoking_status','gender',
+    to_keep = ['id','hpv','age','packs_per_year','gender','smoking_status',
                'Aspiration rate Pre-therapy','total_dose','dose_fraction'] 
     to_onehot = ['T-category','N-category','AJCC','Pathological Grade',
                  'subsite','treatment','laterality','ln_cluster']
@@ -154,7 +154,7 @@ def preprocess_dt_data(df,extra_to_keep=None):
         to_keep.append(v)
     for k,v in Const.modification_types.items():
         name = 'Modification Type (0= no dose adjustment, 1=dose modified, 2=dose delayed, 3=dose cancelled, 4=dose delayed & modified, 5=regimen modification, 9=unknown)'
-        df[v] = df[name].apply(lambda x: int(Const.modification_types.get(int(x),0) == v))
+        df[v] = df[name].apply(lambda x: int(Const.modification_types.get(int(x),'no_dose_adjustment') == v))
         to_keep.append(v)
     #Features to keep. I think gender is is in 
     
@@ -236,11 +236,16 @@ class DTDataset():
                  data_file = '../data/digital_twin_data.csv',
                  ln_data_file = '../data/digital_twin_ln_monograms.csv',
                  ids=None,
+                 use_smote=False,
+                 smote_columns = ['Overall Survival (4 Years)','FT','Aspiration rate Post-therapy'],#only is use_smote=True
+                 smote_kwargs={},
+                 smote_ids = None, #if we want to only upsample select (i.e. train) ids
                 ):
         df = pd.read_csv(data_file)
         df = preprocess(df)
         df = df.rename(columns = Const.rename_dict).copy()
-        df = df.drop('MRN OPC',axis=1)
+        if 'MRN OPC' in df.columns:
+            df = df.drop('MRN OPC',axis=1)
 
         ln_data = pd.read_csv(ln_data_file)
         if 'ln_cluster' in ln_data:
@@ -254,6 +259,30 @@ class DTDataset():
         processed_df = preprocess_dt_data(df,self.ln_cols).fillna(0).drop(['DLT_Type'],axis=1)
         processed_df = fix_ln_laterality(processed_df)
         self.processed_df= processed_df.drop(['laterality_L','laterality_R','laterality_Bilateral'],axis=1)
+        
+        #This upsamples and makes sure the new points have new ids so 
+        #I can keep track of them later 
+        if use_smote:
+            smote_df = self.processed_df.copy()
+            unsmote_df = None
+            max_index = smote_df.index.max()
+            if smote_ids is not None:
+                print('here')
+                smote_df = smote_df.loc[smote_ids]
+                unsmote_df = self.processed_df.drop(smote_df.index,axis=0).copy()
+            new_smote_df = smoteify(smote_df.copy(),smote_columns,**smote_kwargs)
+            #make it so the new stuff has different ids than the original
+            if smote_ids is not None:
+                newindex = []
+                for i,val in enumerate(new_smote_df.index.values):
+                    val = max_index + 1
+                    max_index += 1
+                    newindex.append(val)
+                new_smote_df.index = newindex
+                for col in Const.decisions:
+                    new_smote_df[col] = new_smote_df[col].apply(lambda x: int(x > .5))
+                smote_df = pd.concat([smote_df,new_smote_df,unsmote_df],axis=0)
+            self.processed_df = smote_df
           
         self.means = self.processed_df.mean(axis=0)
         self.stds = self.processed_df.std(axis=0)

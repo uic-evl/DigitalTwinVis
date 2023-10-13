@@ -17,6 +17,7 @@ import AuxillaryViews from './components/AuxillaryViews';
 import DistanceHistogramD3 from './components/DistanceHistogramD3';
 import * as HelpTexts from './modules/Text';
 import HelpText from './modules/HelpText';
+import Tutorial from './components/Tutorial';
 
 function MainApp({authToken,setAuthToken}) {
 
@@ -552,6 +553,8 @@ function MainApp({authToken,setAuthToken}) {
         <div style={{'display': 'inline','width':'auto'}}>{' | '}</div>
         <div className={'toggleButtonLabel'} key={'fixB'}>{'Fix Decisions'}<HelpText text={HelpTexts.fixHelpText}></HelpText>{':'}</div>
         {radioButtons}
+        <div  style={{'display': 'inline','width':'auto'}}>{" |  "}</div>
+        <Tutorial style={{'display':'inline','width':'auto'}}></Tutorial>
       </>
     )
   }
@@ -659,22 +662,7 @@ function MainApp({authToken,setAuthToken}) {
             onClick={()=>queDefaultPatient()}
             >{'Default'}</Button>
         </GridItem>
-        {/* <GridItem colSpan={1} rowSpan={1}>
-          <div className={'title'} style={{'height': '1.5em'}}>{'DLTs'}</div>
-          <div style={{'height': 'calc(100% - 1.5em)'}}>
-          <DLTVisD3
-            dltSvgPaths={dltSvgPaths}
-            data={getSimulation()}
-            currState={currState}
-          />
-          </div>
-        </GridItem>
-        <GridItem colSpan={1} rowSpan={1}>
-        <div className={'title'} style={{'height': '1.5em'}}>{'Legend'}</div>
-          <div style={{'height': 'calc(100% - 1.5em)'}}>
-          {"Something"}
-          </div>
-        </GridItem> */}
+
       </Grid>
     )
   }
