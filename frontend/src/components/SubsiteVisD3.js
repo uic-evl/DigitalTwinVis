@@ -10,6 +10,7 @@ export default function SubsiteVisD3(props){
     const d3Container = useRef(null);
     const [svg, height, width, tTip] = useSVGCanvas(d3Container);
     
+    const keepAspectRatio=true;
     const useAttention = props.useAttention? props.useAttention : true;
     //GPS BOT NOS Soft palate Tonsil
     function getSubsiteKey(string){
@@ -37,6 +38,7 @@ export default function SubsiteVisD3(props){
                 return getColor(d.plotValue);
             }
             //if we do attention we use the attention color scale instead of black/white, and white for empty values
+            var getAttribution = d => 0;
             if(useAttention & Utils.allValid([props.modelOutput,props.simulation])){
                 if(props.simulation[props.modelOutput] !== undefined){
                     if(props.fixedDecisions[props.state] < 0){
@@ -51,7 +53,7 @@ export default function SubsiteVisD3(props){
                         }
                         const attributions = props.simulation[key]['decision'+(props.state + 1)+'_attention'];
                         const colorScale = Utils.getColorScale('attributions',attributions.range[0],attributions.range[1]);
-                        const getColorVal = key => attributions.baseline['subsite_'+key];
+                        getAttribution = key => attributions.baseline['subsite_'+key];
                         getFill = d => {
                             if(d.name === 'outline'){
                                 return 'none'
@@ -59,7 +61,7 @@ export default function SubsiteVisD3(props){
                             if(!d.usable){
                                 return 'none'
                             } 
-                            let cval = getColorVal(d.key);
+                            let cval = getAttribution(d.key);
                             //if zero, use white. If a value that isn't in the model (pharyngeal wall), use 0 attribution color
                             if(cval === 0 | cval === undefined){
                                 return d.value >= 1? colorScale(0): 'white';
@@ -89,6 +91,7 @@ export default function SubsiteVisD3(props){
                     'value': val,
                     'queVal': queVal,
                     'plotValue': plotVal,
+                    'attribution': getAttribution(key),
                     'usable': constants.validSubsites.indexOf(key) > -1
                 }
                 pathData.push(entry)
@@ -116,6 +119,11 @@ export default function SubsiteVisD3(props){
                 .attr('cursor',d=>d.usable? 'pointer':'')
                 .on('mouseover',function(e,d){
                     let string = d.name + ' ' + d.plotValue.toFixed(2);
+                    if(useAttention){
+                        let att = d.attribution === undefined? 0: d.attribution;
+                        string += '</br> Attribution: ' + (100*att).toFixed(2) + '%';
+                    }
+                    
                     tTip.html(string);
                 }).on('mousemove', function(e){
                     Utils.moveTTipEvent(tTip,e);
@@ -141,12 +149,23 @@ export default function SubsiteVisD3(props){
             }
             outlineGroup.selectAll('.usable').raise();
 
-
-            let box = svg.node().getBBox();
-            let translate = 'translate(' + (-box.x)*(width/box.width)  + ',' + (-box.y)*(height/box.height) + ')'
-            let scale = 'scale(' + (width/box.width) + ',' + (height/box.height) + ')';
-            let transform = translate + ' ' + scale
-            svg.selectAll('g').attr('transform',transform);
+            //scale but keep aspect ratio to fit box
+            const box = svg.node().getBBox();
+            if(keepAspectRatio){
+                const scaleSize = Math.min(width/box.width,height/box.height);
+                const xOffset = (width - scaleSize*box.width)/2;
+                const yOffset = (height - scaleSize*box.height)/2;
+                const translate = 'translate(' + ((-box.x)*(width/box.width) + xOffset) + ',' + ((-box.y)*(height/box.height) + yOffset) + ')'
+                const scale = 'scale(' + scaleSize+ ')';
+                const transform = translate + ' ' + scale;
+                svg.selectAll('g').attr('transform',transform);
+            }
+            else{
+                const translate = 'translate(' + (-box.x)*(width/box.width)  + ',' + (-box.y)*(height/box.height) + ')'
+                const scale = 'scale(' + (width/box.width) + ',' + (height/box.height) + ')';
+                const transform = translate + ' ' + scale;
+                svg.selectAll('g').attr('transform',transform);
+            }
 
         }
     },[svg,props.subsiteSvgPaths,props.data,props.simulation,props.featureQue]);

@@ -13,7 +13,7 @@ export default function LNVisD3(props){
 
     const aScale = v => v//Math.sign(v)*(Math.abs(v)**.3);
 
-    
+    const keepAspectRatio = true;
 
     const getStrokeWidth = (d)=>{
         if(d.name === 'outline'){ return 3;}
@@ -109,7 +109,7 @@ export default function LNVisD3(props){
                     let string = d.name + ': ' + (100*d.value).toFixed(0) + '%';
                     if(useAttention){
                         string = d.name + '</br>'
-                        + 'attribution: '+ d.attention.toFixed(3) + '</br>'
+                        + 'attribution: '+ (100*d.attention).toFixed(3) + '%</br>'
                         + 'current value:' + d.value + '</br>'
                         + 'queued value:' + d.queVal;
                     } 
@@ -120,11 +120,22 @@ export default function LNVisD3(props){
                     Utils.hideTTip(tTip);
                 });;
 
-            let box = svg.node().getBBox();
-            let translate = 'translate(' + (-box.x)*(width/box.width)  + ',' + (-box.y)*(height/box.height) + ')'
-            let scale = 'scale(' + (width/box.width) + ',' + (height/box.height) + ')';
-            let transform = translate + ' ' + scale
-            svg.selectAll('g').attr('transform',transform);
+            const box = svg.node().getBBox();
+            if(keepAspectRatio){
+                const scaleSize = Math.min(width/box.width,height/box.height);
+                const xOffset = (width - scaleSize*box.width)/2;
+                const yOffset = (height - scaleSize*box.height)/2;
+                const translate = 'translate(' + ((-box.x)*(width/box.width) + xOffset) + ',' + ((-box.y)*(height/box.height) + yOffset) + ')'
+                const scale = 'scale(' + scaleSize+ ')';
+                const transform = translate + ' ' + scale;
+                svg.selectAll('g').attr('transform',transform);
+            }
+            else{
+                const translate = 'translate(' + (-box.x)*(width/box.width)  + ',' + (-box.y)*(height/box.height) + ')'
+                const scale = 'scale(' + (width/box.width) + ',' + (height/box.height) + ')';
+                const transform = translate + ' ' + scale;
+                svg.selectAll('g').attr('transform',transform);
+            }
 
         }
     },[svg,props.lnSvgPaths,props.data,props.featureQue,props.simulation,props.modelOutput,props.fixedDecisions,props.state]);

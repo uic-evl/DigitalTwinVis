@@ -150,7 +150,7 @@ export default function AttributionPlotD3(props){
             if(discrepency > 0){
                 positiveTotal += discrepency;
             } else{
-                negativeTotal += discrepency;
+                negativeTotal += Math.abs(discrepency);
             }
 
             //data should now be a dictionayr of values
@@ -276,12 +276,17 @@ export default function AttributionPlotD3(props){
                 .attr('font-size',bottomMargin/2)
                 .text(d=>(100*d.value).toFixed() + '%');
 
-            // let leftMost = Math.min(currX, centerX);
-            // group.attr('transform','translate(' +  -1*(leftMost - labelSpacing) + ')');
-            const bounds = group.node().getBBox();
-            if(bounds.x > margin){
-                group.attr('transform','translate(' +  -1*(bounds.x - margin) + ')');
+            let leftMost = Math.min(currX, centerX);
+            group.attr('transform','translate(' +  -1*(leftMost - labelSpacing) + ')');
+            const box = svg.node().getBBox();
+            if( box.x + box.width > width | box.x < 0){
+                const translate = box.x < 0? 'translate(' +  -1*(box.x - labelSpacing) + ')':'translate(' +  -1*(leftMost - labelSpacing) + ')';
+                const xScale = Math.min(((width-2*margin)/(box.x+box.width)),1);
+                const scale = 'scale(' + xScale + ',' + 1 + ')';
+                const transform = translate + ' ' + scale;
+                group.attr('transform',transform);
             }
+            
         }
     },[svg,props.simulation,props.modelOutput,props.currState,width,height,props.defaultPredictions,props.fixedDecisions]);
 
