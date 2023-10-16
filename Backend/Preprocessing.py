@@ -66,9 +66,10 @@ def preprocess(data_cleaned):
 
     data_cleaned['DLT_Other'] = 0
     for index, row in data_cleaned.iterrows():
-        if row['DLT_Type'] == 'None':
+        print(row['DLT_Type'])
+        if row['DLT_Type'] == 'None' or pd.isna(row['DLT_Type']):
             continue
-        for i in re.split('&|and|,', row['DLT_Type']):
+        for i in re.split('&|and|,', str(row['DLT_Type'])):
             if i.strip() != '' and data_cleaned.loc[index, Const.dlt_dict[i.strip()]] == 0:
                 data_cleaned.loc[index, Const.dlt_dict[i.strip()]] = 1
 
@@ -87,7 +88,7 @@ def preprocess(data_cleaned):
     data_cleaned['DLT_Infection (Pneumonia) 2'] = 0
     data_cleaned['DLT_Other 2'] = 0
     for index, row in data_cleaned.iterrows():
-        if row['DLT 2'] == 'None':
+        if row['DLT 2'] == 'None' or pd.isna(row['DLT 2']):
             continue
         for i in re.split('&|and|,', row['DLT 2']):
             if i.strip() != '':

@@ -23,9 +23,20 @@ export default function Tutorial(props){
     }
     setStage(newStage)
   }
+
+  //event handler for key presses (up/down for incrementing brush event)
+  function handleKeyPress(e){
+    console.log('e',e)
+    e.preventDefault();
+    if(e.keyCode === 37){
+        incrementStage(-1)
+    } else if(e.keyCode === 39){
+        incrementStage(1)
+    }
+}
   const style = props.style||{};
   return (
-    <div  style={style} className={"tutorial"}>
+    <div  style={style} className={"tutorial"} onKeyUp={handleKeyPress}>
       <Button onClick={onOpen} className={'modalButton'}>Help</Button>
       <Modal isOpen={isOpen}  onClose={onClose}>
         <ModalOverlay />
@@ -36,12 +47,9 @@ export default function Tutorial(props){
             <img style={{'objectFit':'contain'}} src={images[stage]}/>
           </ModalBody>
           <Progress style={{'width':'90%','left':'5%'}} value={100*(stage+.01)/(images.length-.99)}/>
-          <ModalFooter>
-            <Button colorScheme='blue' onClick={onClose}>
-              Close
-            </Button>
-            <Button onClick={() => incrementStage(-1)} variant='ghost'>Previous</Button>
-            <Button onClick={() => incrementStage(1)} variant='ghost'>Next</Button>
+          <ModalFooter display={'flex'} justifyContent={'space-between'}>
+            <Button onClick={() => incrementStage(-1)} variant='outline'>Previous</Button>
+            <Button onClick={() => incrementStage(1)} variant='outline'>Next</Button>
           </ModalFooter>
         </ModalContent>
       </Modal>

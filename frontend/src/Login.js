@@ -1,7 +1,6 @@
 import {useState} from 'react';
-import * as constants from './modules/Constants';
-import {Input, Button, Flex, FormControl, FormLabel} from '@chakra-ui/react';
-
+import {Input, Button, Flex, FormControl, FormLabel,Text} from '@chakra-ui/react';
+import './App.css';
 
 
 const LoginPage = ({login, message}) => {
@@ -17,11 +16,11 @@ const LoginPage = ({login, message}) => {
     <Flex align="center" justifyContent="center" minH="100vh">
       <form>
         <FormControl>
-          <FormLabel>Username</FormLabel>
+          <FormLabel className='centerText'>Username</FormLabel>
           <Input value={username} onChange={e => setUsername(e.target.value)} />
         </FormControl>
         <FormControl>
-          <FormLabel>Password</FormLabel>
+          <FormLabel className='centerText'>Password</FormLabel>
           <Input
             type="password"
             value={password}
@@ -29,13 +28,13 @@ const LoginPage = ({login, message}) => {
           />
         </FormControl>
         <Button
-          isDisabled={username.trim() === '' || password.trim === ''}
-          mt="2"
+          variant={'solid'}
+          colorScheme={'blue'}
           onClick={handleOnClick}
         >
-          Log in
+          {'Log in'}
         </Button>
-        <div>{message}</div>
+        <Text maxWidth="300px" color='darkred' fontWeight={'bold'} flexWrap={'wrap'}>{message}</Text>
       </form>
     </Flex>
   )
