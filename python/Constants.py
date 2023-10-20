@@ -43,19 +43,24 @@ class Const:
          'Hematological (Neutropenia)': 'DLT_Hematological',
          'Hyponatremia': 'DLT_Other',
          'Immunological': 'DLT_Other',
-         'Infection': 'DLT_Infection (Pneumonia)',
+#          'Infection': 'DLT_Infection (Pneumonia)',
+        'Infection': 'DLT_Other',
          'NOS': 'DLT_Other',
-         'Nephrological': 'DLT_Nephrological',
-         'Nephrological (ARF)': 'DLT_Nephrological',
+#          'Nephrological': 'DLT_Nephrological',
+#          'Nephrological (ARF)': 'DLT_Nephrological',
+        'Nephrological': 'DLT_Other',
+         'Nephrological (ARF)': 'DLT_Other',
          'Neurological': 'DLT_Neurological',
          'Neutropenia': 'DLT_Hematological',
          'Nutritional': 'DLT_Other',
          'Pancreatitis': 'DLT_Other',
          'Pulmonary': 'DLT_Other',
-         'Respiratory (Pneumonia)': 'DLT_Infection (Pneumonia)',
-         'Sepsis': 'DLT_Infection (Pneumonia)',
+#          'Respiratory (Pneumonia)': 'DLT_Infection (Pneumonia)',
+#          'Sepsis': 'DLT_Infection (Pneumonia)',
+        'Respiratory (Pneumonia)': 'DLT_Other',
+         'Sepsis': 'DLT_Other',
          'Suboptimal response to treatment' : 'DLT_Other',
-         'Vascular': 'DLT_Vascular'
+         'Vascular': 'DLT_Other'
     }
     
     decision1 = 'Decision 1 (Induction Chemo) Y/N'
@@ -71,7 +76,7 @@ class Const:
         3: 'dose_cancelled',
         4: 'dose_delayed_&_modified',
         5: 'regiment_modification',
-        9: 'unknown'
+#         9: 'unknown', #only one person
     }
     
     cc_types = {
@@ -90,7 +95,11 @@ class Const:
     
     primary_disease_states2 = [t + ' 2' for t in primary_disease_states]
     nodal_disease_states2 = [t + ' 2' for t in nodal_disease_states]
+    
+    #unremoved stuff because I groups all dlts less common than .05% of the data
     dlt2 = [d + ' 2' for d in dlt1]
+    #Removing some wihtout enough data to evaluate
+#     dlt2 = ['DLT_Gastrointestinal 2','DLT_Dermatological 2','DLT_Other 2','DLT_Neurological 2','DLT_Hematological 2']
     
 
     tuned_transition_models = [

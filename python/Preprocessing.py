@@ -66,7 +66,7 @@ def preprocess(data_cleaned):
 
     data_cleaned['DLT_Other'] = 0
     for index, row in data_cleaned.iterrows():
-        if row['DLT_Type'] == 'None':
+        if row['DLT_Type'] == 'None' or pd.isna(row['DLT_Type']):
             continue
         for i in re.split('&|and|,', row['DLT_Type']):
             if i.strip() != '' and data_cleaned.loc[index, Const.dlt_dict[i.strip()]] == 0:
@@ -87,7 +87,7 @@ def preprocess(data_cleaned):
     data_cleaned['DLT_Infection (Pneumonia) 2'] = 0
     data_cleaned['DLT_Other 2'] = 0
     for index, row in data_cleaned.iterrows():
-        if row['DLT 2'] == 'None':
+        if row['DLT 2'] == 'None' or pd.isna(row['DLT 2']):
             continue
         for i in re.split('&|and|,', row['DLT 2']):
             if i.strip() != '':
@@ -154,7 +154,7 @@ def preprocess_dt_data(df,extra_to_keep=None):
         to_keep.append(v)
     for k,v in Const.modification_types.items():
         name = 'Modification Type (0= no dose adjustment, 1=dose modified, 2=dose delayed, 3=dose cancelled, 4=dose delayed & modified, 5=regimen modification, 9=unknown)'
-        df[v] = df[name].apply(lambda x: int(Const.modification_types.get(int(x),0) == v))
+        df[v] = df[name].apply(lambda x: int(Const.modification_types.get(int(x),'no_dose_adjustment') == v))
         to_keep.append(v)
     #Features to keep. I think gender is is in 
     
@@ -252,7 +252,8 @@ class DTDataset():
         df = pd.read_csv(data_file)
         df = preprocess(df)
         df = df.rename(columns = Const.rename_dict).copy()
-        df = df.drop('MRN OPC',axis=1)
+        if 'MRN OPC' in df.columns:
+            df = df.drop('MRN OPC',axis=1)
 
         ln_data = pd.read_csv(ln_data_file)
         if 'ln_cluster' in ln_data:

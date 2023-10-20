@@ -1,6 +1,7 @@
 import torch
 import numpy as np
 import pandas as pd
+import pickle
 from Preprocessing import *
 
 def get_dt_ids(df=None):
@@ -35,9 +36,24 @@ def df_to_torch(df,ttype  = torch.FloatTensor):
 def load_models():
     files = [
         '../resources/decision_model.pt',
-        '../resources/transition1_model.pt',
-        '../resources/transition2_model.pt',
-        '../resources/outcome_model.pt',
+        '../resources/transition1_model_pytorch.pt',
+        '../resources/transition2_model_pytorch.pt',
+        '../resources/outcome_model_pytorch.pt',
     ]
     decision_model,transition_model1,transition_model2, outcome_model = [torch.load(file) for file in files]
     return decision_model,transition_model1,transition_model2,outcome_model
+
+
+def load_sklearn_transition_models():
+    model_names = ['transition1_model.pickle','transition2_model.pickle','outcome_model.pickle']
+    success = []
+    for mname in model_names:
+        try:
+            name = '../resources/sklearn_models/' + mname
+            with open(name,'rb') as f:
+                model = pickle.load(f)
+            success.append(model)
+        except Exception as e:
+            success.append(False)
+            print(e)
+    return success
