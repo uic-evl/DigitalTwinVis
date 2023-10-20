@@ -673,7 +673,7 @@ function MainApp({authToken,setAuthToken}) {
         h='99%'
         w='100%'
         templateRows='2em repeat(2,1fr)'
-        templateColumns='25em repeat(4,1fr) 1em'
+        templateColumns='max(25vw, 15em) repeat(4,1fr) 1em'
         gap={1}
         style={{'cursor':cursor}}
       >

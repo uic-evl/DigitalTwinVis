@@ -85,7 +85,7 @@ export default function AttributionPlotD3(props){
                     ordinalLookup[variable+'_'+o] = variable
                 }
             }
-            var otherEntries = [];
+            var otherEntries = {};
             
             function addAttribution(d,key,value){
                 value = value === undefined? 0: value;
@@ -115,7 +115,7 @@ export default function AttributionPlotD3(props){
                         vkey = 'Contralateral LNs';
                     } else if(Math.abs(val) < minAttribution){
                         vkey = 'other';
-                        otherEntries.push(key2)
+                        otherEntries[key] = val;
                     } else if(isPd){
                         vkey = 'Primary Response';
                     } else if(isNd){
@@ -128,6 +128,7 @@ export default function AttributionPlotD3(props){
                 if(Math.abs(v) < minAttribution & v !== undefined){
                     data['other'] = data['other'] + v;
                     if(k !== 'other'){
+                        otherEntries[k] = v;
                         delete data[k];
                     }
                 }
@@ -152,6 +153,7 @@ export default function AttributionPlotD3(props){
             } else{
                 negativeTotal += Math.abs(discrepency);
             }
+            otherEntries['Losts due to rounding errors'] = discrepency;
 
             //data should now be a dictionayr of values
             const keys = Object.keys(data);
@@ -220,8 +222,8 @@ export default function AttributionPlotD3(props){
                         + 'attribution: ' + formatText(d.val);
                     if(d.name === 'other'){
                         string += '</br>' + 'features:';
-                        for(let v of otherEntries){
-                            string += v + ', '
+                        for(let [k,v] of Object.entries(otherEntries)){
+                            string += k + ': ' + 100*(v).toFixed(5) + '%</br>'
                         }
                     }
                     tTip.html(string);

@@ -1,8 +1,14 @@
 import torch
 # import numpy as np
 import pandas as pd
+import numpy as np
 from Constants import Const
 from captum.attr import IntegratedGradients
+from sklearn.svm import SVC
+from sklearn.neural_network import MLPClassifier
+from sklearn.ensemble import RandomForestClassifier
+from sklearn.base import clone
+from sklearn.calibration import CalibratedClassifierCV
 
 
 
@@ -41,7 +47,7 @@ class SimulatorBase(torch.nn.Module):
         self.register_buffer('input_std',input_std)
         
         self.sigmoid = torch.nn.Sigmoid()
-        self.softmax = torch.nn.LogSoftmax(dim=1)
+        self.softmax = torch.nn.Softmax(dim=1)
         self.identifier = 'state'  +str(state) + '_input'+str(input_size) + '_dims' + ','.join([str(h) for h in hidden_layers]) + '_dropout' + str(input_dropout) + ',' + str(dropout)
     
     def set_device(self,device,**kwargs):
@@ -53,7 +59,17 @@ class SimulatorBase(torch.nn.Module):
     
     def get_device(self):
         return next(self.parameters()).device
+
+    def enable_dropout(self):
+        for m in self.modules():
+            if m.__class__.__name__.startswith('Dropout'):
+                m.train()
     
+    def disable_dropout(self):
+        for m in self.modules():
+            if m.__class__.__name__.startswith('Dropout'):
+                m.eval()
+        
     def normalize(self,x):
         x = torch.subtract(x,self.input_mean)
         x = torch.add(x, self.eps)
@@ -117,7 +133,12 @@ class SimulatorAttentionBase(SimulatorBase):
         self.norms = torch.nn.ModuleList(norms)
         self.final_layer = torch.nn.Linear(hidden_layers[-1],len(Const.decisions))
         self.activation = torch.nn.ReLU()
+        self.register_buffer('memory',None)
 
+    def save_memory(self,newmemory):
+        self.memory= newmemory
+
+# +
 class OutcomeSimulator(SimulatorBase):
     
     def __init__(self,
@@ -143,7 +164,7 @@ class OutcomeSimulator(SimulatorBase):
 #             self.dlt_layers = torch.nn.ModuleList([torch.nn.Linear(hidden_layers[-1],2) for i in Const.dlt2])
             self.treatment_layer = torch.nn.Linear(hidden_layers[-1],len(Const.ccs))
    
-    def forward(self,xin):
+    def get_output(self,xin):
         x = self.normalize(xin)
         x = self.input_dropout(x)
         for layer in self.layers:
@@ -166,11 +187,11 @@ class OutcomeSimulator(SimulatorBase):
         #this only kind of works since I think it can end up all zero and softmaxes to .33% flat
         if self.state == 1:
             #pd and nd, shrink complete and partial response columns if decision is 0
-            scale = xin[:,-1].view(-1,1)
+            scale = torch.gt(xin[:,-1].view(-1,1),.5)
             x_pd= torch.mul(x_pd,scale)
             x_nd= torch.mul(x_nd,scale)
             #shrink all but "no modifications"
-#             x_mod[:,1:]  = torx_mod[:,1:] *scale
+            x_mod[:,1:]  = torch.mul(x_mod[:,1:],scale)
         x_pd = self.softmax(x_pd)
         x_nd = self.softmax(x_nd)
         x_mod = self.softmax(x_mod)
@@ -182,7 +203,55 @@ class OutcomeSimulator(SimulatorBase):
         xout = [x_pd, x_nd, x_mod, x_dlts]
         
         return xout
+    
+    def forward(self,x,**kwargs):
+        return self.get_output(x)
+    
+class BayesianOutcomeSimulator(OutcomeSimulator):
 
+    def quantile(self,xlist,q,from_ll=False):
+        xshape = xlist[0].shape
+        xx = torch.stack(xlist).view((len(xlist),-1))
+        if from_ll:
+            xx = torch.exp(xx)
+        return xx.quantile(q,dim=0).view(xshape)
+    
+    def cf(self,xlist,ci=.1,**kwargs):
+        lower = self.quantile(xlist,ci,**kwargs)
+        upper = self.quantile(xlist,1-ci,**kwargs)
+        return lower, upper
+    
+    def forward(self,xin,n_samples=20,**kwargs):
+        if not self.training:
+            self.disable_dropout()
+        basex =  self.get_output(xin)
+        if n_samples <= 1:
+            return basex
+        self.enable_dropout()
+        xpd_range = []
+        xnd_range = []
+        xmod_range = []
+        xdlt_range = []
+        with torch.no_grad():
+            for sample in range(n_samples):
+                xx = self.get_output(xin)
+                xpd_range.append(xx[0])
+                xnd_range.append(xx[1])
+                xmod_range.append(xx[2])
+                xdlt_range.append(xx[3])
+            xpd_range = self.cf(xpd_range,from_ll=False)
+            xnd_range =self.cf(xnd_range,from_ll=False)
+            xmod_range = self.cf(xmod_range,from_ll=False)
+            xdlt_range = self.cf(xdlt_range,from_ll=False)
+        entry  = {
+            'predictions': basex,
+            '5%': [xpd_range[0],xnd_range[0],xmod_range[0],xdlt_range[0]],
+            '95%':  [xpd_range[1],xnd_range[1],xmod_range[1],xdlt_range[1]],
+            'order': ['pd','nd','mod','dlt']
+        }
+        return entry
+
+# +
 class EndpointSimulator(SimulatorBase):
     
     def __init__(self,
@@ -198,7 +267,7 @@ class EndpointSimulator(SimulatorBase):
         self.outcome_layer = torch.nn.Linear(hidden_layers[-1],len(Const.outcomes))
       
         
-    def forward(self,x):
+    def get_output(self,x):
         x = self.normalize(x)
         x = self.input_dropout(x)
         for layer in self.layers:
@@ -208,6 +277,52 @@ class EndpointSimulator(SimulatorBase):
         x= self.outcome_layer(x)
         x = self.sigmoid(x)
         return x
+    
+    def forward(self,x,**kwargs):
+        return self.get_output(x)
+    
+class BayesianEndpointSimulator(EndpointSimulator):
+    
+    def average(self,xlist,from_ll=True):
+        if from_ll:
+            xlist = [torch.exp(xx) for xx in xlist]
+        if len(xlist) < 2:
+            return xlist[0]
+        else:
+            return torch.stack(xlist).mean(dim=0) 
+        
+    def quantile(self,xlist,q,from_ll=False):
+        xshape = xlist[0].shape
+        xx = torch.stack(xlist).view((len(xlist),-1))
+        #if the simulator outputs a log loss
+        if from_ll:
+            xx = torch.exp(xx)
+        return xx.quantile(q,dim=0).view(xshape)
+    
+    def cf(self,xlist,ci=.1,**kwargs):
+        lower = self.quantile(xlist,ci,**kwargs)
+        upper = self.quantile(xlist,1-ci,**kwargs)
+        return lower, upper
+    
+    def forward(self,xin,n_samples=20,**kwargs):
+        if not self.training:
+            self.disable_dropout()
+        basex =  self.get_output(xin)
+        if n_samples <= 1:
+            return basex
+        self.enable_dropout()
+        xrange =[]
+        with torch.no_grad():
+            for sample in range(n_samples):
+                xx = self.get_output(xin)
+                xrange.append(xx)
+            [x5, x95] = self.cf(xrange,from_ll=False)
+        entry = {
+            'predictions': basex,
+            '5%':x5,
+            '95%':  x95,
+        }
+        return entry
     
 class TransitionEnsemble(torch.nn.Module):
     
@@ -227,7 +342,7 @@ class TransitionEnsemble(torch.nn.Module):
     def get_device(self):
         return next(self.parameters()).device
     
-    def average(self,xlist,from_ll=True):
+    def average(self,xlist,from_ll=False):
         if from_ll:
             xlist = [torch.exp(xx) for xx in xlist]
         if len(xlist) < 2:
@@ -235,7 +350,7 @@ class TransitionEnsemble(torch.nn.Module):
         else:
             return torch.stack(xlist).mean(dim=0) 
         
-    def quantile(self,xlist,q,from_ll=True):
+    def quantile(self,xlist,q,from_ll=False):
         xshape = xlist[0].shape
         xx = torch.stack(xlist).view((len(xlist),-1))
         if from_ll:
@@ -273,14 +388,14 @@ class TransitionEnsemble(torch.nn.Module):
             xnd_range.append(xx[1])
             xmod_range.append(xx[2])
             xdlt_range.append(xx[3])
-        xpd = self.average(xpd,from_ll=True)
-        xnd = self.average(xnd,from_ll=True)
-        xmod = self.average(xmod,from_ll=True)
+        xpd = self.average(xpd)
+        xnd = self.average(xnd)
+        xmod = self.average(xmod)
         xdlt = self.average(xdlt,from_ll=False)
         
-        xpd_range = self.cf(xpd_range,from_ll=True)
-        xnd_range =self.cf(xnd_range,from_ll=True)
-        xmod_range = self.cf(xmod_range,from_ll=True)
+        xpd_range = self.cf(xpd_range,)
+        xnd_range =self.cf(xnd_range)
+        xmod_range = self.cf(xmod_range)
         xdlt_range = self.cf(xdlt_range,from_ll=False)
         entry = {
             'predictions': [xpd,xnd,xmod,xdlt],
@@ -296,6 +411,7 @@ class EndpointEnsemble(TransitionEnsemble):
         super().__init__(base_models,error_models,ci=ci)
     
     def forward(self,x):
+        x=x.to(self.get_device())
         xlist = []
         xrange =[]
         for m in self.base_models:
@@ -313,6 +429,9 @@ class EndpointEnsemble(TransitionEnsemble):
             '95%':  x95,
         }
         return entry
+
+
+# -
 
 class DecisionModel(SimulatorBase):
     
@@ -394,12 +513,15 @@ class DecisionModel(SimulatorBase):
         attributions = ig.attribute(x,base,target=target)
         return attributions
     
-    def forward(self,x,position=0,**kwargs):
+    def forward(self,x,position=0,use_saved_memory=None,**kwargs):
+        #use save memory is purely so I don't need an if statement for the attention version
         x = x.to(self.get_device())
         x = self.get_embedding(x,position=position)
         x = self.final_layer(x)
         x = self.sigmoid(x)
         return x
+
+
 
 class DecisionAttentionModel(DecisionModel):
     
@@ -414,6 +536,7 @@ class DecisionAttentionModel(DecisionModel):
                  eps = 0.01,
                  calculate_spread=True,
                  ln_group_positions = [[0, 2, 4, 6, 8, 10, 12, 14, 16, 36],[1, 3, 5, 7, 9, 11, 13, 15, 17, 37]],
+                **kwargs,
                  ):
         #input will be all states up until treatment 3
         input_size = baseline_input_size  + 2*len(Const.dlt1) + len(Const.primary_disease_states)  + len(Const.nodal_disease_states)  + len(Const.ccs)  + len(Const.modifications) + 2
@@ -480,7 +603,7 @@ class DecisionAttentionModel(DecisionModel):
             spreads[:,i] = spread.view(-1)
         return spreads.to(self.get_device())
     
-    def get_embedding(self,x,position=0,memory=None,use_saved_memory=False):
+    def get_embedding(self,x,position=0,memory=None,use_saved_memory=False,**kwargs):
         x = x.to(self.get_device())
         xbase = x[:,0:self.baseline_input_size]
         if self.calculate_spread:
@@ -535,7 +658,7 @@ class DecisionAttentionModel(DecisionModel):
     def save_memory(self,newmemory):
         self.memory= newmemory
     
-    def get_attributions(self,x,output=-1,target=0,**kwargs):
+    def get_attributions(self,x,output=-1,target=0,base=None,**kwargs):
         device= self.get_device()
         x = x.to(device)
         if output == -1:
@@ -543,7 +666,6 @@ class DecisionAttentionModel(DecisionModel):
         else:
             model = lambda x: self.forward(x,**kwargs)[output]
         ig = IntegratedGradients(model)
-        base = torch.zeros(x.shape).to(device)
         if self.memory is not None:
             if self.memory.ndim < 3:
                 m = self.memory
@@ -551,7 +673,8 @@ class DecisionAttentionModel(DecisionModel):
                 pos = kwargs.get('position',2)
                 m = self.memory[pos]
             m = m.to(device)
-            base[:] = torch.median(m,dim=0)[0].type(torch.FloatTensor)
+        if base is None:
+            base = torch.zeros(x.shape).to(device)
         attributions = ig.attribute(x,base,target=target)
         return attributions
     
@@ -562,6 +685,7 @@ class DecisionAttentionModel(DecisionModel):
         x = self.final_layer(x)
         x = self.sigmoid(x)
         return x
+
 
 class OutcomeAttentionSimulator(SimulatorAttentionBase):
     
@@ -590,22 +714,50 @@ class OutcomeAttentionSimulator(SimulatorAttentionBase):
             #we only have dlt yes or no for the second state?
 #             self.dlt_layers = torch.nn.ModuleList([torch.nn.Linear(hidden_layers[-1],2) for i in Const.dlt2])
             self.treatment_layer = torch.nn.Linear(hidden_layers[-1],len(Const.ccs))
-
         
-    def forward(self,x):
+        
+    def forward(self,x,memory=None,use_saved_memory=False):
+        decision = x[:,-1]
         x = self.normalize(x)
         x = self.input_dropout(x)
         x = self.activation(self.resize_layer(x))
+        
+        if use_saved_memory:
+            memory = self.memory
+            if memory is None:
+                print('passed bad memory argument to transition model ',self.state)
+        if memory is not None:
+            memory = self.normalize(memory)
+            memory = self.activation(self.resize_layer(memory))
+        i = len(self.attentions)
         for attention,layer,norm in zip(self.attentions,self.layers,self.norms):
-            x2, attention_weights = attention(x,x,x)
+            if memory is not None:
+                x2, attention_weights = attention(x,memory,memory)
+            else:
+                x2, attention_weights = attention(x,x,x)
             x2 = norm(x2+x)
             x2 = self.activation(x2)
             x = layer(x2)
             x = self.activation(x)
+            if i > 1:
+                memory2, _ = attention(memory,memory,memory)
+                memory = norm(memory2+memory)
+                memory = self.activation(memory)
+                memory = layer(memory)
+                memory = self.activation(memory)
+                i -= 1
         x = self.dropout(x)
         x_pd = self.disease_layer(x)
         x_nd = self.nodal_disease_layer(x)
         x_mod = self.treatment_layer(x)
+        
+        if self.state == 1:
+            #pd and nd, shrink complete and partial response columns if decision is 0
+            scale = torch.gt(decision.view(-1,1),.5)
+            x_pd= torch.mul(x_pd,scale)
+            x_nd= torch.mul(x_nd,scale)
+            #shrink all but "no modifications"
+            x_mod[:,1:]  = torch.mul(x_mod[:,1:],scale)
         x_dlts = [layer(x) for layer in self.dlt_layers]
         
         x_pd = self.softmax(x_pd)
@@ -636,7 +788,7 @@ class EndpointAttentionSimulator(SimulatorAttentionBase):
                          state=state)
         
         self.outcome_layer = torch.nn.Linear(hidden_layers[-1],len(Const.outcomes))
-      
+        
         
     def forward(self,x):
         x = self.normalize(x)
@@ -657,3 +809,178 @@ def df_to_torch(df,ttype  = torch.FloatTensor):
     values = df.values.astype(float)
     values = torch.from_numpy(values)
     return values.type(ttype)
+
+
+# +
+def resample_array(x,y=None):
+    shape = [i for i in range(x.shape[0])]
+    idx = np.random.choice(shape,replace=True,size=x.shape[0])
+    if y is not None:
+        assert x.shape[0] == y.shape[0]
+        return x[idx],y[idx]
+    return x[idx]
+
+class SingleOutcomeEnsembleWrapper():
+    
+    def __init__(self,models,outcome,error_models=None,ci=.1):
+        self.base_models = models
+        self.error_models = None
+        self.device = 'cpu'
+        self.x = None
+        self.y = None
+        self.ci = ci
+        self.return_type = torch.FloatTensor
+        self.outcome=outcome
+        
+    def set_device(self,device,**kwargs):
+        self.device = device
+        return True
+    
+    def get_device(self):
+        return self.device
+    
+    def numpyify(self,x):
+        is_torch = isinstance(x,torch.Tensor)
+        if is_torch:
+            x = x.cpu().detach().numpy()
+        if isinstance(x,pd.DataFrame):
+            x = x.values
+        return x.astype(float)
+    
+    def save_training_data(self,x,y):
+        self.x = x
+        self.y = y
+    
+    def get_input_size(self):
+        if self.x is None:
+            return 0
+        return self.x.shape[0]
+        
+    def fit_models(self,x,y,n_bootstraps =10,save_data=True,verbose=False):
+        if save_data:
+            self.save_training_data(x,y)
+        x = self.numpyify(x)
+        y = self.numpyify(y)
+        if y.ndim > 1 and y.shape[1] > 1:
+            if y.sum(axis=1).max() > 1.0000001:
+                print('bad sum?',self.outcome,y[0:3,:])
+            y = np.argmax(y,axis=1)
+        y = y.ravel()
+        error_models = []
+        for i,model in enumerate(self.base_models):
+            self.base_models[i] = model.fit(x,y)
+        while len(error_models) < n_bootstraps:
+            xtemp, ytemp = resample_array(x,y)
+            #error in case of issue with calibration due to small sample sizes
+            try:
+                for model in self.base_models:
+                    tempmodel = clone(model)
+                    error_models.append(tempmodel.fit(xtemp,ytemp))
+            except Exception as e:
+                if verbose:
+                    print('resampling issue',e)
+                
+    def __call__(self,x):
+        x = self.numpyify(x)
+        ys = [model.predict_proba(x.astype(np.float32)) for model in self.base_models]
+        if self.error_models is not None:
+            y_err = [model.predict_proba(x) for model in self.error_models]
+        else:
+            y_err = ys
+        if len(ys) < 2:
+            ypred = ys[0]
+        else:
+            ypred = np.stack(ys).mean(axis=0)
+        if len(y_err) < 2:
+            y_lower = y_err[0]
+            y_upper = y_err[0]
+        else:
+            [y_lower, y_upper] = np.quantile(np.stack(y_err),[self.ci,1-self.ci],axis=0)
+        outcome = [ypred, y_lower, y_upper]
+        #for boolean outcomes just return probability of true to match how I do torch models
+        if outcome[0].shape[1] == 2:
+            outcome = [o[:,1] for o in outcome]
+        return [torch.from_numpy(arr).type(self.return_type).to(self.device) for arr in outcome]
+    
+class OutcomeEnsembleWrapper():
+    
+    def __init__(self,model_list,model_order=None,to_group=[],groupname='',state=1,*args,**kwargs):
+        super().__init__(*args,**kwargs)
+        m_dict = {m.outcome: m for m in model_list}
+        if model_order is None:
+            model_order = [m.outcome for m in model_list]
+        self.models = [m_dict[n] for n in model_order]
+        self.model_names = model_order
+        self.device = model_list[0].get_device()
+        self.to_group =  [m for m in self.model_names if m in to_group]
+        self.groupname = groupname
+        self.state = state
+        
+    def get_model(self,name):
+        if name not in self.model_order:
+            return None
+        idx = self.model_order.index(name)
+        return self.models[idx]
+    
+    def eval(self,**kwargs):
+        return
+    
+    def train(self,*args,**kwargs):
+        return
+    
+    def set_device(self,device):
+        self.device=device
+        return
+    
+    def get_device(self):
+        return self.device
+    
+    def fit_models(self,x,ylist,**kwargs):
+        assert len(ylist) == len(self.models)
+        for m,y in zip(self.models,ylist):
+            m.fit_models(x,y,**kwargs)
+        return True
+    
+    def get_input_size(self):
+        return self.modes[0].get_input_size()
+    
+    def __call__(self,x):
+        outcomes = []
+        lower_ci = []
+        upper_ci = []
+        pos = 0
+        ogroup = []
+        lgroup = []
+        ugroup = []
+        #todo: group dlts like I do in other stuff
+        order = []
+        for model in self.models:
+            [ypred, ylower, yupper] = model(x)
+            if model.outcome not in self.to_group:
+                outcomes.append(ypred)
+                lower_ci.append(ylower)
+                upper_ci.append(yupper)
+                order.append(model.outcome)
+            else:
+                ogroup.append(ypred)
+                lgroup.append(ylower)
+                ugroup.append(yupper)
+        if len(ogroup) > 0:
+            ogroup = torch.stack(ogroup,axis=1)
+            lgroup = torch.stack(lgroup,axis=1)
+            ugroup = torch.stack(ugroup,axis=1)
+            outcomes.append(ogroup)
+            lower_ci.append(lgroup)
+            upper_ci.append(ugroup)
+        if len(self.to_group):
+            order.append(self.groupname)
+        if self.state == 3:
+            outcomes = torch.stack(outcomes,axis=1)
+        entry = {
+            'predictions': outcomes,
+            '5%': lower_ci,
+            '95%': upper_ci,
+            'order': order,
+        }
+        return entry
+    

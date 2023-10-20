@@ -50,7 +50,7 @@ def get_default_predictions(dm,dataset):
     for state in [0,1,2]:
         xin = get_default_input(dataset,state)[0]
         xin = dict_to_model_input(dataset,xin,state).to(dm.get_device())
-        val = dm(xin)
+        val = dm(xin,pos=state,use_saved_memory=True)
         res.append(val.cpu().detach().numpy())
     return np.vstack(res)
 
@@ -356,6 +356,13 @@ def get_neighbors_and_embeddings_from_sim(embeddings,dataset,decisionmodel,
         
     return results
 
+def get_default_model_inputs(dataset):
+    res = []
+    for state in [0,1,2]:
+        xin = get_default_input(dataset,state)[0]
+        xin = dict_to_model_input(dataset,xin,state)
+        res.append(xin)
+    return res
 
 def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisionmodel,state=0,model_type='optimal',**kwargs):
     #this takes a patient dict and returns the results for a full treatment simulation
@@ -389,8 +396,11 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     
     #baseline, dlt1, dlt2, pd, nd, cc, mod
     input_keys = get_inputkey_order(data)
+    
+    defaults = get_default_model_inputs(data)
+    defaults = [d.to(device) for d in defaults]
     def get_attention(xx, position, offset):
-        attention = decisionmodel.get_attributions(xx,target=position+offset, position=1)[0].cpu().detach().numpy()
+        attention = decisionmodel.get_attributions(xx,target=position+offset, position=position,base=defaults[position],use_saved_memory=True)[0].cpu().detach().numpy()
         attention_dict = {
             'step': position,
             'model': 'optimal' if offset == 0 else 'imitation',
@@ -445,7 +455,8 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         #do this to track malahanobis distances?
         is_default = (modifier == modifiers[0] and decision1 is None and decision2 is None and decision3 is None)
         if is_default:
-            embeddings[0] = decisionmodel.get_embedding(cat(baseline_inputs),position=0,use_saved_memory=True)
+            embeddings[0] = decisionmodel.get_embedding(cat(baseline_inputs),position=0,
+                                                                  use_saved_memory=True)
             
         #transition 1 model uses usebaline + decision
         if decision1 is not None:
@@ -533,7 +544,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
             d3 = decisionmodel(cat(oinput3),position = 2)[0,2+modifier].view(1,-1)
             d3_attention = get_attention(cat(oinput3),2,modifier)
         if is_default:
-            embeddings[2] =decisionmodel.get_embedding(cat(oinput3),position=2,use_saved_memory=True)
+            embeddings[2] = decisionmodel.get_embedding(cat(oinput3),position=2,use_saved_memory=True)
         #outcomes uses baseline + pd2 + nd2 + cc type + dlt2 + decision 1,2,3
         tinput3 = [baseline_inputs[0], ypd2, ynd2, ycc, ydlt2, thresh(d1), thresh(d2), thresh(d3)]
         tinput3 = cat(tinput3)

@@ -418,7 +418,7 @@ export default function PatientEditor(props){
                             setFeatureQue={props.setFeatureQue}
                         />
                     </div>
-                    <div style={{'display':'inline-flex','width':'2.8em','height':'100%','marginTop':'0px'}}>
+                    <div style={{'display':'inline-flex','width':'4rem','height':'100%','marginTop':'0px'}}>
                         <Input 
                             placeholder={data.currValue? data.currValue.toString(): 0} 
                             className={'fillSpace'} 

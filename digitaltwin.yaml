@@ -1,0 +1,77 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: digitaltwin
+  namespace: awentze2
+  labels:
+    app: digitaltwin
+spec:
+  dnsConfig:
+    nameservers:
+    - 8.8.8.8
+  nodeSelector:
+    nvidia.com/gpu.product: Tesla-T4-SHARED
+  containers:
+  - image: k8smaster.evl.uic.edu:5000/digitaltwin
+    imagePullPolicy: IfNotPresent
+    name: digitaltwin
+    args: ['sleep', 'infinity']
+    resources:
+      limits:
+        nvidia.com/gpu: 1               #Number of GPUs
+      requests:
+        memory: "100Mi"
+    env:
+    - name: NVIDIA_DRIVER_CAPABILITIES
+      value: "compute,utility"
+    - name: NVIDIA_VISIBLE_DEVICES
+      value: "all"
+    volumeMounts:
+    - name: nfs-volume
+      mountPath: /data
+    - name: dshm
+      mountPath: /dev/shm
+  volumes:
+  - name: nfs-volume
+    nfs:
+      server: 10.2.100.1
+      path: /data/nfs/awentze2
+  - name: dshm
+    emptyDir:
+      medium: Memory
+  restartPolicy: Always
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: digitaltwin-service           #Your app name adding -service
+  namespace: awentze2
+spec:
+  selector:
+    app: digitaltwin               #Your app name as state on label above
+  type: NodePort
+  ports:
+  - name: one
+    port: 9100
+    targetPort: 8888
+    protocol: TCP
+
+---
+
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: digitaltwin-ingress-port1     #Your app name adding -ingress-port1
+  namespace: awentze2
+spec:
+  entryPoints:
+    - web
+  routes:
+  - match: Host(`pods.evl.uic.edu`) && PathPrefix(`/awentze2`)   #Your username
+    kind: Rule
+    priority: 1
+    services:
+    - name: digitaltwin-service
+      port: 9100
