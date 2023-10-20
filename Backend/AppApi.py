@@ -50,7 +50,7 @@ def get_default_predictions(dm,dataset):
     for state in [0,1,2]:
         xin = get_default_input(dataset,state)[0]
         xin = dict_to_model_input(dataset,xin,state).to(dm.get_device())
-        val = dm(xin,pos=state,use_saved_memory=True)
+        val = dm(xin,position=state,use_saved_memory=True)
         res.append(val.cpu().detach().numpy())
     return np.vstack(res)
 
@@ -273,7 +273,7 @@ def calculateMahalanobis(y=None, data=None, cov=None):
     y_mu = y - np.mean(data)
     if not cov:
         cov = np.cov(data.T)
-    inv_covmat = np.linalg.inv(cov)
+    inv_covmat = np.linalg.pinv(cov)
     left = np.dot(y_mu, inv_covmat)
     mahal = np.dot(left, y_mu.T)
     return mahal.diagonal()
@@ -400,7 +400,11 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     defaults = get_default_model_inputs(data)
     defaults = [d.to(device) for d in defaults]
     def get_attention(xx, position, offset):
-        attention = decisionmodel.get_attributions(xx,target=position+offset, position=position,base=defaults[position],use_saved_memory=True)[0].cpu().detach().numpy()
+        attention = decisionmodel.get_attributions(xx,
+                                                   target=position+offset, 
+                                                   position=position,
+                                                   base=defaults[position],
+                                                   use_saved_memory=True)[0].cpu().detach().numpy()
         attention_dict = {
             'step': position,
             'model': 'optimal' if offset == 0 else 'imitation',

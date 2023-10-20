@@ -3,7 +3,6 @@ import numpy as np
 from Constants import Const
 import re
 
-
 def preprocess(data_cleaned):
     #this was Elisa's preprocessing except I removed all the Ifs because that's dumb
     if len(data_cleaned.shape) < 2:
@@ -66,10 +65,9 @@ def preprocess(data_cleaned):
 
     data_cleaned['DLT_Other'] = 0
     for index, row in data_cleaned.iterrows():
-        print(row['DLT_Type'])
         if row['DLT_Type'] == 'None' or pd.isna(row['DLT_Type']):
             continue
-        for i in re.split('&|and|,', str(row['DLT_Type'])):
+        for i in re.split('&|and|,', row['DLT_Type']):
             if i.strip() != '' and data_cleaned.loc[index, Const.dlt_dict[i.strip()]] == 0:
                 data_cleaned.loc[index, Const.dlt_dict[i.strip()]] = 1
 
@@ -193,6 +191,7 @@ def load_digital_twin(file='../data/digital_twin_data.csv'):
     df = pd.read_csv(file)
     return df.rename(columns = Const.rename_dict)
 
+
 def get_side(row):
     side = 'R'
     if row['laterality_L'] > 0:
@@ -237,10 +236,7 @@ class DTDataset():
                  data_file = '../data/digital_twin_data.csv',
                  ln_data_file = '../data/digital_twin_ln_monograms.csv',
                  ids=None,
-                 use_smote=False,
-                 smote_columns = ['Overall Survival (4 Years)','FT','Aspiration rate Post-therapy'],#only is use_smote=True
-                 smote_kwargs={},
-                 smote_ids = None, #if we want to only upsample select (i.e. train) ids
+                 **kwargs,
                 ):
         df = pd.read_csv(data_file)
         df = preprocess(df)
@@ -263,28 +259,7 @@ class DTDataset():
         
         #This upsamples and makes sure the new points have new ids so 
         #I can keep track of them later 
-        if use_smote:
-            smote_df = self.processed_df.copy()
-            unsmote_df = None
-            max_index = smote_df.index.max()
-            if smote_ids is not None:
-                print('here')
-                smote_df = smote_df.loc[smote_ids]
-                unsmote_df = self.processed_df.drop(smote_df.index,axis=0).copy()
-            new_smote_df = smoteify(smote_df.copy(),smote_columns,**smote_kwargs)
-            #make it so the new stuff has different ids than the original
-            if smote_ids is not None:
-                newindex = []
-                for i,val in enumerate(new_smote_df.index.values):
-                    val = max_index + 1
-                    max_index += 1
-                    newindex.append(val)
-                new_smote_df.index = newindex
-                for col in Const.decisions:
-                    new_smote_df[col] = new_smote_df[col].apply(lambda x: int(x > .5))
-                smote_df = pd.concat([smote_df,new_smote_df,unsmote_df],axis=0)
-            self.processed_df = smote_df
-          
+       
         self.means = self.processed_df.mean(axis=0)
         self.stds = self.processed_df.std(axis=0)
         self.maxes = self.processed_df.max(axis=0)
@@ -401,3 +376,4 @@ class DTDataset():
         if len(arrays) < 2:
             return arrays[0]
         return pd.concat(arrays,axis=1)
+
