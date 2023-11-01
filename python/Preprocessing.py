@@ -106,10 +106,17 @@ def merge_editions(row,basecol='AJCC 8th edition',fallback='AJCC 7th edition'):
     return row[basecol]
 
 
+# +
+def get_tte(df):
+    def ttm(row):
+        if row['FT'] == 1 or row['Aspiration rate Post-therapy'] == 1:
+            return 6.0
+        return np.min(row[['OS (Calculated)','Locoregional control (Time)','FDM (months)']].values)
+    return df.apply(ttm,axis=1).values
+
 def preprocess_dt_data(df,extra_to_keep=None):
-    
     to_keep = ['id','hpv','age','packs_per_year','gender','smoking_status',
-               'Aspiration rate Pre-therapy','total_dose','dose_fraction'] 
+               'Aspiration rate Pre-therapy','total_dose','dose_fraction'] + Const.timeseries_outcomes
     to_onehot = ['T-category','N-category','AJCC','Pathological Grade',
                  'subsite','treatment','laterality','ln_cluster']
     
@@ -179,14 +186,24 @@ def preprocess_dt_data(df,extra_to_keep=None):
     for col in yn_to_binary:
         df[col] = df[col].apply(lambda x: int(x == 'Y'))
         
+    df['time_to_event'] = get_tte(df)
+    
     to_keep = to_keep + [c for c in df.columns if 'DLT_' in c and c != 'DLT_Grade']
     
     for statelist in [Const.state2,Const.state3,Const.decisions,Const.outcomes]:
         toadd = [c for c in statelist if c not in to_keep]
         to_keep = to_keep + toadd
+    
 #     print(to_keep)
-   
+
+    for c in to_keep:
+        if c not in df.columns:
+            print('preprocessing missing',c)
+            to_keep.remove(c)
     return df[to_keep].set_index('id')
+
+
+# -
 
 def load_digital_twin(file='../data/digital_twin_data.csv'):
     df = pd.read_csv(file)
