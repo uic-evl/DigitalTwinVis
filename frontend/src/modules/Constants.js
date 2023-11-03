@@ -2,6 +2,9 @@
 export const API_URL = 'http://127.0.0.1:8000/';//this is a bad way to do this.  Whatever the flask server is set to
 
 export const OUTCOMES = ['Overall Survival (4 Years)','FT','Aspiration rate Post-therapy','LRC']
+
+export const TEMPORAL_OUTCOMES = ['OS (Calculated)','Locoregional control (Time)','FDM (months)','time_to_event']
+export const FOURYEAR_OUTCOMES = TEMPORAL_OUTCOMES.map(s => s+'(4yr)')
 export const DECISIONS = [
         'Decision 1 (Induction Chemo) Y/N',
         'Decision 2 (CC / RT alone)',

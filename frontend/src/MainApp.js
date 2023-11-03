@@ -298,18 +298,47 @@ function MainApp({authToken,setAuthToken}) {
   }
   
 
-  function getSimulation(){
+  function getSimulation(useAlt=false){
     if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
-    let key = modelOutput;
+    // let key = modelOutput;
+    // for(let i in fixedDecisions){
+    //   let d = fixedDecisions[i];
+    //   let di = parseInt(i) + 1
+    //   if(d >= 0){
+    //     let suffix = '_decision'+(di)+'-'+d;
+    //     key += suffix;
+    //   }
+    // }
+    let currKey = modelOutput;
+    let altKey = modelOutput;
+    let currPredictions = ['1','2','3'].map(i=> (simulation[modelOutput]['decision'+i] > .5) + 0);
+    let currDecision = 0;
     for(let i in fixedDecisions){
       let d = fixedDecisions[i];
-      let di = parseInt(i) + 1
+      let di = parseInt(i) + 1;
+      let trueDecision = d >= 0? d: currPredictions[i];
+      let suffix = '';
       if(d >= 0){
-        let suffix = '_decision'+(di)+'-'+d;
-        key += suffix;
+        suffix = '_decision'+(di)+'-'+d;
+      }
+      currKey += suffix;
+      if(parseInt(i) !== parseInt(currState)){
+        altKey += suffix;
+      } else{
+        let altDecision = trueDecision > 0? 0: 1;
+        let altSuffix = '_decision' + (di) + '-' + altDecision;
+        altKey += altSuffix;
+        currDecision = trueDecision;
       }
     }
-    return simulation[key]
+    var sim = simulation[currKey];
+    var altSim = simulation[altKey];
+    sim.currDecision = currDecision;
+    altSim.currDecision = Math.abs(1-currDecision );
+    if(useAlt){
+      return [sim, altSim]
+    }
+    return sim
   }
 
   
@@ -333,31 +362,35 @@ function MainApp({authToken,setAuthToken}) {
         ]
       }
       const maxN = 10;
-      let currKey = modelOutput;
-      let altKey = modelOutput;
-      let currPredictions = ['1','2','3'].map(i=> (simulation[modelOutput]['decision'+i] > .5) + 0);
-      // const currPropensity = simulation['imitation']['decision'+ (currState+1)];
-      let currDecision = 0;
-      for(let i in fixedDecisions){
-        let d = fixedDecisions[i];
-        let di = parseInt(i) + 1;
-        let trueDecision = d >= 0? d: currPredictions[i];
-        let suffix = '';
-        if(d >= 0){
-          suffix = '_decision'+(di)+'-'+d;
-        }
-        currKey += suffix;
-        if(parseInt(i) !== parseInt(currState)){
-          altKey += suffix;
-        } else{
-          let altDecision = trueDecision > 0? 0: 1;
-          let altSuffix = '_decision' + (di) + '-' + altDecision;
-          altKey += altSuffix;
-          currDecision = trueDecision;
-        }
-      }
-      const sim = simulation[currKey];
-      const altSim = simulation[altKey];
+
+      const [sim,altSim] = getSimulation(true);
+      const currDecision = sim.currDecision;
+      const altDecision = altSim.currDecision;
+      // let currKey = modelOutput;
+      // let altKey = modelOutput;
+      // let currPredictions = ['1','2','3'].map(i=> (simulation[modelOutput]['decision'+i] > .5) + 0);
+      // // const currPropensity = simulation['imitation']['decision'+ (currState+1)];
+      // let currDecision = 0;
+      // for(let i in fixedDecisions){
+      //   let d = fixedDecisions[i];
+      //   let di = parseInt(i) + 1;
+      //   let trueDecision = d >= 0? d: currPredictions[i];
+      //   let suffix = '';
+      //   if(d >= 0){
+      //     suffix = '_decision'+(di)+'-'+d;
+      //   }
+      //   currKey += suffix;
+      //   if(parseInt(i) !== parseInt(currState)){
+      //     altKey += suffix;
+      //   } else{
+      //     let altDecision = trueDecision > 0? 0: 1;
+      //     let altSuffix = '_decision' + (di) + '-' + altDecision;
+      //     altKey += altSuffix;
+      //     currDecision = trueDecision;
+      //   }
+      // }
+      // const sim = simulation[currKey];
+      // const altSim = simulation[altKey];
 
       const getNeighbor = id => Object.assign(Object.assign({},cohortData[id+'']),cohortEmbeddings[id+'']);
       var neighbors= [];
