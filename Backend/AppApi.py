@@ -4,7 +4,7 @@ import pandas as pd
 import datetime
 import re
 import torch
-from Preprocessing import DTDataset
+from Preprocessing import *
 from sklearn.decomposition import PCA
 from scipy.spatial.distance import cdist
 from Constants import Const
@@ -24,9 +24,11 @@ def load_models():
         '../resources/transition1_model.pt',
         '../resources/transition2_model.pt',
         '../resources/outcome_model.pt',
+        '../resources/outcomeDSM.pt',
     ]
-    decision_model,transition_model1,transition_model2, outcome_model = [torch.load(file) for file in files]
-    return decision_model,transition_model1,transition_model2,outcome_model
+    decision_model,transition_model1,transition_model2, outcome_model,survival_model = [torch.load(file) for file in files]
+    print(len(files))
+    return decision_model,transition_model1,transition_model2,outcome_model,survival_model
 
 def np_converter(obj):
     #converts stuff to vanilla python  for json since it gives an error with np.int64 and arrays
@@ -50,7 +52,7 @@ def get_default_predictions(dm,dataset):
     for state in [0,1,2]:
         xin = get_default_input(dataset,state)[0]
         xin = dict_to_model_input(dataset,xin,state).to(dm.get_device())
-        val = dm(xin,position=state,use_saved_memory=True)
+        val = dm(xin)
         res.append(val.cpu().detach().numpy())
     return np.vstack(res)
 
@@ -135,7 +137,7 @@ def get_decision_input(dataset,state=0,ids=None):
 def get_inputkey_order(dataset,state=0):
     return [list(f.columns) for f in get_decision_input(dataset,state=state)]
 
-def get_predictions(dataset,m1,m2,m3,states=[0,1,2],ids=None):
+def get_predictions(dataset,m1,m2,m3,sm3,states=[0,1,2],ids=None):
     outcomes = {}
     def add_outcomes(names, array,suffix=''):
         for i,name in enumerate(names):
@@ -171,6 +173,15 @@ def get_predictions(dataset,m1,m2,m3,states=[0,1,2],ids=None):
         else:
             for suffixes, values in zip(['','_5%','_95%'],[y,y_lower,y_upper]):
                 add_outcomes(Const.outcomes,values,suffixes)
+        if state == 2: #timeseries outcomes
+            survival = sm3.time_to_event(x,n_samples=20)
+            s = survival['predictions']
+            s_lower = survival['5%']
+            s_upper= survival['95%']
+            names = survival['order']
+            for suffixes,values in zip(['','_5%','_95%'],[s,s_lower,s_upper]):
+                values = torch.stack(values,axis=1).cpu().detach().numpy()
+                add_outcomes(names,values,suffixes)
     if ids is None:
         ids = dataset.processed_df.index.values
     outcomes = pd.DataFrame(outcomes,ids)
@@ -184,6 +195,7 @@ def get_embeddings(dataset,dm,states=[0,1,2],use_saved_memory=True,decimals=2):
     decisions_imitation = [[] for i in states]
     for i,state in enumerate(states):
         x = get_decision_input(dataset,state=state)
+    
         x = torch.cat([df_to_torch(f) for f in x],axis=1).to(dm.get_device())
         embedding = dm.get_embedding(x,position = state)
         inputs.append(x.cpu().detach().numpy())
@@ -364,7 +376,11 @@ def get_default_model_inputs(dataset):
         res.append(xin)
     return res
 
-def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisionmodel,state=0,model_type='optimal',**kwargs):
+def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisionmodel,survival_model,
+                          state=0,
+                          model_type='optimal',
+                          timepoints = [1,6,12,18,24,30,36,42,48,54,60],
+                          **kwargs):
     #this takes a patient dict and returns the results for a full treatment simulation
     #currently if state > 0 it will check if prior transition states are all zero and if not, will input them
     #currently works with categorical, might have to experiment with passing like -1 for fixed "no" with fixed no dlts
@@ -377,6 +393,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     tmodel2.eval()
     outcomemodel.eval()
     decisionmodel.eval()
+    survival_model.eval()
     device = 'cpu'
     if torch.cuda.is_available():
         device='cuda'
@@ -384,6 +401,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     tmodel2.set_device(device)
     outcomemodel.set_device(device)
     decisionmodel.set_device(device)
+    survival_model.set_device(device)
     results = {}
     embeddings = {}
     #do a loop for imitation and a loop for optimal decision making, mod = 3 is imitation
@@ -400,11 +418,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     defaults = get_default_model_inputs(data)
     defaults = [d.to(device) for d in defaults]
     def get_attention(xx, position, offset):
-        attention = decisionmodel.get_attributions(xx,
-                                                   target=position+offset, 
-                                                   position=position,
-                                                   base=defaults[position],
-                                                   use_saved_memory=True)[0].cpu().detach().numpy()
+        attention = decisionmodel.get_attributions(xx,target=position+offset, position=position,base=defaults[position])[0].cpu().detach().numpy()
         attention_dict = {
             'step': position,
             'model': 'optimal' if offset == 0 else 'imitation',
@@ -454,7 +468,101 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         }
         return results
     fixed_transitions = get_fixed_transitions()
-    print('fixed_decisions',fixed_transitions)
+
+    def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisionmodel,survival_model,
+                          override_outcome_model=True,
+                          state=0,
+                          model_type='optimal',
+                          timepoints = [1,6,12,18,24,30,36,42,48,54,60],
+                          **kwargs):
+    #this takes a patient dict and returns the results for a full treatment simulation
+    #currently if state > 0 it will check if prior transition states are all zero and if not, will input them
+    #currently works with categorical, might have to experiment with passing like -1 for fixed "no" with fixed no dlts
+    pdata = format_patient(data,patient_dict)
+    baseline_inputs = dict_to_model_input(data,pdata,state=0,concat=False) 
+    
+    
+    
+    tmodel1.eval()
+    tmodel2.eval()
+    outcomemodel.eval()
+    decisionmodel.eval()
+    survival_model.eval()
+    device = 'cpu'
+    if torch.cuda.is_available():
+        device='cuda'
+    tmodel1.set_device(device)
+    tmodel2.set_device(device)
+    outcomemodel.set_device(device)
+    decisionmodel.set_device(device)
+    survival_model.set_device(device)
+    results = {}
+    embeddings = {}
+    #do a loop for imitation and a loop for optimal decision making, mod = 3 is imitation
+    format_transition = lambda x: x.view(1,-1).to(device)
+    #inputs are order baseline, dlt1, dlt2, pd, nd, cc type, dose modifications
+    #model output is nx6 -> optimal 1 , 2, 3, imitation 1, 2, 3
+    cat = lambda x: torch.cat([xx.to(device) for xx in x],axis=1).to(device)
+    
+    size_dict = decisionmodel.input_sizes
+    
+    #baseline, dlt1, dlt2, pd, nd, cc, mod
+    input_keys = get_inputkey_order(data)
+    
+    defaults = get_default_model_inputs(data)
+    defaults = [d.to(device) for d in defaults]
+    def get_attention(xx, position, offset):
+        attention = decisionmodel.get_attributions(xx,target=position+offset, position=position,base=defaults[position])[0].cpu().detach().numpy()
+        attention_dict = {
+            'step': position,
+            'model': 'optimal' if offset == 0 else 'imitation',
+            'range': [float(attention.min()),float(attention.max())],
+            'baseline': dictify(input_keys[0],attention[0:size_dict['baseline']]),
+        }
+        pos = size_dict['baseline']
+        attention_dict['dlt1'] = dictify(input_keys[1],attention[pos:pos+size_dict['dlt']])
+        pos += size_dict['dlt']
+        attention_dict['dlt2'] = dictify(input_keys[2], attention[pos:pos+size_dict['dlt']])
+        pos += size_dict['dlt']
+        attention_dict['pd'] = dictify(input_keys[3], attention[pos:pos+size_dict['pd']])
+        pos += size_dict['pd']
+        attention_dict['nd'] = dictify(input_keys[4], attention[pos:pos+size_dict['nd']])
+        pos += size_dict['nd']
+        attention_dict['cc'] = dictify(input_keys[5], attention[pos:pos+size_dict['cc']])
+        pos += size_dict['cc']
+        attention_dict['modifications'] = dictify(input_keys[6], attention[pos:])
+        return attention_dict
+        
+    memory = get_decision_input(data,state=2)
+    memory = cat([df_to_torch(f) for f in memory])
+    o1 = decisionmodel(cat(baseline_inputs),position=0)[0]
+    
+    thresh = lambda x: torch.gt(x,.5).type(torch.FloatTensor)
+    
+    modifiers = [3] if model_type == 'imitation' else [0]
+    if model_type == 'both':
+        modifiers = [0,3]
+        
+    def get_fixed_transitions():
+        
+        [base, dlt1,_,pd1,nd1,_,mod] =dict_to_model_input(data,pdata,state=1,
+                                                          concat=False,zero_transition_states=False)
+        [base, _,dlt2,pd2,nd2,cc,_] =dict_to_model_input(data,pdata,state=2,
+                                                          concat=False,zero_transition_states=False)
+        isfixed = lambda d: not (torch.sum(d) < .00001)
+        results = {
+            'dlt1': isfixed(dlt1),
+            'dlt2': isfixed(dlt2),
+            'pd1': isfixed(pd1),
+            'pd2': isfixed(pd2),
+            'nd1': isfixed(nd2),
+            'nd2': isfixed(nd2),
+            'cc': isfixed(cc),
+            'mod': isfixed(mod)
+        }
+        return results
+    fixed_transitions = get_fixed_transitions()
+
     def run_simulation(modifier,decision1=None,decision2=None,decision3=None):
         #do this to track malahanobis distances?
         is_default = (modifier == modifiers[0] and decision1 is None and decision2 is None and decision3 is None)
@@ -562,6 +670,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
             'decision2_attention': d2_attention,
             'decision3_attention': d3_attention,
         }
+        
         def add_to_entry(tmodel_output,names):
             pred = tmodel_output['predictions']
             lower = tmodel_output['5%']
@@ -578,6 +687,24 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         add_to_entry(ytransition,['pd1','nd1','modifications','dlt1'])
         add_to_entry(ytransition2,['pd2','nd2','cc_type','dlt2'])
         add_to_entry(outcomes,['outcomes'])
+        
+        #add time to event  for each event, each is a seperate entry unlike the grouped outcomes
+        tte = survival_model.time_to_event(tinput3)
+        tte_order = tte['order']
+        add_to_entry(tte,tte_order)
+        
+        scurve_entry = {}
+        survival_curves = survival_model(tinput3,timepoints)
+        for name,scurve in zip(tte_order,survival_curves):
+            scurve = [np.round(v.cpu().detach().numpy()[0],3) for v in scurve]
+            scurve_entry[name] = scurve
+        scurve_entry['times'] = timepoints
+        entry['survival_curves'] = scurve_entry
+        #put the 4year probability for the timeseries input in case I want to override the other model
+        fouryear_probs = survival_model(tinput3,48)
+        for name, probs in zip(tte_order,fouryear_probs):
+            probs = probs[0].detach().cpu().numpy()[0]
+            entry[name+'(4yr)'] = np.round(probs,3)
         key = 'optimal' if modifier < 1 else 'imitation'
         if decision1 is not None:
             key += '_decision1-'+str(decision1)

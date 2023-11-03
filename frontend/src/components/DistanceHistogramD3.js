@@ -42,17 +42,20 @@ export default function DistanceHistogram(props){
             var maxCount = 0;
             var cumSum = 0;
             var currPercentile = 1;
+            var totalAbove = distances.length;
             for(let i = 0; i <= 1; i+=increment){
                 const binMin = extents[0]*(1-i) + extents[1]*i;
                 const ii = i + increment;
                 const binMax = extents[0]*(1-ii) + extents[1]*ii;
                 const inBin = distances.filter(v => (v >= binMin) & (v < binMax)).length;
                 maxCount = Math.max(maxCount,inBin);
+                totalAbove -= inBin;
                 binData.push({
                     'count': inBin,
                     'i': i,
                     'binMax':binMax,
                     'binMin': binMin,
+                    'histVal': totalAbove,
                 });
                 cumSum += inBin;
                 if(currDist >= binMin & currDist < binMax){
@@ -66,9 +69,12 @@ export default function DistanceHistogram(props){
 
             const functionalHeight = height - bottomMargin - topMargin;
             const heightScale = d3.scaleLinear()
-                .domain([0,maxCount])
+                .domain([0,distances.length])
                 .range([0,functionalHeight]);
 
+            const colorScale = d3.scaleLinear()
+                .domain([distances.length,distances.length/1.5,0.05])
+                .range(['#99d594','#ffffbf','#fc8d59'])
             const bars = svg.selectAll('.histBar').data(binData,d=>d.x);
             
             bars.enter().append('rect')
@@ -76,11 +82,11 @@ export default function DistanceHistogram(props){
                 .merge(bars)
                 .attr('x',d=> xScale(d.binMin))
                 .attr('width',d=>xScale(d.binMax) - xScale(d.binMin))
-                .attr('y',d=> topMargin + (functionalHeight - heightScale(d.count)))
-                .attr('fill','grey')
-                .attr('opacity',.8)
+                .attr('y',d=> topMargin + (functionalHeight - heightScale(d.histVal)))
+                .attr('fill',d=>colorScale(d.histVal))
+                .attr('opacity',1)
                 .transition(500)
-                .attr('height',d=>heightScale(d.count))
+                .attr('height',d=>heightScale(d.histVal))
         
             bars.exit().remove();
 
