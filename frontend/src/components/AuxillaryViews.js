@@ -407,7 +407,7 @@ export default function AuxillaryViews(props){
       if(Utils.allValid([props.simulation,props.cohortData,props.currEmbeddings])){
         let decision = getDecision(props.fixedDecisions,props.currState,props.getSimulation);
         const dString = constants.DECISIONS[props.currState];
-        var neighborsToShow = 10;
+        var neighborsToShow = 20;
         const [neighbors,cfs] = getNeighbors(decision,props.currEmbeddings,props.currState,props.cohortData,neighborsToShow);
         return (
           <div key={'survival'} className={'fillSpace'}>

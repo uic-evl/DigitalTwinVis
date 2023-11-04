@@ -55,7 +55,7 @@ export default function DistanceHistogram(props){
                     'i': i,
                     'binMax':binMax,
                     'binMin': binMin,
-                    'histVal': totalAbove,
+                    'histVal': Math.max(totalAbove,0),
                 });
                 cumSum += inBin;
                 if(currDist >= binMin & currDist < binMax){
@@ -81,7 +81,7 @@ export default function DistanceHistogram(props){
                 .attr('class','histBar')
                 .merge(bars)
                 .attr('x',d=> xScale(d.binMin))
-                .attr('width',d=>xScale(d.binMax) - xScale(d.binMin))
+                .attr('width',d=>Math.max(xScale(d.binMax) - xScale(d.binMin),0))
                 .attr('y',d=> topMargin + (functionalHeight - heightScale(d.histVal)))
                 .attr('fill',d=>colorScale(d.histVal))
                 .attr('opacity',1)

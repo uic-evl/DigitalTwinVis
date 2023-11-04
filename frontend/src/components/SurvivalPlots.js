@@ -3,6 +3,7 @@ import useSVGCanvas from './useSVGCanvas.js';
 import Utils from '../modules/Utils.js';
 import * as d3 from 'd3';
 import * as constants from "../modules/Constants.js";
+import '../App.css';
 
 
 
@@ -13,53 +14,185 @@ export default function SurvivalPlots(props){
 
     const curvesToPlot = constants.TEMPORAL_OUTCOMES;
     
-    const xMargin = 10;
-    const yMargin = 10;
+    const xMargin = 20;
+    const yMargin = 20;
+    const xTickSpacing = 20;
+    const yTickSpacing = 40;
+    const titleSpacing = 20;
+    const legendSpacing = Math.min(width/2,Math.max(80,width/10));
+    const maxTime = 48;
     useEffect(()=>{
         if(svg === undefined){return}
         const [sim,altSim] = props.getSimulation(true)
         const survivalCurves = sim['survival_curves'];
         const altCurves = altSim['survival_curves'];
 
-        const chartHeight = (height/curvesToPlot.length) - 2*yMargin;
+        const chartHeight = (height/curvesToPlot.length) - 1.5*yMargin;
         const chartWidth = width - 2*xMargin;
-        const times = survivalCurves.times;
+        const times = survivalCurves.times.filter(d=>d<=maxTime);
         const xScale = d3.scaleLinear()
             .domain([times[0],times[times.length-1]])
-            .range([xMargin,width-xMargin]);
-
-        const lineColors = sim.currDecision >= .5? [constants.yesColor,constants.noColor]: [constants.noColor,constants.yesColor];
+            .range([xMargin + yTickSpacing,width-xMargin-legendSpacing]);
+        const lineColors = sim.currDecision >= .5? [constants.dnnColor,constants.dnnColorNo,constants.knnColor,constants.knnColorNo]: [constants.dnnColorNo,constants.dnnColor,constants.knnColorNo,constants.knnColor];
         function makeChart(name,topPos){
+            
             const curves = survivalCurves[name];
-            const alt = altCurves[name]
-            const timeToEvent = sim[name];
-            const timeToEventUpper = sim[name+'_95%'];
-            const timeToEventLower = sim[name+'_95%'];
+            const alt = altCurves[name]   
 
             const yScale = d3.scaleLinear()
                 .domain([0,1])
-                .range([topPos + chartHeight, topPos]);
+                .range([topPos + chartHeight - xTickSpacing, topPos + titleSpacing]);
             const lineFunc = d3.line()
-                .x((d,i) => xScale(times[i]))
-                .y(d=>yScale(d));
+                // .x(d=>d.x)
+                // .y(d=>d.y);
+                // .x((d,i) => xScale(times[i]))
+                // .y(d=>yScale(d));
 
-            const selector=name.replace('.','').replace(')','').replace('(','').replace('.','').replace(' ','').replace(' ','')
-            var path = svg.selectAll('path').filter('.path'+selector).data([curves,alt],(d,i) => i);
+            const selector=name.replace('.','').replace(')','').replace('(','').replace('.','').replace(' ','').replace(' ','');
+
+            svg.selectAll('g').filter('.g'+selector).remove();
+            const g = svg.append('g').attr('class','g'+selector)
+                .style('outline','3px solid rgba(40,40,40,.1)')
+                .style('outline-offset', '2px')
+                .style('border-radius','10px');
+
+            var curveData = [];
+
+            for(let ii in [curves,alt]){
+                let cVals = [curves,alt][ii];
+                let path = [];
+                for(let i in cVals){
+                    path.push([xScale(times[i]),yScale(cVals[i])]);
+                }
+                curveData.push({
+                    'path': lineFunc(path),
+                    'color': lineColors[ii],
+                })
+            }
+
+
+            for(let nList of [props.neighbors,props.cfs]){
+                const nTimes = nList.map(d=>d[name]);
+                let pCurve = [];
+                for(let time of times){
+                    let pctAbove = nTimes.filter(d => d > time).length/nTimes.length;
+                    pCurve.push([xScale(time),yScale(pctAbove)]);
+                }
+                curveData.push({
+                    'path': lineFunc(pCurve),
+                    'color': lineColors[curveData.length],
+                });
+            }
+            var path = g.selectAll('path').filter('.path'+selector).data(curveData,(d,i) => i);
 
             path.enter()
                 .append('path').attr('class','path'+selector)
                 .merge(path)
                 .transition(100)
-                .attr('d',lineFunc)
-                .attr('stroke-width',3)
-                .attr('stroke',(d,i)=>lineColors[i])
+                .attr('d',d=>d.path)
+                .attr('stroke-width',5)
+                .attr('stroke',d=>d.color)
+                .attr('opacity',.5)
                 .attr('fill','none');
             path.exit().remove();
+
+            let textStuff = [{
+                'x':(width-legendSpacing)/2,
+                'y': yScale(1) - titleSpacing/2, 
+                'size': titleSpacing*.9,
+                'text': Utils.getFeatureDisplayName(name),
+                'anchor': 'middle',
+                'weight':'bold'
+            }];
+            for(let time of times){
+                let entry = {
+                    'x': xScale(time),
+                    'y': yScale(0) + xTickSpacing/2,
+                    'size': xTickSpacing*.8,
+                    'text': time,
+                    'anchor':'middle',
+                    'weight': ''
+                }
+                textStuff.push(entry);
+            }
+
+            const xStart = xScale(0);
+            const xEnd = xScale(times[times.length-1]);
+            //use this for any lines you want to use
+            for(let pct of [.5]){
+                let y = yScale(pct)
+                textStuff.push({
+                    'x': xMargin,
+                    'y': y,
+                    'size': xTickSpacing*.8,
+                    'text': (pct*100).toFixed(0) + '%',
+                    'anchor':'start',
+                    'weight': '',
+                    'line': lineFunc([[xStart,y],[xEnd,y]]),
+                })
+            }
+            g.selectAll('.text'+selector).remove();
+            g.selectAll('.text'+selector).data(textStuff)
+                .enter().append('text')
+                .attr('class','text'+selector)
+                .attr('font-size',d=>d.size)
+                .attr('dominant-baseline','middle')
+                .attr('text-anchor',d=>d.anchor)
+                .attr('font-weight',d=>d.weight)
+                .attr('x',d=>d.x)
+                .attr('y',d=>d.y)
+                .html(d=>d.text);
+
+            g.selectAll('.axisTick'+selector).remove();
+            g.selectAll('.axisTick'+selector).data(textStuff)
+                .enter().append('path').attr('class','axisTick'+selector)
+                .attr('d',d=>d.line)
+                .attr('stroke','azure')
+                // .attr('stroke-dasharray','1')
+                .attr('stroke-opacity',1)
+                .attr('stroke-width',3);
+
+            const timeToEvent = sim[name];
+            const altTimeToEvent = altSim[name];
+            const knnTTE = Utils.median(props.neighbors.map(d=>d[name]));
+            const altKnnTTE = Utils.median(props.cfs.map(d=>d[name]));
+            console.log('knntte',knnTTE,altKnnTTE,sim[name+'(4yr)'],sim[name],sim)
+            var legendData = [];
+            const lX = xScale.range()[1]+2;
+            var lY = yScale(1);
+            const lTextSize = Math.min(16,xTickSpacing*.8);
+            const lWidth = Math.min(legendSpacing/2,lTextSize);
+            for(let tte of [timeToEvent,altTimeToEvent,knnTTE,altKnnTTE]){
+                let color = lineColors[legendData.length];
+                legendData.push({
+                    'color': color,
+                    'x': lX,
+                    'textX': lX+lWidth+2,
+                    'y': lY,
+                    'text': tte.toFixed(0)
+                });
+                lY += lWidth + 2;
+            }
+            g.selectAll('.legendItem'+selector).remove();
+            g.selectAll('.legendItem'+selector).filter('rect')
+                .data(legendData).enter()
+                .append('rect').attr('class','legendItem'+selector)
+                .attr('x',d=>d.x).attr('y',d=>d.y)
+                .attr('width',lWidth).attr('height',lWidth)
+                .attr('fill',d=>d.color);
+            g.selectAll('.legendItem'+selector).filter('text')
+                .data(legendData).enter()
+                .append('text').attr('class','legendItem'+selector)
+                .attr('x',d=>d.textX).attr('y',d=>d.y+(lWidth/2))
+                .attr('font-size',lTextSize)
+                .attr('dominant-baseline','middle')
+                .attr('text-anchor','start')
+                .text(d=>d.text)
         }
         var currPos = yMargin;
         for(let cName of curvesToPlot){
             makeChart(cName,currPos);
-            currPos += chartHeight + 2*yMargin;
+            currPos += chartHeight + yMargin;
         }
         console.log('survivalplot',survivalCurves,altCurves,sim.currDecision,altSim.currDecision)
     },[svg,props])

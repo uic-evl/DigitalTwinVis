@@ -2,7 +2,6 @@ import pandas as pd
 import numpy as np
 from Constants import Const
 import re
-from imblearn.over_sampling import SMOTE
 
 def preprocess(data_cleaned):
     #this was Elisa's preprocessing except I removed all the Ifs because that's dumb
@@ -209,13 +208,7 @@ def load_digital_twin(file='../data/digital_twin_data.csv'):
     df = pd.read_csv(file)
     return df.rename(columns = Const.rename_dict)
 
-def smoteify(df,ycols,**kwargs):
-    subdf = df.copy().fillna(0)
-    y = subdf[ycols].apply(lambda x: ''.join([str(r) for r in x]), axis=1)
-    smote = SMOTE(sampling_strategy='not majority',n_jobs=-2,random_state=0,**kwargs)
-    smote_df = smote.fit_resample(subdf,y)
-    xnew, ynew = smote_df
-    return xnew
+
 
 def get_side(row):
     side = 'R'
@@ -261,10 +254,6 @@ class DTDataset():
                  data_file = '../data/digital_twin_data.csv',
                  ln_data_file = '../data/digital_twin_ln_monograms.csv',
                  ids=None,
-                 use_smote=False,
-                 smote_columns = ['Overall Survival (4 Years)','FT','Aspiration rate Post-therapy'],#only is use_smote=True
-                 smote_kwargs={},
-                 smote_ids = None, #if we want to only upsample select (i.e. train) ids
                 ):
         df = pd.read_csv(data_file)
         df = preprocess(df)
@@ -287,28 +276,7 @@ class DTDataset():
         
         #This upsamples and makes sure the new points have new ids so 
         #I can keep track of them later 
-        if use_smote:
-            smote_df = self.processed_df.copy()
-            unsmote_df = None
-            max_index = smote_df.index.max()
-            if smote_ids is not None:
-                print('here')
-                smote_df = smote_df.loc[smote_ids]
-                unsmote_df = self.processed_df.drop(smote_df.index,axis=0).copy()
-            new_smote_df = smoteify(smote_df.copy(),smote_columns,**smote_kwargs)
-            #make it so the new stuff has different ids than the original
-            if smote_ids is not None:
-                newindex = []
-                for i,val in enumerate(new_smote_df.index.values):
-                    val = max_index + 1
-                    max_index += 1
-                    newindex.append(val)
-                new_smote_df.index = newindex
-                for col in Const.decisions:
-                    new_smote_df[col] = new_smote_df[col].apply(lambda x: int(x > .5))
-                smote_df = pd.concat([smote_df,new_smote_df,unsmote_df],axis=0)
-            self.processed_df = smote_df
-          
+        
         self.means = self.processed_df.mean(axis=0)
         self.stds = self.processed_df.std(axis=0)
         self.maxes = self.processed_df.max(axis=0)
