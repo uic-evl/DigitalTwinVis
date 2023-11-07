@@ -58,6 +58,13 @@ export default function SurvivalPlots(props){
 
             var curveData = [];
 
+            const timeToEvent = sim[name];
+            const altTimeToEvent = altSim[name];
+            const knnTTE = Utils.median(props.neighbors.map(d=>d[name]));
+            const altKnnTTE = Utils.median(props.cfs.map(d=>d[name]));
+            const ttes =  [timeToEvent,altTimeToEvent,knnTTE,altKnnTTE];
+
+            const curveNames = sim.currDecision >= .5? ['Treatment (predicted)', 'No Treatment (predicted)','Treated (neighbors)','No Treatment (neighbors)']: ['No Treatment (predicted)', 'Treatment (predicted)','No Treated (neighbors)','Treatment (neighbors)'];
             for(let ii in [curves,alt]){
                 let cVals = [curves,alt][ii];
                 let path = [];
@@ -67,6 +74,8 @@ export default function SurvivalPlots(props){
                 curveData.push({
                     'path': lineFunc(path),
                     'color': lineColors[ii],
+                    'medianTime': ttes[curveData.length],
+                    'name': curveNames[curveData.length],
                 })
             }
 
@@ -81,6 +90,8 @@ export default function SurvivalPlots(props){
                 curveData.push({
                     'path': lineFunc(pCurve),
                     'color': lineColors[curveData.length],
+                    'medianTime': ttes[curveData.length],
+                    'name': curveNames[curveData.length],
                 });
             }
             var path = g.selectAll('path').filter('.path'+selector).data(curveData,(d,i) => i);
@@ -95,6 +106,15 @@ export default function SurvivalPlots(props){
                 .attr('opacity',.5)
                 .attr('fill','none');
             path.exit().remove();
+
+            g.selectAll('.path'+selector).on('mouseover',function(e,d){
+                let string = d.name + '</br>' + 'Median Time To Event: ' + d.medianTime.toFixed(0) + ' Months';
+                tTip.html(string);
+            }).on('mousemove', function(e){
+                Utils.moveTTipEvent(tTip,e);
+            }).on('mouseout', function(e){
+                Utils.hideTTip(tTip);
+            });
 
             let textStuff = [{
                 'x':(width-legendSpacing)/2,
@@ -152,24 +172,20 @@ export default function SurvivalPlots(props){
                 .attr('stroke-opacity',1)
                 .attr('stroke-width',3);
 
-            const timeToEvent = sim[name];
-            const altTimeToEvent = altSim[name];
-            const knnTTE = Utils.median(props.neighbors.map(d=>d[name]));
-            const altKnnTTE = Utils.median(props.cfs.map(d=>d[name]));
-            console.log('knntte',knnTTE,altKnnTTE,sim[name+'(4yr)'],sim[name],sim)
+            
             var legendData = [];
             const lX = xScale.range()[1]+2;
             var lY = yScale(1);
             const lTextSize = Math.min(16,xTickSpacing*.8);
             const lWidth = Math.min(legendSpacing/2,lTextSize);
-            for(let tte of [timeToEvent,altTimeToEvent,knnTTE,altKnnTTE]){
+            for(let tte of ttes){
                 let color = lineColors[legendData.length];
                 legendData.push({
                     'color': color,
                     'x': lX,
                     'textX': lX+lWidth+2,
                     'y': lY,
-                    'text': tte.toFixed(0)
+                    'text': tte <= 48? tte.toFixed(0)+'M': '>4Yr' ,
                 });
                 lY += lWidth + 2;
             }

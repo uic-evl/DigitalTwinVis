@@ -597,9 +597,12 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         add_to_entry(outcomes,['outcomes'])
         
         #add time to event  for each event, each is a seperate entry unlike the grouped outcomes
-        tte = survival_model.time_to_event(tinput3)
-        tte_order = tte['order']
-        add_to_entry(tte,tte_order)
+        tte = survival_model.time_to_event(tinput3,n_samples=1)
+        tte_order = survival_model.outcome_names
+        for v, name in zip(tte,tte_order):
+            entry[name] = v.cpu().detach().numpy()[0]
+        #tte = survival_model.time_to_event(tinput3)
+        # add_to_entry(tte,tte_order)
         
         scurve_entry = {}
         survival_curves = survival_model(tinput3,timepoints)

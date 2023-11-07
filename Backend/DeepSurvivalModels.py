@@ -118,6 +118,7 @@ def eval_model(model, xtest, ttest,ytest,timepoints = None,outcome_names=None):
 
 def train_dsm(dataset, outcomes=Const.timeseries_outcomes,maxtime=72,
               save_file=None,main_epochs=1000,main_lr=.01,patience=10,dist='LogNormal',
+              pretrain_epochs=10000,
               verbose= 2,
               **kwargs):
     #ok they do something different so like check this later?
@@ -137,7 +138,7 @@ def train_dsm(dataset, outcomes=Const.timeseries_outcomes,maxtime=72,
     ytest, ttest = format_tte_outcomes(dataset,outcomes,ids=test_ids,maxtime=maxtime)
     model = DSM(xtrain.shape[1],outcomes=outcomes,dist=dist,**kwargs)
     model.fit_normalizer(xtrain)
-    premodel = pretrain_dsm(dataset,outcomes=outcomes,maxtime=maxtime,save_file=pretrain_save_file,dist=dist,verbose=verbose,**kwargs)
+    premodel = pretrain_dsm(dataset,outcomes=outcomes,maxtime=maxtime,epochs=pretrain_epochs,save_file=pretrain_save_file,dist=dist,verbose=verbose,**kwargs)
     for i in range(premodel.n_outcomes):
         model.shape[i].data = premodel.shape[i].data
         model.scale[i].data = premodel.scale[i].data
@@ -280,6 +281,15 @@ class DSM(torch.nn.Module):
     def meantime(self,shape,scale,logits):
         #this if for the normal distribution?
         #So i'm sort of guessing for the lognormal (which is median time no mean) but it tests seem to get that is the equivalent time of suvival = .49
+        
+        #Ok so the equation they give more for weibull doesn't work, I just calculate median time via brute for assuming it's between 5 and 200 months
+        if self.dist == "Weibull":
+            #cut off after 4.3 years
+            times = list(range(5,52))
+            probs =[torch.exp(c).T for c in self._cdf(shape,scale,logits,times)]
+            probs = torch.stack(probs,axis=0)
+            best = torch.argmin(torch.abs(.5 - probs),axis=0)
+            return torch.Tensor([times[b] for b in best])
         k_ =  shape
         b_ = scale
         logits = self.squish(logits)
@@ -301,9 +311,12 @@ class DSM(torch.nn.Module):
                 lmeans.append(mu)
         lmeans = torch.stack(lmeans, dim=1)
         if self.dist == 'Weibull':
+#             lmeans = lmeans*torch.exp(logits)
+#             lmeans = torch.sum(lmeans,dim=1)
             lmeans = lmeans+logits
             lmeans = torch.logsumexp(lmeans,dim=1)
             lmeans = torch.exp(lmeans)
+            return lmeans
         elif self.dist == 'LogNormal':
             lmeans = lmeans*torch.exp(logits)
             lmeans = torch.sum(lmeans,dim=1)
