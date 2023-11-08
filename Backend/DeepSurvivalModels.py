@@ -6,8 +6,28 @@ import torch.nn as nn
 import numpy as np
 from sklearn.metrics import roc_auc_score,f1_score,balanced_accuracy_score,matthews_corrcoef
 from Utils import *
+from Misc import *
 
 # +
+def get_tt_split(ids=None,use_default_split=True,use_bagging_split=False,resample_training=False,df=None):
+        if ids is None:
+            ids = get_dt_ids(df)
+        #pre-made, stratified by decision and outcome 72:28
+        if use_default_split:
+            train_ids = Const.stratified_train_ids[:]
+            test_ids = Const.stratified_test_ids[:]
+        elif use_bagging_split:
+            train_ids = np.random.choice(ids,len(ids),replace=True)
+            test_ids = [i for i in ids if i not in train_ids]
+        else:
+            test_ids = ids[0: int(len(ids)*(1-split))]
+            train_ids = [i for i in ids if i not in test_ids]
+
+        if resample_training:
+            train_ids = np.random.choice(train_ids,len(train_ids),replace=True)
+            test_ids = [i for i in ids if i not in train_ids]
+        return train_ids,test_ids
+    
 def create_representation(inputdim, layers, activation, bias=False):
     if activation == 'ReLU6': act = nn.ReLU6()
     elif activation == 'ReLU': act = nn.ReLU()
@@ -154,7 +174,7 @@ def train_dsm(dataset, outcomes=Const.timeseries_outcomes,maxtime=72,
         curr_loss = 0
         shapes,scales,logitss = model(xtrain)
         for i in range(model.n_outcomes):
-            curr_loss += conditional_loss(shapes[i],scales[i],logitss[i],ttrain[i],ytrain[i],model.k,model.dist,discount=model.discount)/model.n_outcomes 
+            curr_loss += conditional_loss(shapes[i],scales[i],logitss[i],ttrain[i],ytrain[i],model.k,model.dist,discount=model.discount,elbo=model.elbo)/model.n_outcomes 
         curr_loss.backward()
         
         optimizer.step()
@@ -163,7 +183,7 @@ def train_dsm(dataset, outcomes=Const.timeseries_outcomes,maxtime=72,
             shapes2,scales2,logitss2 = model(xtest)
             val_loss = 0
             for i in range(model.n_outcomes):
-                val_loss += conditional_loss(shapes2[i],scales2[i],logitss2[i],ttest[i],ytest[i],model.k,model.dist,discount=model.discount)/model.n_outcomes 
+                val_loss += conditional_loss(shapes2[i],scales2[i],logitss2[i],ttest[i],ytest[i],model.k,model.dist,discount=model.discount,elbo=model.elbo)/model.n_outcomes 
             val_metrics= eval_model(model,xtest,ttest,ytest,outcome_names=outcomes)
         if verbose > 1:
             print('val loss',val_loss.item())
@@ -190,9 +210,9 @@ class DSM(torch.nn.Module):
         #the repo I copied this from actually uses different activations and default params to 1, but those make my loss function immediately explode
         if self.dist == 'Weibull':
     
-            self.act=nn.Tanh()
-            self.shape = torch.nn.ParameterList([nn.Parameter(-.1*torch.ones(self.k)) for i in range(n_outcomes)])
-            self.scale = torch.nn.ParameterList([nn.Parameter(-.1*torch.ones(self.k)) for i in range(n_outcomes)])
+            self.act=nn.SELU()
+            self.shape = torch.nn.ParameterList([nn.Parameter(-.01*torch.ones(self.k)) for i in range(n_outcomes)])
+            self.scale = torch.nn.ParameterList([nn.Parameter(-.01*torch.ones(self.k)) for i in range(n_outcomes)])
         else:
             self.act = nn.Sigmoid() if self.dist == 'Normal' else nn.Tanh()
             self.shape = torch.nn.ParameterList([nn.Parameter(.1*torch.ones(self.k)) for i in range(n_outcomes)])
@@ -211,6 +231,7 @@ class DSM(torch.nn.Module):
                embedding_dropout=0.5,
                  activation='ReLU6',
                  outcomes=None,
+                 elbo=True,
                 ):
         super().__init__()
         #I'm only using lognormal because weibull explosed
@@ -228,6 +249,7 @@ class DSM(torch.nn.Module):
         self.outcome_names = outcomes
         if layers is None: layers = [1000]
         self.layers = layers
+        self.elbo = elbo
 
         if len(layers) == 0: lastdim = inputdim
         else: lastdim = layers[-1]
@@ -284,7 +306,6 @@ class DSM(torch.nn.Module):
         
         #Ok so the equation they give more for weibull doesn't work, I just calculate median time via brute for assuming it's between 5 and 200 months
         if self.dist == "Weibull":
-            #cut off after 4.3 years
             times = list(range(5,52))
             probs =[torch.exp(c).T for c in self._cdf(shape,scale,logits,times)]
             probs = torch.stack(probs,axis=0)
@@ -297,10 +318,18 @@ class DSM(torch.nn.Module):
         lmeans = []
         for g in range(self.k):
             if self.dist == 'Weibull':
-                k = k_[:, g]
-                b = b_[:, g]
-                one_over_k = torch.reciprocal(torch.exp(k))
-                lmean = -(one_over_k*b) + torch.lgamma(1+one_over_k)
+                k = torch.exp(k_[:, g])
+#                 b = b_[:,g]
+                b = torch.exp(b_[:, g])
+                onek = torch.reciprocal(k)
+                lmean = torch.pow(b,-1/k)*torch.pow(torch.log(torch.tensor([2])),onek)
+#                 onek = torch.reciprocal(torch.exp(k))
+#                 lmean  = -(b*onek)*torch.pow(torch.log(torch.tensor([2])),onek)
+#                 print('lmean',lmean.mean(),onek.mean(),torch.pow(b,onek).mean(), torch.pow(torch.log(torch.tensor([2])),onek).mean() )
+#                 one_over_k = torch.reciprocal(torch.exp(k))
+#                 lmean = torch.pow(b,-one_over_k)*torch.lgamma(1+one_over_k)
+#                 lmean = -(one_over_k*b) + torch.lgamma(1+one_over_k)
+#                 lmean = torch.exp(lmean)
                 lmeans.append(lmean)
             elif self.dist == 'LogNormal':
                 sigma = b_[:,g]
@@ -311,11 +340,12 @@ class DSM(torch.nn.Module):
                 lmeans.append(mu)
         lmeans = torch.stack(lmeans, dim=1)
         if self.dist == 'Weibull':
-#             lmeans = lmeans*torch.exp(logits)
-#             lmeans = torch.sum(lmeans,dim=1)
-            lmeans = lmeans+logits
-            lmeans = torch.logsumexp(lmeans,dim=1)
-            lmeans = torch.exp(lmeans)
+            print('lmeans',lmeans,'logits',torch.exp(logits))
+            lmeans = lmeans*torch.exp(logits)
+            lmeans = torch.sum(lmeans,dim=1)
+#             lmeans = lmeans+logits
+#             lmeans = torch.logsumexp(lmeans,dim=1)
+#             lmeans = torch.exp(lmeans)
             return lmeans
         elif self.dist == 'LogNormal':
             lmeans = lmeans*torch.exp(logits)
@@ -467,14 +497,14 @@ def conditional_loss(shape,scale,logits,t,e,k,dist,**kwargs):
         return conditional_normal_loss(shape,scale,logits,t,e,k,**kwargs)
     return conditional_lognormal_loss(shape,scale,logits,t,e,k,**kwargs)
 
-def weibull_loss(shape,scale,t,e,k):
+def weibull_loss(shape,scale,t,e,kk):
     #so for like, all of these k_ is a parameter and k is the number of distributions idk why the repo I copied uses the term twice
     k_ = shape.expand(t.shape[0], -1)
     b_ = scale.expand(t.shape[0], -1)
 
     ll = 0.
     risk = 1
-    for g in range(k):
+    for g in range(kk):
 
         k = k_[:, g]
         b = b_[:, g]
@@ -489,13 +519,13 @@ def weibull_loss(shape,scale,t,e,k):
 
     return -ll.mean()
 
-def normal_loss(shape,scale,t,e,k):
+def normal_loss(shape,scale,t,e,kk):
 
     k_ = shape.expand(t.shape[0], -1)
     b_ = scale.expand(t.shape[0], -1)
     ll = 0.
     risk=1
-    for g in range(k):
+    for g in range(kk):
 
         mu = k_[:, g]
         sigma = b_[:, g]
@@ -593,7 +623,7 @@ def conditional_normal_loss(shape,scale,logits, t, e, k, discount=1.0,elbo=True)
 
     return -ll/float(len(uncens)+len(cens))
 
-def conditional_lognormal_loss(shape,scale,logits, t, e, k, discount=1.0,elbo=True):
+def conditional_lognormal_loss(shape,scale,logits, t, e, kk, discount=1.0,elbo=True):
 
     alpha = discount
 
@@ -603,7 +633,7 @@ def conditional_lognormal_loss(shape,scale,logits, t, e, k, discount=1.0,elbo=Tr
     k_ = shape
     b_ = scale
     risk=1
-    for g in range(k):
+    for g in range(kk):
 
         mu = k_[:, g]
         sigma = b_[:, g]
@@ -644,7 +674,7 @@ def conditional_lognormal_loss(shape,scale,logits, t, e, k, discount=1.0,elbo=Tr
 
     return -ll/float(len(uncens)+len(cens))
 
-def conditional_weibull_loss(shape,scale,logits, t, e, k, discount=1.0,elbo=True):
+def conditional_weibull_loss(shape,scale,logits, t, e, kk, discount=1.0,elbo=True):
 
     alpha = discount
     k_ = shape
@@ -653,7 +683,7 @@ def conditional_weibull_loss(shape,scale,logits, t, e, k, discount=1.0,elbo=True
     lossf = []
     losss = []
     risk=1
-    for g in range(k):
+    for g in range(kk):
 
         k = k_[:, g]
         b = b_[:, g]

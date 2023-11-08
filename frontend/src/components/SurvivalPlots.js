@@ -185,7 +185,7 @@ export default function SurvivalPlots(props){
                     'x': lX,
                     'textX': lX+lWidth+2,
                     'y': lY,
-                    'text': tte <= 48? tte.toFixed(0)+'M': '>4Yr' ,
+                    'text': tte.toFixed(0) + ' M',// tte <= 48? tte.toFixed(0)+'M': '>4Yr' ,
                 });
                 lY += lWidth + 2;
             }

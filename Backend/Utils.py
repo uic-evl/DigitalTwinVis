@@ -4,6 +4,8 @@ import pandas as pd
 import pickle
 from Preprocessing import *
 from sklearn.metrics import balanced_accuracy_score, roc_auc_score,accuracy_score,precision_recall_fscore_support
+from Misc import *
+
 # +
 def get_dt_ids(df=None):
     if df is None:
@@ -64,17 +66,8 @@ def transition_sample(state,dataset=None):
     return xtrain,xtest,ytrain,ytest
 
 
-def torch_apply_along_axis(function, x, axis: int = 0):
-    return torch.stack([
-        function(x_i) for x_i in torch.unbind(x, dim=axis)
-    ], dim=axis)
 
 
-
-def df_to_torch(df,ttype  = torch.FloatTensor):
-    values = df.values.astype(float)
-    values = torch.from_numpy(values)
-    return values.type(ttype)
 
 # +
 def load_models():
