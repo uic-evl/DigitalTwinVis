@@ -20,10 +20,11 @@ export default function SurvivalPlots(props){
     const yTickSpacing = 40;
     const titleSpacing = 20;
     const legendSpacing = Math.min(width/2,Math.max(80,width/10));
-    const maxTime = 48;
+    const maxTime = 60;
     useEffect(()=>{
-        if(svg === undefined){return}
-        const [sim,altSim] = props.getSimulation(true)
+        if(svg === undefined | props.sim === undefined | props.altSim === undefined){return}
+        const sim = props.sim;
+        const altSim = props.altSim;
         const survivalCurves = sim['survival_curves'];
         const altCurves = altSim['survival_curves'];
 
@@ -63,7 +64,6 @@ export default function SurvivalPlots(props){
             const knnTTE = Utils.median(props.neighbors.map(d=>d[name]));
             const altKnnTTE = Utils.median(props.cfs.map(d=>d[name]));
             const ttes =  [timeToEvent,altTimeToEvent,knnTTE,altKnnTTE];
-
             const curveNames = sim.currDecision >= .5? ['Treatment (predicted)', 'No Treatment (predicted)','Treated (neighbors)','No Treatment (neighbors)']: ['No Treatment (predicted)', 'Treatment (predicted)','No Treated (neighbors)','Treatment (neighbors)'];
             for(let ii in [curves,alt]){
                 let cVals = [curves,alt][ii];
@@ -76,6 +76,7 @@ export default function SurvivalPlots(props){
                     'color': lineColors[ii],
                     'medianTime': ttes[curveData.length],
                     'name': curveNames[curveData.length],
+                    'values': cVals,
                 })
             }
 
@@ -83,8 +84,10 @@ export default function SurvivalPlots(props){
             for(let nList of [props.neighbors,props.cfs]){
                 const nTimes = nList.map(d=>d[name]);
                 let pCurve = [];
+                let pcts = [];
                 for(let time of times){
                     let pctAbove = nTimes.filter(d => d > time).length/nTimes.length;
+                    pcts.push(pctAbove);
                     pCurve.push([xScale(time),yScale(pctAbove)]);
                 }
                 curveData.push({
@@ -92,6 +95,7 @@ export default function SurvivalPlots(props){
                     'color': lineColors[curveData.length],
                     'medianTime': ttes[curveData.length],
                     'name': curveNames[curveData.length],
+                    'values': pcts,
                 });
             }
             var path = g.selectAll('path').filter('.path'+selector).data(curveData,(d,i) => i);
@@ -108,7 +112,14 @@ export default function SurvivalPlots(props){
             path.exit().remove();
 
             g.selectAll('.path'+selector).on('mouseover',function(e,d){
-                let string = d.name + '</br>' + 'Median Time To Event: ' + d.medianTime.toFixed(0) + ' Months';
+                let string = d.name + '</br>' + 'Median Time To Event: ' + d.medianTime.toFixed(0) + ' Months' + '</br>';
+                string += '----------</br>Likelihood At:'
+                for(let i in times){
+                    let val = d.values[i];
+                    if(val !== undefined){
+                        string += '</br>' + times[i] +' Months: ' + (100*val).toFixed(0) + '%';
+                    }
+                }
                 tTip.html(string);
             }).on('mousemove', function(e){
                 Utils.moveTTipEvent(tTip,e);
@@ -124,14 +135,25 @@ export default function SurvivalPlots(props){
                 'anchor': 'middle',
                 'weight':'bold'
             }];
+            const tickY =  yScale(0) + xTickSpacing/2;
+            textStuff.push({
+                'x': xMargin/2,
+                'y': tickY,
+                'size': xTickSpacing*.8,
+                'text': 'Months:',
+                'anchor':'start',
+                'weight': 'bold',
+                'textWidth': xScale(0) - xMargin/2 -2,
+            })
             for(let time of times){
                 let entry = {
                     'x': xScale(time),
-                    'y': yScale(0) + xTickSpacing/2,
+                    'y': tickY,
                     'size': xTickSpacing*.8,
                     'text': time,
                     'anchor':'middle',
-                    'weight': ''
+                    'weight': '',
+                    'textWidth': '',
                 }
                 textStuff.push(entry);
             }
@@ -149,6 +171,7 @@ export default function SurvivalPlots(props){
                     'anchor':'start',
                     'weight': '',
                     'line': lineFunc([[xStart,y],[xEnd,y]]),
+                    'textWidth':'',
                 })
             }
             g.selectAll('.text'+selector).remove();
@@ -159,6 +182,8 @@ export default function SurvivalPlots(props){
                 .attr('dominant-baseline','middle')
                 .attr('text-anchor',d=>d.anchor)
                 .attr('font-weight',d=>d.weight)
+                .attr('textLength',d=>d.textWidth)
+                .attr('lengthAdjust','spacingAndGlyphs')
                 .attr('x',d=>d.x)
                 .attr('y',d=>d.y)
                 .html(d=>d.text);
@@ -168,24 +193,33 @@ export default function SurvivalPlots(props){
                 .enter().append('path').attr('class','axisTick'+selector)
                 .attr('d',d=>d.line)
                 .attr('stroke','azure')
-                // .attr('stroke-dasharray','1')
                 .attr('stroke-opacity',1)
                 .attr('stroke-width',3);
 
-            
-            var legendData = [];
             const lX = xScale.range()[1]+2;
             var lY = yScale(1);
             const lTextSize = Math.min(16,xTickSpacing*.8);
             const lWidth = Math.min(legendSpacing/2,lTextSize);
+            var legendData = [{
+                'color': 'none',
+                'x': 0,
+                'y': lY,
+                'textX': lX + (lWidth),
+                'text': 'Median Time',
+                'size': lTextSize,
+                'name': ''
+            }];
+            lY += lWidth*1.2 + 2
             for(let tte of ttes){
-                let color = lineColors[legendData.length];
+                let color = lineColors[legendData.length-1];
                 legendData.push({
                     'color': color,
                     'x': lX,
                     'textX': lX+lWidth+2,
                     'y': lY,
                     'text': tte.toFixed(0) + ' M',// tte <= 48? tte.toFixed(0)+'M': '>4Yr' ,
+                    'size': lTextSize,
+                    'name': curveNames[legendData.length-1],
                 });
                 lY += lWidth + 2;
             }
@@ -195,14 +229,24 @@ export default function SurvivalPlots(props){
                 .append('rect').attr('class','legendItem'+selector)
                 .attr('x',d=>d.x).attr('y',d=>d.y)
                 .attr('width',lWidth).attr('height',lWidth)
-                .attr('fill',d=>d.color);
+                .attr('fill',d=>d.color)
+                .on('mouseover',function(e,d){
+                    let string=d.name;
+                    tTip.html(string);
+                }).on('mousemove', function(e){
+                    Utils.moveTTipEvent(tTip,e);
+                }).on('mouseout', function(e){
+                    Utils.hideTTip(tTip);
+                });
+    ;
             g.selectAll('.legendItem'+selector).filter('text')
                 .data(legendData).enter()
                 .append('text').attr('class','legendItem'+selector)
                 .attr('x',d=>d.textX).attr('y',d=>d.y+(lWidth/2))
-                .attr('font-size',lTextSize)
+                .attr('font-size',d=>d.size)
                 .attr('dominant-baseline','middle')
-                .attr('text-anchor','start')
+                .attr('font-weight',(d,i)=> i===0? 'bold':'')
+                .attr('text-anchor',(d,i)=> i===0? 'middle':'start')
                 .text(d=>d.text)
         }
         var currPos = yMargin;
@@ -210,7 +254,6 @@ export default function SurvivalPlots(props){
             makeChart(cName,currPos);
             currPos += chartHeight + yMargin;
         }
-        console.log('survivalplot',survivalCurves,altCurves,sim.currDecision,altSim.currDecision)
     },[svg,props])
 
     return (

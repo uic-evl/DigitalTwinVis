@@ -12,12 +12,12 @@ export default function OutcomePlots(props){
     const [svg, height, width, tTip] = useSVGCanvas(d3Container);
     
     const margin = 10;
-    const topMargin = 15;
     const labelSpacing = 60;
-    const titleSpacing = Math.max(height*.075,50);
+    const titleSpacing = Math.max(height*.04,30);
     const modelSpacing = 5;
     const outcomeSpacing = 10;
 
+    const mainPatientOutcomes=['OS (Calculated)(4yr)','FT','Aspiration rate Post-therapy','Locoregional control (Time)(4yr)']
     const xScale = useMemo(()=>{
         return d3.scaleLinear()
             .domain([0,1])
@@ -92,7 +92,6 @@ export default function OutcomePlots(props){
                     'text': key,
                 }
                 titles.push(titleEntry);
-                const startPos= pos;
                 for(let ii in entry){
                     let newPath = [[margin+labelSpacing,pos]];
 
@@ -229,8 +228,8 @@ export default function OutcomePlots(props){
                 .x(d=> xScale(d[0]));
 
             function getErrorPath(d){
-                let p1 = [d.lower,d.y+barWidth/2];
-                let p2 = [d.upper, d.y+barWidth/2];
+                let p1 = [Math.min(d.val,d.lower),d.y+barWidth/2];
+                let p2 = [Math.max(d.val,d.upper), d.y+barWidth/2];
                 return eLineFunc([p1,p2]);
             }
             svg.selectAll('.error').data(rectData.filter(d=>d.rnn),d=> d.name + d.model)
@@ -325,56 +324,56 @@ export default function OutcomePlots(props){
                 .attr('lengthAdjust','spacingAndGlyphs')
                 .text(getLabelText);
 
-            var decisionName = constants.DECISIONS_SHORT[props.state];
-            var legendData = [];
-            let ii = 0;
-            // pos -= 2*barWidth;
-            let lBarHeight = ((titleSpacing-10)/2) - topMargin;
-            for(let model of ['model','neighbors']){
-                for(let treated of [true,false]){
-                    let color = treated? constants.dnnColor: constants.dnnColorNo;
-                    let xPos = model === 'model'? margin: width/2;
-                    let yPos = treated? margin: margin + lBarHeight + 4;
-                    if( model === 'neighbors'){
-                        color = treated? constants.knnColor: constants.knnColorNo;
-                    }
-                    let text = decisionName + ' (' + model + ' pred.)';
-                    text = treated? text: 'No '+text;
-                    let strokeWidth = treated? 0: 1;
-                    let entry = {
-                        'fill': color,
-                        'text': text,
-                        'y': yPos,
-                        'x': xPos,
-                        'strokeWidth': strokeWidth,
-                    }
-                    legendData.push(entry);
-                }
-            }
+            // var decisionName = constants.DECISIONS_SHORT[props.state];
+            // var legendData = [];
+            // let ii = 0;
+            // // pos -= 2*barWidth;
+            // let lBarHeight = ((titleSpacing-10)/2) - topMargin;
+            // for(let model of ['model','neighbors']){
+            //     for(let treated of [true,false]){
+            //         let color = treated? constants.dnnColor: constants.dnnColorNo;
+            //         let xPos = model === 'model'? margin: width/2;
+            //         let yPos = treated? margin: margin + lBarHeight + 4;
+            //         if( model === 'neighbors'){
+            //             color = treated? constants.knnColor: constants.knnColorNo;
+            //         }
+            //         let text = decisionName + ' (' + model + ' pred.)';
+            //         text = treated? text: 'No '+text;
+            //         let strokeWidth = treated? 0: 1;
+            //         let entry = {
+            //             'fill': color,
+            //             'text': text,
+            //             'y': yPos,
+            //             'x': xPos,
+            //             'strokeWidth': strokeWidth,
+            //         }
+            //         legendData.push(entry);
+            //     }
+            // }
 
-            svg.selectAll(".legend").remove();
-            svg.selectAll('legendText').remove();
-            svg.selectAll('.legend')
-                .data(legendData).enter()
-                .append('rect').attr('class','legend')
-                .attr('x',d=>d.x)
-                .attr('y',d=>d.y)
-                .attr('width',lBarHeight)
-                .attr('height',lBarHeight)
-                .attr('fill',d=>d.fill)
-                .attr('stroke','black')
-                .attr('stroke-width',d=>d.strokeWidth)
+            // svg.selectAll(".legend").remove();
+            // svg.selectAll('legendText').remove();
+            // svg.selectAll('.legend')
+            //     .data(legendData).enter()
+            //     .append('rect').attr('class','legend')
+            //     .attr('x',d=>d.x)
+            //     .attr('y',d=>d.y)
+            //     .attr('width',lBarHeight)
+            //     .attr('height',lBarHeight)
+            //     .attr('fill',d=>d.fill)
+            //     .attr('stroke','black')
+            //     .attr('stroke-width',d=>d.strokeWidth)
                 
-            svg.selectAll('.lText').data(legendData)
-                .enter()
-                .append('text')
-                .attr('class','lText')
-                .attr('x', d=> d.x + lBarHeight + 3)
-                .attr('y',d=>d.y+lBarHeight)
-                .attr('text-align','center')
-                .attr('font-weight','bold')
-                .attr('font-size',lBarHeight)
-                .text(d=>d.text);
+            // svg.selectAll('.lText').data(legendData)
+            //     .enter()
+            //     .append('text')
+            //     .attr('class','lText')
+            //     .attr('x', d=> d.x + lBarHeight + 3)
+            //     .attr('y',d=>d.y+lBarHeight)
+            //     .attr('text-align','center')
+            //     .attr('font-weight','bold')
+            //     .attr('font-size',lBarHeight)
+            //     .text(d=>d.text);
             //we want the outline stuff to be on top
             svg.selectAll('.activeRect').raise();
             svg.selectAll('.error').raise()

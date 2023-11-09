@@ -19,22 +19,10 @@ export default function AuxillaryViews(props){
 
     const container = useRef();
 
-    const auxViewOptions = ['survival','attributions','scatterplot','neighbors'];
-    const auxViewLabels =['Survival Curves','Feature Impact on Decision','Cohort Scatterplot', 'Similar Patients']
+    const auxViewOptions = ['survival','attributions','neighbors','scatterplot'];
+    const auxViewLabels =['Survival','Feature Importance','Similar Patients','Scatterplot']
     const [auxView,setAuxView] = useState('attributions');
 
-    function wrapTitle(item,text){
-        return (
-            <div className={'fillSpace'}>
-            <div style={{'height':'1.5em'}} className={'title'}>
-                {text}
-            </div>
-            <div style={{'height':'calc(100% - 1.5em)','width':'100%'}}>
-            {item}
-            </div>
-            </div>
-        )
-    }
 
     function encodeOrdinal(p,key,values,scale=false){
       let val = values[0];
@@ -109,14 +97,7 @@ export default function AuxillaryViews(props){
     return [neighbors, cfs]
   }
 
-  function getDecision(fixedDecisions,currState,getSim){
-    let decision = fixedDecisions[currState];
-      if(decision < 0){
-        let sim = getSim();
-        decision = (sim['decision'+(currState+1)] > .5)? 1: 0;
-      }
-      return decision;
-  }
+ 
 
     function makeNeighborView(currEmbeddings,currState,cohortData,simulation,fixedDecisions,brushedId){
         if(Utils.allValid([currEmbeddings,cohortData,simulation])){
@@ -125,7 +106,7 @@ export default function AuxillaryViews(props){
         const subsiteSvgPaths=props.subsiteSvgPaths;
         const lnSvgPaths=props.lnSvgPaths;
       
-        let decision = getDecision(fixedDecisions,currState,getSimulation);
+        let decision = Utils.getDecision(fixedDecisions,currState,getSimulation);
         const dString = constants.DECISIONS[currState];
         var neighborsToShow = 10;
         const [neighbors,cfs] = getNeighbors(decision,currEmbeddings,currState,cohortData,neighborsToShow);
@@ -405,15 +386,19 @@ export default function AuxillaryViews(props){
 
     function makeSurvivalPlot(props){
       if(Utils.allValid([props.simulation,props.cohortData,props.currEmbeddings])){
-        let decision = getDecision(props.fixedDecisions,props.currState,props.getSimulation);
+        let decision = Utils.getDecision(props.fixedDecisions,props.currState,props.getSimulation);
         const dString = constants.DECISIONS[props.currState];
         var neighborsToShow = 20;
-        const [neighbors,cfs] = getNeighbors(decision,props.currEmbeddings,props.currState,props.cohortData,neighborsToShow);
+        const [sim,altSim] = props.getSimulation(true);
+        const [neighbors,cfs,caliperVal] = Utils.getTreatmentGroups(sim,props.currEmbeddings,props.cohortData,props.currState,props.cohortEmbeddings);
+        // const [neighbors,cfs] = getNeighbors(decision,props.currEmbeddings,props.currState,props.cohortData);
+        
         return (
           <div key={'survival'} className={'fillSpace'}>
             <SurvivalPlots 
-            simulation={props.getSimulation}
             neighbors={neighbors}
+            sim={sim}
+            altSim={altSim}
             cfs={cfs}
             decision={decision}
             dString={dString}

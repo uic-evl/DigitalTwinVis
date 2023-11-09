@@ -18,6 +18,7 @@ import DistanceHistogramD3 from './components/DistanceHistogramD3';
 import * as HelpTexts from './modules/Text';
 import HelpText from './modules/HelpText';
 import Tutorial from './components/Tutorial';
+import OutcomeContainer from './components/OutcomeContainer.js';
 
 function MainApp({authToken,setAuthToken}) {
 
@@ -193,14 +194,12 @@ function MainApp({authToken,setAuthToken}) {
   async function fetchMahalanobisHistograms(){
     setMDists(undefined)
     const mData = await api.getMahalanobisHistogram()
-    console.log("m dists",mData);
     setMDists(mData);
   }
 
   async function fetchDefaultPredictions(){
     if(defaultPredictions !== undefined){ return }
     const pred = await api.getDefaultPredictions();
-    console.log('default predictions',pred);
     if(pred !== undefined){
       setDefaultPredictions(pred);
     }
@@ -284,46 +283,35 @@ function MainApp({authToken,setAuthToken}) {
   },[patientFeatures])
 
 
-  function wrapTitle(item,text){
-    return (
-      <div className={'fillSpace'}>
-        <div style={{'height':'1.5em'}} className={'title'}>
-          {text}
-        </div>
-        <div style={{'height':'calc(100% - 1.5em)','width':'100%'}}>
-        {item}
-        </div>
-      </div>
-    )
-  }
-  
-
   function getSimulation(useAlt=false){
     if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
-    // let key = modelOutput;
-    // for(let i in fixedDecisions){
-    //   let d = fixedDecisions[i];
-    //   let di = parseInt(i) + 1
-    //   if(d >= 0){
-    //     let suffix = '_decision'+(di)+'-'+d;
-    //     key += suffix;
-    //   }
-    // }
+
+    //for data loading if we switch outputs we have to wait for a new query
+    if(simulation[modelOutput] === undefined){ return useAlt? [undefined,undefined]:undefined }
     let currKey = modelOutput;
     let altKey = modelOutput;
     let currPredictions = ['1','2','3'].map(i=> (simulation[modelOutput]['decision'+i] > .5) + 0);
     let currDecision = 0;
+
+    //check if the fixed decisions actually matter or they're all the same as the default
+    let nEq = currPredictions.map((d,i) => (((d > .5) === (fixedDecisions[i] > .5)) & fixedDecisions[i] > -.1)? 1: 0).reduce((partialSum, a) => partialSum + a, 0);
+    let nFixed = fixedDecisions.filter(d=> d > -.1).map(d => 1).reduce((partialSum, a) => partialSum + a, 0);
+    let allEq = nEq >= nFixed;
+    //go through fixed decisions to find the correct key for the simulation
+    //This is currently still using a different simuatlion for the alternative outcome when you toggle the current simulation for some reason
+    //This jsut changes the error bounds since they're different bootstrap iterations
+    //but also there is no point in doing that so hopefully wont be an issue
     for(let i in fixedDecisions){
       let d = fixedDecisions[i];
       let di = parseInt(i) + 1;
       let trueDecision = d >= 0? d: currPredictions[i];
       let suffix = '';
-      if(d >= 0){
+      if(d >= 0 & !allEq){
         suffix = '_decision'+(di)+'-'+d;
       }
       currKey += suffix;
       if(parseInt(i) !== parseInt(currState)){
-        altKey += suffix;
+        altKey += d < 0 | allEq? '': '_decision'+(di)+'-'+d;
       } else{
         let altDecision = trueDecision > 0? 0: 1;
         let altSuffix = '_decision' + (di) + '-' + altDecision;
@@ -341,111 +329,61 @@ function MainApp({authToken,setAuthToken}) {
     return sim
   }
 
-  
-  const [Outcomes,Recommendation] = useMemo(()=>{
-    if(Utils.allValid([simulation,cohortData,currEmbeddings,cohortEmbeddings])){
-      if((simulation[modelOutput] === undefined)){
-        console.log('here');
-        return [
-          (<Spinner/>),
-          (
-          <div className={'fillSpace noGutter shadow'}>
-            <div className={'centerText'}  style={{'height': '1.5em','width':'100%'}}>
-              {'Recommended'}
-              <HelpText text={HelpTexts.recHelpText} />
-            </div>
-            <div style={{'height': 'calc(100%-1.5em)','width':'100%'}}>
-            <Spinner/>
-            </div>
-          </div>
-        )
-        ]
+  const Recommendation = useMemo(()=>{
+    if(simulation === undefined || simulation[modelOutput] === undefined || currEmbeddings === undefined){
+      return (<div className={'fillSpace noGutter shadow'}>
+        <div className={'centerText'}  style={{'height': '1.5em','width':'100%'}}>
+          {'Recommended'}
+          <HelpText text={HelpTexts.recHelpText} />
+        </div>
+        <div style={{'height': 'calc(100%-1.5em)','width':'100%'}}>
+        <Spinner/>
+        </div>
+      </div>)
+    } else{
+      //get the 20 patients with the highest similar and pass the decisions they had to compare to the model decision
+      let similarDecisions = [];
+      const getPrediction = id => cohortData[id+''][constants.DECISIONS[currState]];
+      
+      for(let nID of currEmbeddings.neighbors.slice(20)){
+        similarDecisions.push(getPrediction(nID));
       }
-      const maxN = 10;
+      const recommendedDecision = simulation[modelOutput]['decision'+(currState+1)];
+      return (
+        <div className={'fillSpace noGutter shadow'}>
+          <div className={'title'}  style={{'height': '1em','width':'100%'}}>
+            {'Recommended Treatment'}
+            <HelpText text={HelpTexts.recHelpText} />
+          </div>
+          <div style={{'height': 'calc(100% - 1em)'}}>
+            <RecommendationPlot
+              decision={recommendedDecision}
+              state={currState}
+              neighborDecisions={similarDecisions}
+            ></RecommendationPlot>
+          </div>
+        </div>
+      )
+
+    }
+  });
+
+  
+  const Outcomes = useMemo(()=>{
+    if(Utils.allValid([simulation,cohortData,currEmbeddings,cohortEmbeddings])){
+      if((simulation[modelOutput] === undefined)){return  (<Spinner/>)}
+
+
+      //so the code here triese to pull the patients with the smallest caliper distance (likelihood of being treated)
+      //from the treated and untreated groups. We start at .1*std(logit(chort propensities)) and gradually increase (for each group individuall) until we get enough people
+      //todo: there's probably a better way to do this using sorting? also maybe show propensity match somewhere?
 
       const [sim,altSim] = getSimulation(true);
+
+      const [neighbors,cfs,caliperVal] = Utils.getTreatmentGroups(sim,currEmbeddings,cohortData,currState,cohortEmbeddings);
       const currDecision = sim.currDecision;
-      const altDecision = altSim.currDecision;
-      // let currKey = modelOutput;
-      // let altKey = modelOutput;
-      // let currPredictions = ['1','2','3'].map(i=> (simulation[modelOutput]['decision'+i] > .5) + 0);
-      // // const currPropensity = simulation['imitation']['decision'+ (currState+1)];
-      // let currDecision = 0;
-      // for(let i in fixedDecisions){
-      //   let d = fixedDecisions[i];
-      //   let di = parseInt(i) + 1;
-      //   let trueDecision = d >= 0? d: currPredictions[i];
-      //   let suffix = '';
-      //   if(d >= 0){
-      //     suffix = '_decision'+(di)+'-'+d;
-      //   }
-      //   currKey += suffix;
-      //   if(parseInt(i) !== parseInt(currState)){
-      //     altKey += suffix;
-      //   } else{
-      //     let altDecision = trueDecision > 0? 0: 1;
-      //     let altSuffix = '_decision' + (di) + '-' + altDecision;
-      //     altKey += altSuffix;
-      //     currDecision = trueDecision;
-      //   }
-      // }
-      // const sim = simulation[currKey];
-      // const altSim = simulation[altKey];
 
-      const getNeighbor = id => Object.assign(Object.assign({},cohortData[id+'']),cohortEmbeddings[id+'']);
-      var neighbors= [];
-      var cfs = [];
-      var similarDecisions = [];
-      const nToShow = 50; //bad name now but the max # of similar patients before balancing propensity;
-      var nPropensity = [0];
-      var cfPropensity = [0];
-      for(let i in currEmbeddings.neighbors){
-        var id = currEmbeddings.neighbors[i];
-        var nData = getNeighbor(id);
-        const prediction = nData[constants.DECISIONS[currState]];
-        const propensity = nData['decision'+(currState)+"_imitation"];
-        nData.propensity = propensity;
-        // nData.propensity_diff = Math.abs(currPropensity - propensity);
-        if(similarDecisions.length < 20){
-          similarDecisions.push(prediction);
-        }
-        if(neighbors.length < nToShow & prediction === currDecision){
-          neighbors.push(nData);
-          nPropensity.push((nPropensity[nPropensity.length-1] + nData.propensity));
-        } else if(cfs.length < nToShow & prediction !== currDecision){
-          cfs.push(nData);
-          cfPropensity.push((cfPropensity[cfPropensity.length-1] + nData.propensity));
-        }
-        if( cfs.length > nToShow & neighbors.length > nToShow){
-          break;
-        }
-      }
-
-      //so basically from the pool of similar patients I'm finding the # to use that minimizes
-      //the average diference in propensity score so the outcomes approximates a causal effect
-      nPropensity = nPropensity.map((d,i) => d/(i+1));
-      cfPropensity = cfPropensity.map((d,i) => d/(i+1));
-      let optimalLoc = 5;
-      let minPropDiff = 1;
-      for(let i in cfPropensity){
-        if(i < optimalLoc){
-          continue;
-        }
-        let cfP = cfPropensity[i];
-        let nP = nPropensity[i];
-        let diff = Math.abs(cfP - nP);
-        if(diff < minPropDiff){
-          optimalLoc = i;
-          minPropDiff = diff;
-        }
-        if(minPropDiff < .01){
-          break
-        }
-      }
-      cfs = cfs.slice(0,optimalLoc);
-      neighbors = neighbors.slice(0,optimalLoc);
-
-      var outcomes = constants.OUTCOMES;
+      var outcomes = constants.OUTCOMES.concat(constants.TEMPORAL_OUTCOMES);
       if(currState == 0){
         outcomes = outcomes.concat(constants.dlts1);
         outcomes = outcomes.concat(constants.primaryDiseaseProgressions);
@@ -462,7 +400,6 @@ function MainApp({authToken,setAuthToken}) {
         cfPredictions[key] = Utils.mean(cfs.map(d=>d[key]));
       }
 
-      const recommendedDecision = simulation[modelOutput]['decision'+(currState+1)];
 
       const outcomeViewOptions = currState < 2? ['all','endpoints','disease response','dlts','no dlts']: ['endpoints'];
       function makeOutcomeToggle(){
@@ -470,7 +407,7 @@ function MainApp({authToken,setAuthToken}) {
       }
 
 
-      return [(
+      return (
       <>
       <div style={{'height': '1.5em','width':'100%'}}>
         <HelpText text={HelpTexts.outcomeHelpText}/>
@@ -488,37 +425,9 @@ function MainApp({authToken,setAuthToken}) {
         ></OutcomePlots>
       </div>
       </>
-      ),
-      (
-        <div className={'fillSpace noGutter shadow'}>
-          <div className={'title'}  style={{'height': '1em','width':'100%'}}>
-            {'Recommended Treatment'}
-            <HelpText text={HelpTexts.recHelpText} />
-          </div>
-          <div style={{'height': 'calc(100% - 1em)'}}>
-            <RecommendationPlot
-              decision={recommendedDecision}
-              state={currState}
-              neighborDecisions={similarDecisions}
-            ></RecommendationPlot>
-          </div>
-        </div>
       )
-      ]
     } else{
-      return [
-        (<Spinner/>),
-        (
-        <div className={'fillSpace noGutter shadow'}>
-          <div className={'centerText'}  style={{'height': '1.5em','width':'100%'}}>
-            {'Recommended'}
-          </div>
-          <div style={{'height': 'calc(100%-1.5em)','width':'100%'}}>
-          <Spinner/>
-          </div>
-        </div>
-      )
-      ]
+      return (<Spinner/>)
     }
   },[simulation,cohortData,currEmbeddings,modelOutput,currState,cohortEmbeddings,fixedDecisions,outcomesView]);
 
@@ -777,7 +686,23 @@ function MainApp({authToken,setAuthToken}) {
             templateColumns='1fr'
           >
             <GridItem rowSpan={2} style={{'overflowY':'scroll'}}>
-              {Outcomes}
+              <OutcomeContainer
+                cohortData={cohortData}
+                cohortEmbeddings={cohortEmbeddings}
+                currState={currState}
+                setCurrState={setCurrState}
+                patientFeatures={patientFeatures}
+                currEmbeddings={currEmbeddings}
+                modelOutput={modelOutput}
+                simulation={simulation}
+                getSimulation={getSimulation}
+                patientEmbeddingLoading={patientEmbeddingLoading}
+                patientSimLoading={patientSimLoading}
+                cohortLoading={cohortLoading}
+                cohortEmbeddingsLoading={cohortEmbeddingsLoading}
+                fixedDecisions={fixedDecisions}
+              ></OutcomeContainer>
+              {/* {Outcomes} */}
             </GridItem>
             
           </Grid>

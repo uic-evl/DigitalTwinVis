@@ -485,6 +485,9 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         else:
             d1 = o1[0+modifier].view(1,-1)
             d1_attention = get_attention(cat(baseline_inputs),0,modifier)
+            
+        propensity1 = o1[0+3].view(1,-1)
+            
         tinput1 = cat([baseline_inputs[0],thresh(d1)])
         
         ytransition = tmodel1(tinput1)
@@ -518,13 +521,16 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         else:
             oinput2[6] = torch.clone(ymod)
             
-            
+        d2_full = decisionmodel(cat(oinput2),position=1)
         if decision2 is not None:
             d2 = torch.tensor([[decision2]]).type(torch.FloatTensor)
             d2_attention=0
         else:
-            d2 = decisionmodel(cat(oinput2),position=1)[0,1+modifier].view(1,-1)
+            d2 = d2_full[0,1+modifier].view(1,-1)
             d2_attention = get_attention(cat(oinput2),1,modifier)
+            
+        propensity2 = d2_full[0,4].view(1,-1)
+            
         if is_default:
             embeddings[1] = decisionmodel.get_embedding(cat(oinput2),position=1,use_saved_memory=True)
             
@@ -556,13 +562,15 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         else:
             oinput3[5] = torch.clone(ycc)
 
-            
+        d3_full = decisionmodel(cat(oinput3),position = 2)
         if decision3 is not None:
             d3 = torch.tensor([[decision3]]).type(torch.FloatTensor)
             d3_attention=0
         else:
-            d3 = decisionmodel(cat(oinput3),position = 2)[0,2+modifier].view(1,-1)
+            d3 = d3_full[0,2+modifier].view(1,-1)
             d3_attention = get_attention(cat(oinput3),2,modifier)
+        propensity3= d3_full[0,4].view(1,-1)
+        
         if is_default:
             embeddings[2] = decisionmodel.get_embedding(cat(oinput3),position=2,use_saved_memory=True)
         #outcomes uses baseline + pd2 + nd2 + cc type + dlt2 + decision 1,2,3
@@ -577,6 +585,9 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
             'decision1_attention': d1_attention,
             'decision2_attention': d2_attention,
             'decision3_attention': d3_attention,
+            'propensity1': propensity1.cpu().detach().numpy()[0][0],
+            'propensity2': propensity2.cpu().detach().numpy()[0][0],
+            'propensity3': propensity3.cpu().detach().numpy()[0][0],
         }
         
         def add_to_entry(tmodel_output,names):
@@ -635,6 +646,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
                         if d1_fixed is not None and d2_fixed is not None and d3_fixed is not None and modifier != modifiers[0]:
                             continue
                         run_simulation(modifier,d1_fixed,d2_fixed,d3_fixed)
+
     for k,v in embeddings.items():
         embeddings[k] = v.cpu().detach().numpy()
     embedding_results = get_neighbors_and_embeddings_from_sim(embeddings,data,decisionmodel,**kwargs)

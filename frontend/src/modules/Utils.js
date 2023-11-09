@@ -28,7 +28,11 @@ export default class Utils {
         'African American/Black':'AA/Black',
         'Hispanic/Latino': 'Hispanic',
         'dose_fraction': 'Dose Frac.',
-        'packs_per_year': 'Packs/Year'
+        'packs_per_year': 'Packs/Year',
+        'time_to_event': 'OS + FDM + LRC + No Toxicity',
+        'OS (Calculated)':'Overall Survival',
+        'Locoregional control (Time)': 'Loco-Regional Control',
+        'FDM (months)': 'Free From Distant Metastases',
     }
 
     static getColorScale(name,min,max){
@@ -99,6 +103,23 @@ export default class Utils {
         return name;
     }
 
+    static logit(arr){
+        return arr.map(v => Math.log(v/(1-v)));
+    }
+
+    static std(array){
+        const n = array.length
+        const mean = array.reduce((a, b) => a + b) / n
+        return Math.sqrt(array.map(x => Math.pow(x - mean, 2)).reduce((a, b) => a + b) / n)
+    }
+
+    static inBetween(val,min,max,lowerInclusive=false,upperInclusive=false){
+       
+        const upper = upperInclusive? val <= max: val < max;
+        const lower = lowerInclusive? val >= min: val > min;
+        return lower && upper;
+    }
+
     static signedLog(x){
         if(Math.abs(x) < 1){
             return x
@@ -137,9 +158,14 @@ export default class Utils {
         return total/arr.length
     }
 
+    static nonshittySort(arr){
+        //javascript uses string sort for arrays of floats
+        return arr.sort((a,b) => Number(a) -Number(b))
+    }
+
     static median(arr){
         let sortedArray = arr.slice();
-        sortedArray.sort();
+        sortedArray = this.nonshittySort(sortedArray)
         if(sortedArray.length === 1){
             return sortedArray[0]
         }
@@ -411,4 +437,72 @@ export default class Utils {
         });
     }
 
+    static getTreatmentGroups(sim,currEmbeddings,cohortData,currState,cohortEmbeddings,minN=5){
+
+        const currDecision = sim.currDecision;
+        const propensity = sim['propensity'+(currState+1)];
+        const getNeighbor = id => Object.assign(Object.assign({},cohortData[id+'']),cohortEmbeddings[id+'']);
+    
+        var neighbors= [];
+        var cfs = [];
+        
+
+        //minimum number of similar people we need in the treated an untreated group
+        const getPropensity = id => cohortEmbeddings[id+'']['decision'+(currState)+"_imitation"];
+
+        //get default caliper based off of 1/2 recommended value in https://www.ncbi.nlm.nih.gov/pmc/articles/PMC3120982/
+        const pScores = currEmbeddings.neighbors.map(getPropensity);
+        const logits = Utils.logit(pScores);
+        const caliperDist = Utils.std(logits);
+        var cScale = .1;
+        const cIncrement = .1;
+        var allNeighbors = currEmbeddings.neighbors.map(i=>i);
+        //only update number of counts on each iteratio so we use the whole group to get a more specific outcome mean
+        var nCount = 0;
+        var cfCount = 0;
+        //add people until we have enough of each group or we are down to like 5 people in the neighbors
+        while((cfs.length < minN || neighbors.length < minN) && allNeighbors.length && cScale < 1){
+        const valid = allNeighbors.filter(nId=> Math.abs(propensity - getPropensity(nId)) <=  caliperDist*cScale);
+        allNeighbors = allNeighbors.filter(v => valid.indexOf(v) < 0);
+        const patients = valid.map(getNeighbor);
+        for(let p of patients){
+            const prediction = p[constants.DECISIONS[currState]];
+            //add patient if we didn't get enough on the last loop
+            if(prediction === currDecision && nCount < minN){
+            neighbors.push(p);
+            } else if(cfCount < minN){
+            cfs.push(p)
+            }
+        }
+        nCount = neighbors.length;
+        cfCount = cfs.length;
+        cScale += cIncrement;
+        }
+        return [neighbors, cfs,(cScale-cIncrement)*propensity]
+    }
+
+    static getDecision(fixedDecisions,currState,getSim){
+        let decision = fixedDecisions[currState];
+          if(decision < 0){
+            let sim = getSim();
+            if(sim === undefined){
+                return undefined
+            }
+            decision = (sim['decision'+(currState+1)] > .5)? 1: 0;
+          }
+          return decision;
+      }
+
+      static wrapTitle(item,text){
+        return (
+          <div className={'fillSpace'}>
+            <div style={{'height':'1.5em'}} className={'title'}>
+              {text}
+            </div>
+            <div style={{'height':'calc(100% - 1.5em)','width':'100%'}}>
+            {item}
+            </div>
+          </div>
+        )
+      }
 }

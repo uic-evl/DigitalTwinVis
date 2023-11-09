@@ -73,8 +73,8 @@ export default function DistanceHistogram(props){
                 .range([0,functionalHeight]);
 
             const colorScale = d3.scaleLinear()
-                .domain([distances.length,distances.length/1.5,0.05])
-                .range(['#99d594','#ffffbf','#fc8d59'])
+                .domain([distances.length,0.05])
+                .range(['#99d594','black'])
             const bars = svg.selectAll('.histBar').data(binData,d=>d.x);
             
             bars.enter().append('rect')
