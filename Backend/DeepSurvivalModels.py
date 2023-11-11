@@ -43,16 +43,20 @@ def create_representation(inputdim, layers, activation, bias=False):
         prevdim = hidden
     return nn.Sequential(*modules)
 
-def format_tte_outcome(dataset,outcome,times=None, mintime = 1,maxtime = None,ids=None):
+def format_tte_outcome(dataset,outcome,ids=None,**kwargs):
     #turns the timeseires censored output into an array of shape n_timepoints
-    #time is by default 1 value until maxtime
     df = dataset.processed_df
     if ids is not None:
         df = df.loc[ids]
     values = df[outcome].values
-    if maxtime is None:
-        maxtime = values.max()
-    event = values <= maxtime
+    if outcome != 'time_to_event':
+        idx = Const.timeseries_outcomes.index(outcome)
+        event = df[Const.timeseries_censoring[idx]].values
+    elif outcome == 'time_to_event':
+        event = df[['FT', 'Aspiration rate Post-therapy']+Const.timeseries_censoring].apply(lambda x: np.sum(x) >= len(x),axis=1).values
+    did_they_not_die_early = (df['OS (Calculated)'].values >= values).astype(int)
+    event = np.multiply(event,did_they_not_die_early)
+    event = 1-event
     return torch.tensor(event), torch.tensor(values)
 
 def format_tte_outcomes(dataset,outcomes,**kwargs):
@@ -70,7 +74,7 @@ def pretrain_dsm(dataset,
                  dist,
                  model=None,
                  outcomes = ['time_to_event'],
-                 maxtime=72,lr=.1,
+                 lr=.1,
                  epochs=100000,
                  patience=10,
                  verbose=2,
@@ -80,7 +84,7 @@ def pretrain_dsm(dataset,
     state = 3
     xtrain = df_to_torch(dataset.get_input_state(step=state,ids=train_ids))
     #event series (1 = happend, 0 = didn't happen or already happened), t = 1-d list of times used of shape ytrain.shape[1]
-    ytrain, ttrain = format_tte_outcomes(dataset,outcomes,ids=train_ids,maxtime=maxtime)
+    ytrain, ttrain = format_tte_outcomes(dataset,outcomes,ids=train_ids)
     if model is None:
         model = DSM(xtrain.shape[1],dist=dist,outcomes=outcomes,**model_kwargs)
     model.fit_normalizer(xtrain)
@@ -136,7 +140,7 @@ def eval_model(model, xtest, ttest,ytest,timepoints = None,outcome_names=None):
         allres[outcome] = res
     return allres
 
-def train_dsm(dataset, outcomes=Const.timeseries_outcomes,maxtime=72,
+def train_dsm(dataset, outcomes=Const.timeseries_outcomes,
               save_file=None,main_epochs=1000,main_lr=.01,patience=10,dist='LogNormal',
               pretrain_epochs=10000,
               verbose= 2,
@@ -154,11 +158,11 @@ def train_dsm(dataset, outcomes=Const.timeseries_outcomes,maxtime=72,
     xtrain = df_to_torch(dataset.get_input_state(step=state,ids=train_ids))
     xtest = df_to_torch(dataset.get_input_state(step=state,ids=test_ids))
     #n_outcomes by n_items, ytrain is event y/n, ttrain is time of event or last followup
-    ytrain, ttrain = format_tte_outcomes(dataset,outcomes,ids=train_ids,maxtime=maxtime)
-    ytest, ttest = format_tte_outcomes(dataset,outcomes,ids=test_ids,maxtime=maxtime)
+    ytrain, ttrain = format_tte_outcomes(dataset,outcomes,ids=train_ids)
+    ytest, ttest = format_tte_outcomes(dataset,outcomes,ids=test_ids)
     model = DSM(xtrain.shape[1],outcomes=outcomes,dist=dist,**kwargs)
     model.fit_normalizer(xtrain)
-    premodel = pretrain_dsm(dataset,outcomes=outcomes,maxtime=maxtime,epochs=pretrain_epochs,save_file=pretrain_save_file,dist=dist,verbose=verbose,**kwargs)
+    premodel = pretrain_dsm(dataset,outcomes=outcomes,epochs=pretrain_epochs,save_file=pretrain_save_file,dist=dist,verbose=verbose,**kwargs)
     for i in range(premodel.n_outcomes):
         model.shape[i].data = premodel.shape[i].data
         model.scale[i].data = premodel.scale[i].data
@@ -254,7 +258,7 @@ class DSM(torch.nn.Module):
         if len(layers) == 0: lastdim = inputdim
         else: lastdim = layers[-1]
 
-        self._init_dsm_layers(lastdim,n_outcomes)
+        self._init_dsm_layers(lastdim+3,n_outcomes)
         self.activation_name=activation
         self.embedding = create_representation(inputdim, layers, activation)
         self.input_dropout = nn.Dropout(input_dropout)
@@ -304,13 +308,16 @@ class DSM(torch.nn.Module):
         #this if for the normal distribution?
         #So i'm sort of guessing for the lognormal (which is median time no mean) but it tests seem to get that is the equivalent time of suvival = .49
         
+        #all the commented stuff is the things I tried to get weibull time to event to work
+        
         #Ok so the equation they give more for weibull doesn't work, I just calculate median time via brute for assuming it's between 5 and 200 months
-        if self.dist == "Weibull":
-            times = list(range(5,52))
-            probs =[torch.exp(c).T for c in self._cdf(shape,scale,logits,times)]
-            probs = torch.stack(probs,axis=0)
-            best = torch.argmin(torch.abs(.5 - probs),axis=0)
-            return torch.Tensor([times[b] for b in best])
+#         if self.dist == "Weibull":
+#             times = list(range(5,52))
+#             probs =[torch.exp(c).T for c in self._cdf(shape,scale,logits,times)]
+#             probs = torch.stack(probs,axis=0)
+#             best = torch.argmin(torch.abs(.5 - probs),axis=0)
+#             return torch.Tensor([times[b] for b in best])
+
         k_ =  shape
         b_ = scale
         logits = self.squish(logits)
@@ -318,18 +325,21 @@ class DSM(torch.nn.Module):
         lmeans = []
         for g in range(self.k):
             if self.dist == 'Weibull':
-                k = torch.exp(k_[:, g])
-#                 b = b_[:,g]
-                b = torch.exp(b_[:, g])
-                onek = torch.reciprocal(k)
-                lmean = torch.pow(b,-1/k)*torch.pow(torch.log(torch.tensor([2])),onek)
+                k = k_[:,g]
+                b = b_[:,g]
+                one_over_k = torch.reciprocal(torch.exp(k))
+                lmean = -(one_over_k*b) + torch.lgamma(1+one_over_k)
+                
+#                 k = k_[:, g]
+#                 b = torch.exp(b_[:, g])
+#                 onek = torch.reciprocal(k)
+#                 lmean = torch.pow(b,-onek)*torch.pow(torch.log(torch.tensor([2])),onek)
+#                 lmean = torch.exp(lmean)
+                
 #                 onek = torch.reciprocal(torch.exp(k))
 #                 lmean  = -(b*onek)*torch.pow(torch.log(torch.tensor([2])),onek)
 #                 print('lmean',lmean.mean(),onek.mean(),torch.pow(b,onek).mean(), torch.pow(torch.log(torch.tensor([2])),onek).mean() )
-#                 one_over_k = torch.reciprocal(torch.exp(k))
-#                 lmean = torch.pow(b,-one_over_k)*torch.lgamma(1+one_over_k)
-#                 lmean = -(one_over_k*b) + torch.lgamma(1+one_over_k)
-#                 lmean = torch.exp(lmean)
+
                 lmeans.append(lmean)
             elif self.dist == 'LogNormal':
                 sigma = b_[:,g]
@@ -341,11 +351,13 @@ class DSM(torch.nn.Module):
         lmeans = torch.stack(lmeans, dim=1)
         if self.dist == 'Weibull':
             print('lmeans',lmeans,'logits',torch.exp(logits))
-            lmeans = lmeans*torch.exp(logits)
-            lmeans = torch.sum(lmeans,dim=1)
-#             lmeans = lmeans+logits
-#             lmeans = torch.logsumexp(lmeans,dim=1)
-#             lmeans = torch.exp(lmeans)
+            
+#             lmeans = lmeans*torch.exp(logits)
+#             lmeans = torch.sum(lmeans,dim=1)
+
+            lmeans = lmeans+logits
+            lmeans = torch.logsumexp(lmeans,dim=1)
+            lmeans = torch.exp(lmeans)
             return lmeans
         elif self.dist == 'LogNormal':
             lmeans = lmeans*torch.exp(logits)
@@ -449,9 +461,12 @@ class DSM(torch.nn.Module):
 
         """
         x = self.normalize(x)
+        #add a pass-through layer for decisions
+        decisions = x[:,x.shape[1]-3:]
         x = self.input_dropout(x)
         xrep = self.embedding(x)
         xrep = self.embedding_dropout(xrep)
+        xrep = torch.cat([xrep,decisions],axis=1)
         dim = x.shape[0]
         
         shapes = []

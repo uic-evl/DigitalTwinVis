@@ -368,9 +368,13 @@ export default function PatientEditor(props){
                 xTicks= constants.ordinalVars[key];
             } else if(continuousVars.indexOf(key) > -1){
                 //todo: add exact values for certain continous values here idk
-                const [minVal,maxVal] = scale.domain();
-                let weights = key === 'hpv'? [0,.5,1]: [0,.25,.5,.75,1];
-                xTicks = weights.map(w => maxVal*w + (minVal*(1-w))).map(i=> parseFloat(i));
+                if(constants.contVarGroups[key] !== undefined){
+                    xTicks = constants.contVarGroups[key]
+                } else{
+                    const [minVal,maxVal] = scale.domain();
+                    let weights = key === 'hpv'? [0,.5,1]: [0,.25,.5,.75,1];
+                    xTicks = weights.map(w => maxVal*w + (minVal*(1-w))).map(i=> parseFloat(i));
+                }
             } else if(constants.progressionVars[key] !== undefined){
                 xTicks = constants.progressionVars[key].map((d,i)=>i);;
             }

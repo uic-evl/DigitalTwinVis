@@ -37,6 +37,7 @@ export default function SurvivalPlots(props){
         const lineColors = sim.currDecision >= .5? [constants.dnnColor,constants.dnnColorNo,constants.knnColor,constants.knnColorNo]: [constants.dnnColorNo,constants.dnnColor,constants.knnColorNo,constants.knnColor];
         function makeChart(name,topPos){
             
+            const censorVar = constants.censorVars[constants.TEMPORAL_OUTCOMES.indexOf(name)%constants.censorVars.length];
             const curves = survivalCurves[name];
             const alt = altCurves[name]   
 
@@ -61,8 +62,8 @@ export default function SurvivalPlots(props){
 
             const timeToEvent = sim[name];
             const altTimeToEvent = altSim[name];
-            const knnTTE = Utils.median(props.neighbors.map(d=>d[name]));
-            const altKnnTTE = Utils.median(props.cfs.map(d=>d[name]));
+            const knnTTE = Utils.mean(props.neighbors.map(d=>d[censorVar])) > .5? Infinity: Utils.median(props.neighbors.map(d=>d[name]));
+            const altKnnTTE = Utils.mean(props.cfs.map(d=>d[censorVar])) > .5? Infinity: Utils.median(props.cfs.map(d=>d[name]));
             const ttes =  [timeToEvent,altTimeToEvent,knnTTE,altKnnTTE];
             const curveNames = sim.currDecision >= .5? ['Treatment (predicted)', 'No Treatment (predicted)','Treated (neighbors)','No Treatment (neighbors)']: ['No Treatment (predicted)', 'Treatment (predicted)','No Treated (neighbors)','Treatment (neighbors)'];
             for(let ii in [curves,alt]){
@@ -82,11 +83,13 @@ export default function SurvivalPlots(props){
 
 
             for(let nList of [props.neighbors,props.cfs]){
-                const nTimes = nList.map(d=>d[name]);
                 let pCurve = [];
                 let pcts = [];
                 for(let time of times){
-                    let pctAbove = nTimes.filter(d => d > time).length/nTimes.length;
+                    // const nAbove = nList.filter(d => d[name] >= time);
+                    //patient who are either censored or died later (basically we assume alive)
+                    const nAbove = nList.filter(d => d[name] >= time || d[censorVar] > .5);
+                    let pctAbove = nAbove.length/nList.length;
                     pcts.push(pctAbove);
                     pCurve.push([xScale(time),yScale(pctAbove)]);
                 }
@@ -105,7 +108,7 @@ export default function SurvivalPlots(props){
                 .merge(path)
                 .transition(100)
                 .attr('d',d=>d.path)
-                .attr('stroke-width',5)
+                .attr('stroke-width',10)
                 .attr('stroke',d=>d.color)
                 .attr('opacity',.5)
                 .attr('fill','none');
@@ -161,7 +164,7 @@ export default function SurvivalPlots(props){
             const xStart = xScale(0);
             const xEnd = xScale(times[times.length-1]);
             //use this for any lines you want to use
-            for(let pct of [.5]){
+            for(let pct of [.5,.75]){
                 let y = yScale(pct)
                 textStuff.push({
                     'x': xMargin,
@@ -217,7 +220,7 @@ export default function SurvivalPlots(props){
                     'x': lX,
                     'textX': lX+lWidth+2,
                     'y': lY,
-                    'text': tte.toFixed(0) + ' M',// tte <= 48? tte.toFixed(0)+'M': '>4Yr' ,
+                    'text': tte === Infinity? 'Indefinite' : tte.toFixed(0) + ' M',// tte <= 48? tte.toFixed(0)+'M': '>4Yr' ,
                     'size': lTextSize,
                     'name': curveNames[legendData.length-1],
                 });
@@ -232,6 +235,12 @@ export default function SurvivalPlots(props){
                 .attr('fill',d=>d.color)
                 .on('mouseover',function(e,d){
                     let string=d.name;
+                    if(d.text === 'Indefinite'){
+                        string += '</br> >50% Survive after their last follow up'
+                    } else{
+                        string += '</br>Median Survival: '+d.text + 'onths';
+                    }
+                    
                     tTip.html(string);
                 }).on('mousemove', function(e){
                     Utils.moveTTipEvent(tTip,e);

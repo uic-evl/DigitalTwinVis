@@ -19,7 +19,7 @@ export function NeighborVisD3(props){
 
     const colorVar = 'similarity';
 
-    const margin = Math.max(25,height/10);
+    const margin = Math.max(20,height/10);
 
     //actually rectangle vars
     const baselineVars = Object.keys(ordinalVars)
@@ -35,7 +35,7 @@ export function NeighborVisD3(props){
             case 'boolean':
                 return booleanVars;
             case 'outcomes':
-                return constants.OUTCOMES.map(i=>i);
+                return constants.OUTCOMES.map(i=>i).concat(['FDM']);
             case 'staging':
                 return Object.keys(ordinalVars);
             case 'notStaging':
@@ -70,7 +70,13 @@ export function NeighborVisD3(props){
         if(svg !== undefined & props.data !== undefined){
             var data = props.data;
             var refData = props.referenceData;
+            if(props.version){
+                data = Object.assign({},data);
+                data['FDM'] = data['FDM (months)'] > 48;
+    
+            }
             const nVars = allVars.length;
+            console.log('neighbor',data);
 
             const thetaScale = d3.scaleLinear()
                 .domain([0,nVars])
@@ -139,9 +145,9 @@ export function NeighborVisD3(props){
             const pathData = [
                 {
                     'path': pathPoints,
-                    'fill': d3.interpolateGreys(data.similarity**.3),
+                    'fill': props.showTicks?'none':d3.interpolateGreys(.8*data.similarity**.3),
                     'stroke': 'black',
-                    'sw':0,
+                    'sw':2,
                     'kind': 'main'
                 },
                 {
@@ -172,16 +178,21 @@ export function NeighborVisD3(props){
 
             
             svg.selectAll('.kLabels').remove();
-            svg.selectAll('.kLabels').data(plotData)
+            if(props.showTicks){
+                svg.selectAll('.kLabels').data(plotData)
                 .enter()
                 .append('text').attr('class','kLabels')
                 .attr('x',d=>d.xText)
                 .attr('y',d=>d.yText)
-                .attr('font-size',Math.max(9,margin/3))
+                .attr('font-size',Math.max(11,margin/3))
                 .attr('text-anchor','middle')
-                .attr('font-weight','bold')
-                // .attr('transform',d=> 'translate('+d.xText+','+d.yText+')rotate('+radianToDegree((d.theta + Math.PI/2))+')')
-                .text(d=>Utils.getFeatureDisplayName(d.name));
+                .attr('dominant-baseline','middle')
+                .attr('font-weight',800)
+                .attr('stroke','white')
+                .attr('stroke-width',.1)
+                // .attr('transform',d=> 'translate('+d.xText+','+d.yText+')rotate('+radianToDegree(-(d.theta+Math.PI/2)%Math.PI)+')')
+                .text(d=>Utils.getFeatureDisplayName(d.name.replace('total_dose','dose').replace('packs_per_year','packs').replace('bilateral','Bilat.')));
+            }
 
             svg.selectAll('.kPathreference').raise();
             svg.on('mouseover',(e,d)=>{

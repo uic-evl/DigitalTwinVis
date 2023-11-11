@@ -68,7 +68,9 @@ class Const:
     decision3 = 'Decision 3 Neck Dissection (Y/N)'
     decisions = [decision1,decision2, decision3]
     outcomes = ['Overall Survival (4 Years)', 'FT', 'Aspiration rate Post-therapy','LRC']
-    timeseries_outcomes = ['OS (Calculated)','Locoregional control (Time)','FDM (months)'] + ['time_to_event']
+    timeseries_outcomes = ['OS (Calculated)','Locoregional control (Time)','FDM (months)','time_to_event']
+    timeseries_censoring = ['Overall Survival (1=alive, 0=dead)','LRC','DC']
+
     modification_types = {
         0: 'no_dose_adjustment',
         1: 'dose_modified',

@@ -8,6 +8,7 @@ import SurvivalPlots from './SurvivalPlots.js';
 import * as HelpTexts from '../modules/Text';
 import HelpText from '../modules/HelpText';
 import ModelLegend from './ModelLegend.js';
+import AuxOutcomePlot from './AuxOutcomePlot.js';
 
 import {Spinner} from '@chakra-ui/react';
 
@@ -80,7 +81,8 @@ export default function OutcomeContainer(props){
           const [neighbors,cfs,caliperVal] = Utils.getTreatmentGroups(sim,props.currEmbeddings,props.cohortData,props.currState,props.cohortEmbeddings);
         //   const [neighbors,cfs] = Utils.getNeighbors(decision,props.currEmbeddings,props.currState,props.cohortData,neighborsToShow);
           return (
-            <div key={'survival'} className={'fillSpace'}>
+            <div className={'fillSpace'} style={{'overflowX':'hidden'}}>
+            <div key={'survival'} style={{'height':'78%','width':'100%'}}>
               <SurvivalPlots 
               sim={sim}
               altSim={altSim}
@@ -90,6 +92,18 @@ export default function OutcomeContainer(props){
               dString={dString}
               {...props}
               />
+            </div>
+            <div style={{'height':'19%','width':'98%','margin':'.5%','overflow':'hidden'}}>
+              <AuxOutcomePlot
+                className={'shadow'}
+                sim={sim}
+                altSim={altSim}
+                neighbors={neighbors}
+                cfs={cfs}
+                decision={decision}
+                currState={props.currState}
+              />
+            </div>
             </div>
           )
         } else{

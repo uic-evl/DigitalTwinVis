@@ -36,6 +36,16 @@ export const continuousVars = [
 'hpv',
 'total_dose','dose_fraction','packs_per_year']
 
+export const censorVars = ['Overall Survival (1=alive, 0=dead)','LRC','DC']
+
+export const contVarGroups = {
+        'age': [20,30,40,50,60,65,70,75,80,85,90,95],
+        'dose_fraction': [1.8,2,2.1,2.2,2.3,3],
+        'total_dose': [0,66,70,72],
+        'pack_per_year': [0,10,20,30,40,50,60,70,90,100],
+}
+
+
 //order used in the model and returned values
 const progressions = ['CR','PR','SD']
 //ordre used for the user interface

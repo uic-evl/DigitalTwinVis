@@ -38,6 +38,7 @@ export default function PatientFeatureEditor(props){
         // }
         
         const barWidth = (width - 2*margin)/(ticks.length);
+        let fixVal = Math.max(...ticks) > 10? 0: 1;
         for(let i in ticks){
             i = parseInt(i);
             let xx = ticks[i];
@@ -51,14 +52,15 @@ export default function PatientFeatureEditor(props){
                 val = val > 0? 'Y': val < 0? '?':'N';
             }
             else if(constants.continuousVars.indexOf(key) > -1){
-                let minVal = ticks[i];
-                let fixVal = minVal > 10? 0:1;
-                if(i+ 1 < data.ticks.length){
-                    let maxVal =  ticks[i+1] - .1;
-                    val = '[' +  (0+minVal).toFixed(fixVal) + '-' + (0+maxVal).toFixed(fixVal) + ')';
-                } else{
-                    val = (0+minVal).toFixed(fixVal) + '+'
-                }    
+                val = '~'+val.toFixed(fixVal);
+                // let minVal = ticks[i];
+                // let fixVal = minVal > 10? 0:1;
+                // if(i+ 1 < data.ticks.length){
+                //     let maxVal =  ticks[i+1] - .1;
+                //     val = '[' +  (0+minVal).toFixed(fixVal) + '-' + (0+maxVal).toFixed(fixVal) + ')';
+                // } else{
+                //     val = (0+minVal).toFixed(fixVal) + '+'
+                // }    
             }
             else if(constants.ordinalVars[key] !== undefined){
                 val = val.toFixed(0);

@@ -139,19 +139,20 @@ export default function AuxillaryViews(props){
           }
           const width = container.current.clientWidth;
           const nPerRow = width > 1000? 2:1;
-          const thingHeight = width/(nPerRow*6.3);
+          const thingHeight = width/(nPerRow*5.3);
           const dltWidth = thingHeight/2;
           const lnWidth = thingHeight*.8;
           const subsiteWidth = thingHeight*.7;
           const nWidth = thingHeight;
-          const titleWidth = thingHeight/1.5;
+          const titleWidth = thingHeight/2;
           const encodedRef = encodePatient(props.patientFeatures);
         //   const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
-          function makeN(d,i,bottomBorder=true,name=undefined){
+          function makeN(d,i,showTicks,bottomBorder=true,name=undefined){
             const borderColor = d[dString] > .5? constants.knnColor: constants.knnColorNo;
             const bBorder = bottomBorder? '.4em solid ' + borderColor:'';
             const marginBottom = bottomBorder? '.4em': '.01em';
             const showLabels = true;
+        
             function brush(){
               let pId = parseInt(d.id)
               if(pId > 0 & pId !== brushedId){
@@ -179,6 +180,11 @@ export default function AuxillaryViews(props){
               }
               
             }
+            const headerSize = '1em';
+            const viewSize = 'calc(100% - ' + headerSize + ' - 10px)';
+            const headerStyle = {'width':'100%','height':headerSize};
+            const viewStyle   = {'width':'100%','height':viewSize,'marginTop':'10px'}
+            const componentStyle = w => {return {'margin':0,'width': w,'height':'100%','display':'inline-block','verticalAlign':'top'}}
             return (
             <div key={d.id+'-'+i+props.currState} 
                style={{'margin':'.2em','height': thingHeight,
@@ -193,9 +199,9 @@ export default function AuxillaryViews(props){
               <div className={'toggleButtonLabel'} style={{'display':'inline-flex','width': titleWidth,'fontSize':14,'height':'100%','justifyContent':'center','alignItems':'center'}}>
                 {name}
               </div>
-              <div style={{'margin':0,'width': dltWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
-                <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"DLTs"}</div>
-                <div style={{'width':'100%','height':'calc(100% - 1em)'}}>
+              {/* <div style={componentStyle(dltWidth)}>
+                <div  className={'title'} style={headerStyle}>{"DLTs"}</div>
+                <div style={viewStyle}>
                   <DLTVisD3
                     dltSvgPaths={dltSvgPaths}
                     data={d}
@@ -204,10 +210,10 @@ export default function AuxillaryViews(props){
                   />
                 </div>
                 
-              </div>
-              <div style={{'margin':0,'width': lnWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
-                <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"LN"}</div>
-                <div style={{'width':'100%','height':'calc(100% - 1em - 10px)','marginTop':'10px'}}>
+              </div> */}
+              <div style={componentStyle(lnWidth)}>
+                <div  className={'title'} style={headerStyle}>{"LN"}</div>
+                <div style={viewStyle}>
                   <LNVisD3
                     lnSvgPaths={lnSvgPaths}
                     data={d}
@@ -216,9 +222,9 @@ export default function AuxillaryViews(props){
                   ></LNVisD3>
                 </div>
               </div>
-              <div style={{'margin':0,'width': subsiteWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
-                <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"Subsite"}</div>
-                <div style={{'width':'100%','height':'calc(100% - 1em - 10px)','marginTop':'10px'}}>
+              <div style={componentStyle(subsiteWidth)}>
+                <div  className={'title'} style={headerStyle}>{"Subsite"}</div>
+                <div style={viewStyle}>
                   <SubsiteVisD3
                     subsiteSvgPaths={props.subsiteSvgPaths}
                     data={d}
@@ -227,9 +233,9 @@ export default function AuxillaryViews(props){
                   ></SubsiteVisD3>
                 </div>
               </div>
-              <div style={{'margin':0,'width': nWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
-                <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"Staging"}</div>
-                <div style={{'width':'100%','height':'calc(100% - 1em - 10px)','marginTop':'10px'}}>
+              <div style={componentStyle(nWidth)}>
+                <div  className={'title'} style={headerStyle}>{"Staging"}</div>
+                <div style={viewStyle}>
                 <NeighborVisD3
                   data={d}
                   referenceData={encodedRef}
@@ -238,15 +244,15 @@ export default function AuxillaryViews(props){
                   valRanges={ranges}
                   dltSvgPaths={dltSvgPaths}
                   currState={currState}
-                  showLabels={showLabels}
                   version={'staging'}
                   name={name}
+                  showTicks={showTicks}
                 ></NeighborVisD3>
                 </div>
               </div>
-              <div style={{'margin':0,'width': nWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
-                <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"Baseline"}</div>
-                <div style={{'width':'100%','height':'calc(100% - 1em - 10px)','marginTop':'10px'}}>
+              <div style={componentStyle(nWidth)}>
+                <div  className={'title'} style={headerStyle}>{"Baseline"}</div>
+                <div style={viewStyle}>
                 <NeighborVisD3
                   data={d}
                   referenceData={encodedRef}
@@ -255,15 +261,15 @@ export default function AuxillaryViews(props){
                   valRanges={ranges}
                   dltSvgPaths={dltSvgPaths}
                   currState={currState}
-                  showLabels={showLabels}
                   version={'useful'}
                   name={name}
+                  showTicks={showTicks}
                 ></NeighborVisD3>
                 </div>
               </div>
-              <div style={{'margin':0,'width': nWidth,'height':'100%','display':'inline-block','verticalAlign':'top'}}>
-                <div  className={'title'} style={{'width':'100%','height':'1em'}}>{"Outcomes"}</div>
-                <div style={{'width':'100%','height':'calc(100% - 1em - 10px)','marginTop':'10px'}}>
+              <div style={componentStyle(nWidth)}>
+                <div  className={'title'} style={headerStyle}>{"Outcomes"}</div>
+                <div style={viewStyle}>
                 <NeighborVisD3
                   data={d}
                   referenceData={undefined}
@@ -272,23 +278,23 @@ export default function AuxillaryViews(props){
                   valRanges={ranges}
                   dltSvgPaths={dltSvgPaths}
                   currState={currState}
-                  showLabels={showLabels}
                   version={'outcomes'}
                   name={name}
+                  showTicks={showTicks}
                 ></NeighborVisD3>
                 </div>
               </div>
             </div>
             )
           }
-          const nStuff = p.map((d,i) => makeN(d,i));
+          const nStuff = p.map((d,i) => makeN(d,i,false));
     
           if(nPerRow < 2){
             return (
               <div className={'centerText scroll'} style={{'width':'100%!important','height':'100%',
                       'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
-                  {makeN(meanTreated,'n')}
-                  {makeN(meanUntreated,'cf')}
+                  {makeN(meanTreated,'n',true)}
+                  {makeN(meanUntreated,'cf',true)}
                   <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
                   {nStuff}
               </div>
@@ -297,13 +303,13 @@ export default function AuxillaryViews(props){
             return (<div className={'fillSpace'}>
               <div className={'scroll'} style={{'width':'49%','height':'100%',
                       'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
-                  {makeN(meanUntreated,'cf')}
+                  {makeN(meanUntreated,'cf',true)}
                   <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
                   {nStuff}
               </div>
               <div className={'scroll'} style={{'width':'49%','height':'100%',
                       'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
-                  {makeN(meanUntreated,'cf')}
+                  {makeN(meanUntreated,'cf',true)}
                   <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
                   {nStuff}
               </div>

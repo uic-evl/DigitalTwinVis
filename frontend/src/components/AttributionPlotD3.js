@@ -13,7 +13,7 @@ export default function AttributionPlotD3(props){
     
     const margin = 20;
     const labelSpacing = Math.max(width/5,80);
-    const topMargin = 20;
+    const topMargin = 50;
     const bottomMargin = 30
 
     const minAttribution = 0.0001;
@@ -245,8 +245,8 @@ export default function AttributionPlotD3(props){
                 .text(d=>Utils.getFeatureDisplayName(d.name));
 
             const ticks = [
-                [[centerX, yPos],[centerX,yPos+5]],
-                [[currX, yPos],[currX,yPos+5]],
+                [[centerX, topMargin],[centerX,topMargin*.75]],
+                [[currX, yPos],[currX,yPos+bottomMargin/4]],
             ];
             //theortically defaultP - negativeTotal + postitiveTotal but off due to rounding errors
             const baseTick = {
@@ -268,26 +268,34 @@ export default function AttributionPlotD3(props){
                 .attr('stroke','gray')
                 .attr('stroke-width',3);
 
+            const tickTextSize = bottomMargin/2;
+            const tickSuffixes = ['Default Recommendation: ', 'Recommendation: ']
             group.selectAll('.textTicks')
                 .data(tickData)
                 .enter().append('text')
                 .attr('class','ticks textTicks offset')
                 .attr('x',d=>d.x)
-                .attr('y',yPos + bottomMargin/2 + 5)
+                .attr('y',(d,i) => i ==0? topMargin - tickTextSize:yPos + tickTextSize + 5)
                 .attr('text-anchor','middle')
                 .attr('font-size',bottomMargin/2)
-                .text(d=>(100*d.value).toFixed() + '%');
+                .text((d,i)=>tickSuffixes[i] + (100*d.value).toFixed() + '% ' + constants.DECISIONS_SHORT[props.currState]);
 
-            let leftMost = Math.min(currX, centerX);
-            group.attr('transform','translate(' +  -1*(leftMost - labelSpacing) + ')');
+            // let leftMost = Math.min(currX, centerX);
+            // group.attr('transform','translate(' +  -1*(leftMost - labelSpacing) + ')');
             const box = svg.node().getBBox();
-            if( box.x + box.width > width | box.x < 0){
-                const translate = box.x < 0? 'translate(' +  -1*(box.x - labelSpacing) + ')':'translate(' +  -1*(leftMost - labelSpacing) + ')';
-                const xScale = Math.min(((width-2*margin)/(box.x+box.width)),1);
-                const scale = 'scale(' + xScale + ',' + 1 + ')';
-                const transform = translate + ' ' + scale;
-                group.attr('transform',transform);
+            var translate = 0;
+            var scale = 1;
+            if(box.x > width/2 | box.x < 0){
+                translate = -box.x;
             }
+            if(box.x + box.width > width){
+                translate = -(box.x+box.width-width-1);
+            }
+            if(box.width > width){
+                scale = Math.min(((width-2*margin)/(box.width)),1);
+            }
+            group.attr('transform','translate('+translate+')'+'scale('+scale+',1)')
+
             
         }
     },[svg,props.simulation,props.modelOutput,props.currState,width,height,props.defaultPredictions,props.fixedDecisions]);

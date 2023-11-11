@@ -116,7 +116,7 @@ def get_tte(df):
 
 def preprocess_dt_data(df,extra_to_keep=None):
     to_keep = ['id','hpv','age','packs_per_year','gender','smoking_status',
-               'Aspiration rate Pre-therapy','total_dose','dose_fraction'] + Const.timeseries_outcomes
+               'Aspiration rate Pre-therapy','total_dose','dose_fraction'] + Const.timeseries_outcomes + Const.timeseries_censoring
     to_onehot = ['T-category','N-category','AJCC','Pathological Grade',
                  'subsite','treatment','laterality','ln_cluster']
     
@@ -350,7 +350,7 @@ class DTDataset():
                     
         to_skip = ['CC Regimen(0= none, 1= platinum based, 2= cetuximab based, 3= others, 9=unknown)'] + [c for c in processed_df.columns if 'treatment' in c]
         to_skip = [c for c in to_skip if c in processed_df.columns]
-        other_states = set(Const.decisions + Const.state3 + Const.state2 + Const.outcomes  + to_skip + Const.timeseries_outcomes)
+        other_states = set(Const.decisions + Const.state3 + Const.state2 + Const.outcomes  + to_skip + Const.timeseries_outcomes + Const.timeseries_censoring)
 
         base_state = sorted([c for c in processed_df.columns if c not in other_states])
 

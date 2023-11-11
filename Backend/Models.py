@@ -21,12 +21,14 @@ class SimulatorBase(torch.nn.Module):
                  input_dropout=0.1,
                  state = 1,
                  eps = 0.01,
+                 add_decision_passthrough=True,
                 ):
         #predicts disease state (sd, pr, cr) for primar and nodal, then dose modications or cc type (depending on state), and [dlt ratings]
         torch.nn.Module.__init__(self)
         self.state = state
         self.input_dropout = torch.nn.Dropout(input_dropout)
         
+        self.passthrough = add_decision_passthrough
         first_layer =torch.nn.Linear(input_size,hidden_layers[0],bias=True)
         layers = [first_layer,torch.nn.ReLU()]
         curr_size = hidden_layers[0]
@@ -147,30 +149,37 @@ class OutcomeSimulator(SimulatorBase):
                  dropout = 0.7,
                  input_dropout=0.1,
                  state = 1,
+                 **kwargs
                 ):
         #predicts disease state (sd, pr, cr) for primar and nodal, then dose modications or cc type (depending on state), and [dlt ratings]
-        super().__init__(input_size,hidden_layers=hidden_layers,dropout=dropout,input_dropout=input_dropout,state=state)
+        super().__init__(input_size,hidden_layers=hidden_layers,dropout=dropout,input_dropout=input_dropout,state=state,**kwargs)
     
-        self.disease_layer = torch.nn.Linear(hidden_layers[-1],len(Const.primary_disease_states))
-        self.nodal_disease_layer = torch.nn.Linear(hidden_layers[-1],len(Const.nodal_disease_states))
+        final_dim = hidden_layers[-1]
+        if self.passthrough:
+            final_dim = final_dim + state
+        self.disease_layer = torch.nn.Linear(final_dim,len(Const.primary_disease_states))
+        self.nodal_disease_layer = torch.nn.Linear(final_dim,len(Const.nodal_disease_states))
         #dlt ratings are 0-4 even though they don't always appear
-        self.dlt_layers = torch.nn.ModuleList([torch.nn.Linear(hidden_layers[-1],1) for i in Const.dlt1])
+        self.dlt_layers = torch.nn.ModuleList([torch.nn.Linear(final_dim,1) for i in Const.dlt1])
         assert( state in [1,2])
         if state == 1:
 #             self.dlt_layers = torch.nn.ModuleList([torch.nn.Linear(hidden_layers[-1],5) for i in Const.dlt1])
-            self.treatment_layer = torch.nn.Linear(hidden_layers[-1],len(Const.modifications))
+            self.treatment_layer = torch.nn.Linear(final_dim,len(Const.modifications))
         else:
             #we only have dlt yes or no for the second state?
 #             self.dlt_layers = torch.nn.ModuleList([torch.nn.Linear(hidden_layers[-1],2) for i in Const.dlt2])
-            self.treatment_layer = torch.nn.Linear(hidden_layers[-1],len(Const.ccs))
+            self.treatment_layer = torch.nn.Linear(final_dim,len(Const.ccs))
    
     def get_output(self,xin):
+        decisions = xin[:,xin.shape[1]-self.state:]
         x = self.normalize(xin)
         x = self.input_dropout(x)
         for layer in self.layers:
             x = layer(x)
 #         x = self.batchnorm(x)
         x = self.dropout(x)
+        if self.passthrough:
+            x = torch.concat([x,decisions],axis=1)
         x_pd = self.disease_layer(x)
         x_nd = self.nodal_disease_layer(x)
         x_mod = self.treatment_layer(x)
