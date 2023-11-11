@@ -80,7 +80,7 @@ export function NeighborVisD3(props){
 
             const thetaScale = d3.scaleLinear()
                 .domain([0,nVars])
-                .range([0,2*Math.PI]);
+                .range([Math.PI/2,2.5*Math.PI]);
 
     
 

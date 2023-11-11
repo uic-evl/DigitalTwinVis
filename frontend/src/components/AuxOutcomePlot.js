@@ -41,9 +41,9 @@ export default function AuxOutcomePlot(props){
             omap['nd1'] = constants.nodalDiseaseProgressions;
             omap['dlt1'] = constants.dlts1;
         }
-        svg.selectAll().remove();
+        if(svg) { svg.selectAll().remove(); }
         return omap
-    },[props.currState])
+    },[props.currState,svg])
     
     useEffect(()=>{
         if(!Utils.allValid([svg,props.sim,props.altSim,props.neighbors,props.cfs])){
@@ -64,7 +64,7 @@ export default function AuxOutcomePlot(props){
                     .domain([0,1]).range([radius/10,radius]);
                 const thetaScale = d3.scaleLinear()
                     .domain([0,variables[0].length])
-                    .range([0,2*Math.PI]);
+                    .range([Math.PI/2,2.5*Math.PI]);
 
                 var paths = [];
                 for(let idx in variables){
