@@ -15,8 +15,8 @@ export default function AuxOutcomePlot(props){
     const xMargin = 10;
     const topMargin =1;
     const chartSpacing = 5;
-    const bottomMargin = 40;
-    const timePoints = [12,48];
+    const bottomMargin = 30;
+    const timePoints = props.currState == 2? [12,48,60]:[12,48];
 
 
     function radToCartesian(r,t,centerX=0,centerY=0){
@@ -41,13 +41,16 @@ export default function AuxOutcomePlot(props){
             omap['nd1'] = constants.nodalDiseaseProgressions;
             omap['dlt1'] = constants.dlts1;
         }
-        if(svg) { svg.selectAll().remove(); }
+        if(svg) { 
+            svg.selectAll('path').remove();
+            svg.selectAll('text').remove();
+        }
         return omap
     },[props.currState,svg])
     
     useEffect(()=>{
         if(!Utils.allValid([svg,props.sim,props.altSim,props.neighbors,props.cfs])){
-            console.log('not valid stuff in outcomeplots',props);
+            //console.log('not valid stuff in outcomeplots',props);
         }else{
             
             const sim = props.sim;
@@ -58,14 +61,15 @@ export default function AuxOutcomePlot(props){
             const timeIdxList = timePoints.map(t => times.indexOf(t)).filter(idx => idx >= 0);
             const lineColors = sim.currDecision >= .5? [constants.dnnColor,constants.dnnColorNo,constants.knnColor,constants.knnColorNo]: [constants.dnnColorNo,constants.dnnColor,constants.knnColorNo,constants.knnColor];
             
-            function drawKiviatCurve(centerX, centerY, radius, variables, colors,selector,scales){
+            function drawKiviatCurve(centerX, centerY, radius, variables, colors,selector,groupNames,varNames,scales){
                 //I'm assuming varaibles is a list of a list of variables, each of leng nvariables
-                const radiusScale = d3.scaleSqrt()
+                const radiusScale = d3.scaleSymlog()
                     .domain([0,1]).range([radius/10,radius]);
                 const thetaScale = d3.scaleLinear()
                     .domain([0,variables[0].length])
                     .range([Math.PI/2,2.5*Math.PI]);
 
+                const g = svg.selectAll('.'+selector+'Group').empty()? svg.append('g').attr('class',selector+'Group'): svg.selectAll('.'+selector+'Group');
                 var paths = [];
                 for(let idx in variables){
                     let vals= variables[idx];
@@ -103,25 +107,26 @@ export default function AuxOutcomePlot(props){
                     if(d.active){ c += ' active'}
                     return c
                 }
-                const pathGroup = svg.selectAll('path').filter('.'+selector).data(paths);
+                const pathGroup = g.selectAll('path').filter('.'+selector).data(paths);
                 pathGroup.enter()
                     .append('path').attr('class',getClass)
                     .merge(pathGroup)
                     .transition(100)
                     .attr('d',d=>d.path)
-                    .attr('fill',(d,i) => i==0? 'none':d.color)
-                    .attr('stroke',(d,i) => i==0? d.color:'none')
-                    .attr('stroke-width',2)
-                    .attr('fill-opacity',(d,i) => i == 0? 0:.25)
-                    // .attr('stroke',d=>d.color)
-                    // .attr('stroke-width',(d,i) => i==0?2:5)
-                    // .attr('stroke-opacity',.8)
-                    // .attr('fill','none');
+                    // .attr('fill',(d,i) => i==0? 'none':d.color)
+                    // .attr('stroke',(d,i) => i==0? d.color:'none')
+                    // .attr('stroke-width',2)
+                    // .attr('fill-opacity',(d,i) => i == 0? 0:.25)
+                    .attr('stroke',d=>d.color)
+                    .attr('stroke-width',(d,i) => i==0?2:4)
+                    .attr('stroke-opacity',.8)
+                    .attr('fill','white')
+                    .attr('fill-opacity',0);
 
                 const title = Utils.getFeatureDisplayName(selector.replace('-',' '));
                 const titleSize = Math.min(20,bottomMargin/1.75);
-                svg.selectAll('text').filter('.'+selector+'title').remove();
-                svg.append('text').attr('class',selector+'title')
+                g.selectAll('text').filter('.'+selector+'title').remove();
+                g.append('text').attr('class',selector+'title')
                     .attr('x', centerX).attr('y',height - bottomMargin/2)
                     .attr('font-size',titleSize)
                     .attr('text-anchor','middle')
@@ -130,8 +135,33 @@ export default function AuxOutcomePlot(props){
                     .attr('lengthAdjust','spacingAndGlyphs')
                     .text(title);
                 pathGroup.exit().remove();
+
+                g.on('mouseover',function(e,d){
+                    var string = selector;
+                    if(groupNames !== undefined && varNames !== undefined){
+                        for(let gidx in groupNames){
+                            gidx = Number(gidx);
+                            if(gidx === 0 || variables[gidx] === undefined){continue}
+                            let gname = Utils.getFeatureDisplayName(groupNames[gidx]);
+                            string += '</br>' + gname + ':</br>'
+                            for(let vidx in varNames){
+                                if(variables[gidx][vidx] !== undefined){
+                                    let varname = Utils.getFeatureDisplayName(varNames[vidx]);
+                                    string += varname + ': ' + variables[gidx][vidx].toFixed(2) + '</br>';
+                                } else{
+                                    console.log('what',gname,vidx,variables[gidx][vidx])
+                                }
+                            }
+                        }
+                    }
+                    tTip.html(string);
+                }).on('mousemove', function(e){
+                    Utils.moveTTipEvent(tTip,e);
+                }).on('mouseout', function(e){
+                    Utils.hideTTip(tTip);
+                });
                 //raise recommended outcome to top
-                svg.selectAll('.active').raise();
+                g.selectAll('.active').raise();
             }
             const nPlots = Object.values(outcomeGroups).length + (timePoints.length-1);
             const pradius = Math.min((height - topMargin - bottomMargin)/2, .5*(((width - 2*xMargin)/nPlots) - chartSpacing));
@@ -146,7 +176,7 @@ export default function AuxOutcomePlot(props){
                         const valList = [outline,kvals,altvals]
                         const name = 'survival-'+times[tIdx]+'-Months'
                         drawKiviatCurve(currCX,(height - bottomMargin + topMargin)/2,pradius,valList,
-                        ['grey'].concat(lineColors),name);
+                        ['grey'].concat(lineColors),name,['outline','treatment (model)','no treatment (model)'],v);
                         currCX += 2*pradius + chartSpacing;
                     }
                 }
@@ -159,7 +189,7 @@ export default function AuxOutcomePlot(props){
                     const cfMeans = cfCurveVals.map(Utils.mean);
                     const valList = [outline,kVals,altvals,nMeans,cfMeans];
                     drawKiviatCurve(currCX,(height - bottomMargin + topMargin)/2,pradius,valList,
-                        ['grey'].concat(lineColors),k);
+                        ['grey'].concat(lineColors),k,['outline','treatment (model)','no treatment (model)','treatment (cohort)','no treatment (cohort)'],v);
                     currCX += 2*pradius + chartSpacing;
                 }
                 

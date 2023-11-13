@@ -66,9 +66,9 @@ export const dlts1 = [
         'DLT_Other',
         'DLT_Neurological',
         'DLT_Hematological',
-        'DLT_Dermatological',
-        'DLT_Nephrological',
-        'DLT_Gastrointestinal'
+        // 'DLT_Dermatological',
+        // 'DLT_Nephrological',
+        // 'DLT_Gastrointestinal'
 ]
 export const dlts2 = dlts1.map(d=>d + ' 2');
 
