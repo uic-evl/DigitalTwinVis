@@ -70,7 +70,7 @@ function MainApp({authToken,setAuthToken}) {
   const [previousPatientStack,setPreviousPatientStack] = useState([]);
   const [simulation,setSimulation] = useState();
   const [currEmbeddings,setCurrEmbeddings] = useState();
-  const [cohortData,setCohortData] = useState();
+  const [cohortData,setCohortData] = useState(localStorage.getItem('cohortData') !== null? JSON.parse(localStorage.getItem('cohortData')) : undefined);
   const [cohortEmbeddings, setCohortEmbeddings] = useState();
   const [fixedDecisions,setFixedDecisions] = useState([-1,-1,-1]);//-1 is not fixed ,0 is no, 1 is yes
   const [modelOutput,setModelOutput] = useState('optimal');
@@ -277,10 +277,16 @@ function MainApp({authToken,setAuthToken}) {
   },[patientFeatures,currState,modelOutput])
 
   useEffect(()=>{
-    if(patientFeatures!== undefined & patientFeatures !== null){
+    if(patientFeatures!== undefined && patientFeatures !== null){
       localStorage.setItem('patientFeatures',JSON.stringify(patientFeatures));
     }
   },[patientFeatures])
+
+  useEffect(()=>{
+    if(cohortData !== undefined && cohortData !== null){
+      localStorage.setItem('cohortData',JSON.stringify(cohortData));
+    }
+  },[cohortData])
 
 
   function getSimulation(useAlt=false){

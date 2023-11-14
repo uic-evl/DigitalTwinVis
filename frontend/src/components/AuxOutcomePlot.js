@@ -14,7 +14,7 @@ export default function AuxOutcomePlot(props){
 
     const xMargin = 10;
     const topMargin =1;
-    const chartSpacing = 5;
+    const chartSpacing = 15;
     const bottomMargin = 30;
     const timePoints = props.currState == 2? [12,48,60]:[12,48];
 
@@ -25,6 +25,14 @@ export default function AuxOutcomePlot(props){
         return [x,y];
     };
 
+    function getTickText(t){
+        let tnew = Utils.nameDictShort[t];
+        if(tnew !== undefined){
+            return tnew;
+        }
+        t = t.replace('dlt','').replace('DLT','').replace('_',' ').replace('Nodal','').replace('Primary','').replace(' (Pneumonia)','').replace('2','');
+        return Utils.getFeatureDisplayName(t);
+    }
     const outcomeGroups = useMemo(()=>{
         var omap = {
             'temporal': ['OS (Calculated)','Locoregional control (Time)','FDM (months)','time_to_event'],
@@ -71,6 +79,7 @@ export default function AuxOutcomePlot(props){
 
                 const g = svg.selectAll('.'+selector+'Group').empty()? svg.append('g').attr('class',selector+'Group'): svg.selectAll('.'+selector+'Group');
                 var paths = [];
+                var labelData = [];
                 for(let idx in variables){
                     let vals= variables[idx];
                     if(vals === undefined || Utils.sum(vals) == 0){
@@ -88,8 +97,17 @@ export default function AuxOutcomePlot(props){
                         let theta = thetaScale(idx2);
                         radii.push(r);
                         thetai.push(theta)
-                        const [x,y] = radToCartesian(r,theta,centerX,centerY);
+                        let [x,y] = radToCartesian(r,theta,centerX,centerY);
                         path.push([x,y]);
+                        if(Number(idx) <= .0001 && varNames !== undefined){
+                            let [xText,yText] = radToCartesian(r*.9,theta,centerX,centerY);
+                            labelData.push({
+                                'x': xText,
+                                'y': yText,
+                                'text': varNames[idx2],
+                            })
+                        }
+                        
                     }
                     path.push(path[0]);
                     paths.push({
@@ -102,6 +120,9 @@ export default function AuxOutcomePlot(props){
                         'active': Number(idx)%2 === 1,
                     })
                 }
+
+                
+
                 function getClass(d){
                     let c = selector;
                     if(d.active){ c += ' active'}
@@ -122,6 +143,7 @@ export default function AuxOutcomePlot(props){
                     .attr('stroke-opacity',.8)
                     .attr('fill','white')
                     .attr('fill-opacity',0);
+                    pathGroup.exit().remove();
 
                 const title = Utils.getFeatureDisplayName(selector.replace('-',' '));
                 const titleSize = Math.min(20,bottomMargin/1.75);
@@ -134,7 +156,7 @@ export default function AuxOutcomePlot(props){
                     .attr('textLength',title.length*titleSize  > 1.8*radius? 1.8*radius:'')
                     .attr('lengthAdjust','spacingAndGlyphs')
                     .text(title);
-                pathGroup.exit().remove();
+
 
                 g.on('mouseover',function(e,d){
                     var string = selector;
@@ -162,6 +184,25 @@ export default function AuxOutcomePlot(props){
                 });
                 //raise recommended outcome to top
                 g.selectAll('.active').raise();
+
+                //draw labels, doing this last so they're on top
+                if(labelData.length > 0){
+                    var labels = g.selectAll('text').filter('.'+selector+'tick').data(labelData);
+                    const labelSize = Math.max(12,titleSize/3);
+                    labels.enter().append('text')
+                        .attr('class',selector+'tick')
+                        .attr('x',d=>d.x).attr('y',d=>Math.max(labelSize/2,d.y))
+                        .attr('text-anchor','middle')
+                        .attr('dominant-baseline','middle')
+                        .attr('font-size',labelSize)
+                        .attr('font-weight','bold')
+                        .attr('stroke','white').attr('stroke-width',.03)
+                        .text(d=>getTickText(d.text));
+                    labels.exit().remove();
+                    labels.raise();
+                } else{
+                    g.selectAll('text').filter('.'+selector+'tick').remove();
+                }
             }
             const nPlots = Object.values(outcomeGroups).length + (timePoints.length-1);
             const pradius = Math.min((height - topMargin - bottomMargin)/2, .5*(((width - 2*xMargin)/nPlots) - chartSpacing));

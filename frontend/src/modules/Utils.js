@@ -35,6 +35,13 @@ export default class Utils {
         'FDM (months)': 'Free From Distant Metastases',
     }
 
+    static nameDictShort = {
+        'OS (Calculated)': 'OS',
+        'Locoregional control (Time)': 'LRC',
+        'FDM (months)': 'FDM',
+        'time_to_event': 'Event',
+    }
+
     static getColorScale(name,min,max){
         if(name === 'attention' | name === 'attributions'){
             min = min === undefined? -.1: min;
