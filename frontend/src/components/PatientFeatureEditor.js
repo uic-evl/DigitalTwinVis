@@ -52,7 +52,13 @@ export default function PatientFeatureEditor(props){
                 val = val > 0? 'Y': val < 0? '?':'N';
             }
             else if(constants.continuousVars.indexOf(key) > -1){
-                val = '~'+val.toFixed(fixVal);
+                if(key === 'packs_per_year'){
+                    val = val > 0? val  > 50? '> 50': '<= '+val: val;//.ToFixed(fixVal);
+
+                } else{
+                    val = '~'+val.toFixed(fixVal);
+                }
+                
                 // let minVal = ticks[i];
                 // let fixVal = minVal > 10? 0:1;
                 // if(i+ 1 < data.ticks.length){

@@ -48,7 +48,7 @@ export default class Utils {
             max = max === undefined? .1: max;
             return d3.scaleDiverging()
                 .domain([min,0,max])
-                .range(['#d73027','#ffffbf','#4575b4'])
+                .range(constants.divergingAttributionColors)
         } 
         min = min === undefined? 0: min;
         max = max === undefined? 1: max;

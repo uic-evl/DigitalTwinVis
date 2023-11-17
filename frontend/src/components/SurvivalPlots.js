@@ -59,7 +59,7 @@ export default function SurvivalPlots(props){
                 .style('border-radius','10px');
 
             var curveData = [];
-
+            var pointData = [];
             const timeToEvent = sim[name];
             const altTimeToEvent = altSim[name];
             const knnTTE = Utils.mean(props.neighbors.map(d=>d[censorVar])) > .5? Infinity: Utils.median(props.neighbors.map(d=>d[name]));
@@ -70,7 +70,17 @@ export default function SurvivalPlots(props){
                 let cVals = [curves,alt][ii];
                 let path = [];
                 for(let i in cVals){
-                    path.push([xScale(times[i]),yScale(cVals[i])]);
+                    let cx = xScale(times[i]);
+                    let cy = yScale(cVals[i]);
+                    path.push([cx,cy]);
+                    pointData.push({
+                        'x': cx,
+                        'y': cy,
+                        'color': lineColors[ii],
+                        'value': cVals[i],
+                        'time': times[i],
+                        'name': curveNames[curveData.length],
+                    })
                 }
                 curveData.push({
                     'path': lineFunc(path),
@@ -91,7 +101,17 @@ export default function SurvivalPlots(props){
                     const nAbove = nList.filter(d => d[name] >= time || d[censorVar] > .5);
                     let pctAbove = nAbove.length/nList.length;
                     pcts.push(pctAbove);
+                    let cx = xScale(time);
+                    let cy = yScale(pctAbove);
                     pCurve.push([xScale(time),yScale(pctAbove)]);
+                    pointData.push({
+                        'x': cx,
+                        'y': cy,
+                        'color': lineColors[curveData.length],
+                        'value': pctAbove,
+                        'time': time,
+                        'name': curveNames[curveData.length],
+                    })
                 }
                 curveData.push({
                     'path': lineFunc(pCurve),
@@ -101,18 +121,39 @@ export default function SurvivalPlots(props){
                     'values': pcts,
                 });
             }
-            var path = g.selectAll('path').filter('.path'+selector).data(curveData,(d,i) => i);
-
+            var path = g.selectAll('path').filter('.path'+selector).data(curveData,(d,i) =>d.name+d.x);
+            //use different lines, keep extents so people don't see 
             path.enter()
                 .append('path').attr('class','path'+selector)
                 .merge(path)
                 .transition(100)
                 .attr('d',d=>d.path)
-                .attr('stroke-width',10)
+                .attr('stroke-width',2)
                 .attr('stroke',d=>d.color)
-                .attr('opacity',.5)
+                .attr('opacity',1)
                 .attr('fill','none');
             path.exit().remove();
+
+            var points = g.selectAll('.'+'points'+selector).data(pointData,(d,i)=>d.name+d.x);
+            points.enter()
+                .append('circle').attr('class','points'+selector)
+                .attr('cx',d=>d.x)
+                .merge(points)
+                .transition(300)
+                .attr('cy',d=>d.y)
+                .attr('fill',d=>d.color)
+                .attr('r',4)
+            points.exit().remove();
+
+            g.selectAll('.'+'points'+selector).on('mouseover',function(e,d){
+                let string = d.value? d.name +  '</br>' 
+                    + (100*d.value).toFixed(0) + '% at ' + d.time + 'm': 'd.name';
+                tTip.html(string);
+            }).on('mousemove', function(e){
+                Utils.moveTTipEvent(tTip,e);
+            }).on('mouseout', function(e){
+                Utils.hideTTip(tTip);
+            });
 
             g.selectAll('.path'+selector).on('mouseover',function(e,d){
                 let string = d.name + '</br>' + 'Median Time To Event: ' + d.medianTime.toFixed(0) + ' Months' + '</br>';
@@ -164,8 +205,9 @@ export default function SurvivalPlots(props){
             const xStart = xScale(0);
             const xEnd = xScale(times[times.length-1]);
             //use this for any lines you want to use
-            for(let pct of [.5,.75]){
+            for(let pct of [0,.25,.5,.75,1]){
                 let y = yScale(pct)
+                let isBound = pct == 0 || pct == 1;
                 textStuff.push({
                     'x': xMargin,
                     'y': y,
@@ -175,6 +217,8 @@ export default function SurvivalPlots(props){
                     'weight': '',
                     'line': lineFunc([[xStart,y],[xEnd,y]]),
                     'textWidth':'',
+                    'isBound': isBound,
+
                 })
             }
             g.selectAll('.text'+selector).remove();
@@ -195,9 +239,11 @@ export default function SurvivalPlots(props){
             g.selectAll('.axisTick'+selector).data(textStuff)
                 .enter().append('path').attr('class','axisTick'+selector)
                 .attr('d',d=>d.line)
-                .attr('stroke','azure')
-                .attr('stroke-opacity',1)
-                .attr('stroke-width',3);
+                .attr('stroke',d=>d.isBound? 'black':'azure')
+                .attr('stroke-width',d=>d.isBound? 3:2)
+                .attr('stroke-dasharray', d=>d.isBound? '5,5':'')
+                .attr('pointer-events','none')
+                .attr('stroke-opacity',d=>d.isBound? .5:1);
 
             const lX = xScale.range()[1]+2;
             var lY = yScale(1);
@@ -220,7 +266,7 @@ export default function SurvivalPlots(props){
                     'x': lX,
                     'textX': lX+lWidth+2,
                     'y': lY,
-                    'text': tte === Infinity? 'Indefinite' : tte.toFixed(0) + ' M',// tte <= 48? tte.toFixed(0)+'M': '>4Yr' ,
+                    'text': tte === Infinity? 'Indefinite' : tte.toFixed(0) + ' m',// tte <= 48? tte.toFixed(0)+'m': '>4Yr' ,
                     'size': lTextSize,
                     'name': curveNames[legendData.length-1],
                 });
