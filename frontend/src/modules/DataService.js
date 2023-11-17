@@ -1,5 +1,7 @@
 import axios from 'axios';
 import * as constants from './Constants';
+import * as endpoint from './Endpoint.js';
+
 export default class DataService {
 
     constructor(token,setAuthToken){
@@ -9,7 +11,7 @@ export default class DataService {
           } : {};
 
         this.api = axios.create({
-            baseURL: constants.API_URL,
+            baseURL: endpoint.API_URL,
             headers: headers,
         });
         this.resetToken = ()=>setAuthToken(false);

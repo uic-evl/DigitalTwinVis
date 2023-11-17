@@ -2,6 +2,7 @@ import React from 'react';
 import MainApp from './MainApp';
 import LoginPage from './Login';
 import * as constants from "./modules/Constants.js";
+import * as endpoint from './modules/Endpoint.js';
 import {useState, useEffect} from 'react';
 import axios from 'axios';
 
@@ -12,7 +13,7 @@ async function loginUser(username,password) {
   try {
     const response = await axios({
       method:'get',
-      url: constants.API_URL + 'login',
+      url: endpoint.API_URL + 'login',
       params: {username: username, password: password},
     })
     console.log('login response for',username,response);
