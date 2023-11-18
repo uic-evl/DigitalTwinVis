@@ -35,7 +35,7 @@ export function NeighborVisD3(props){
             case 'boolean':
                 return booleanVars;
             case 'outcomes':
-                return constants.OUTCOMES.map(i=>i).concat(['FDM']);
+                return constants.OUTCOMES.map(i=>i).concat(['DC']);
             case 'staging':
                 return Object.keys(ordinalVars);
             case 'notStaging':
@@ -76,7 +76,6 @@ export function NeighborVisD3(props){
     
             }
             const nVars = allVars.length;
-            console.log('neighbor',data);
 
             const thetaScale = d3.scaleLinear()
                 .domain([0,nVars])

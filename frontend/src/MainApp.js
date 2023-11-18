@@ -375,68 +375,6 @@ function MainApp({authToken,setAuthToken}) {
   });
 
   
-  const Outcomes = useMemo(()=>{
-    if(Utils.allValid([simulation,cohortData,currEmbeddings,cohortEmbeddings])){
-      if((simulation[modelOutput] === undefined)){return  (<Spinner/>)}
-
-
-      //so the code here triese to pull the patients with the smallest caliper distance (likelihood of being treated)
-      //from the treated and untreated groups. We start at .1*std(logit(chort propensities)) and gradually increase (for each group individuall) until we get enough people
-      //todo: there's probably a better way to do this using sorting? also maybe show propensity match somewhere?
-
-      const [sim,altSim] = getSimulation(true);
-
-      const [neighbors,cfs,caliperVal] = Utils.getTreatmentGroups(sim,currEmbeddings,cohortData,currState,cohortEmbeddings);
-      const currDecision = sim.currDecision;
-
-      var outcomes = constants.OUTCOMES.concat(constants.TEMPORAL_OUTCOMES);
-      if(currState == 0){
-        outcomes = outcomes.concat(constants.dlts1);
-        outcomes = outcomes.concat(constants.primaryDiseaseProgressions);
-        outcomes = outcomes.concat(constants.nodalDiseaseProgressions);
-      } else if(currState == 1){
-        outcomes = outcomes.concat(constants.dlts2);
-        outcomes = outcomes.concat(constants.primaryDiseaseProgressions2);
-        outcomes = outcomes.concat(constants.nodalDiseaseProgressions2);
-      }
-      var neighborPredictions = {};
-      var cfPredictions = {};
-      for(let key of outcomes){
-        neighborPredictions[key] = Utils.mean(neighbors.map(d=>d[key]));
-        cfPredictions[key] = Utils.mean(cfs.map(d=>d[key]));
-      }
-
-
-      const outcomeViewOptions = currState < 2? ['all','endpoints','disease response','dlts','no dlts']: ['endpoints'];
-      function makeOutcomeToggle(){
-        return Utils.makeStateToggles(outcomeViewOptions,outcomesView,setOutcomesView);
-      }
-
-
-      return (
-      <>
-      <div style={{'height': '1.5em','width':'100%'}}>
-        <HelpText text={HelpTexts.outcomeHelpText}/>
-            {makeOutcomeToggle()}
-      </div>
-      <div style={{'height': 'calc(100% - 1.5em)','width':'100%'}} className={'noGutter'}>
-        <OutcomePlots
-          sim={sim}
-          altSim={altSim}
-          neighborOutcomes={neighborPredictions}
-          counterfactualOutcomes={cfPredictions}
-          mainDecision={currDecision}
-          state={currState}
-          outcomesView={outcomesView}
-        ></OutcomePlots>
-      </div>
-      </>
-      )
-    } else{
-      return (<Spinner/>)
-    }
-  },[simulation,cohortData,currEmbeddings,modelOutput,currState,cohortEmbeddings,fixedDecisions,outcomesView]);
-
   function makeButtonToggle(){
     var makeButton = (state,text)=>{
       return Utils.makeStateToggles([state],currState,setCurrState,[text]);
@@ -621,7 +559,7 @@ function MainApp({authToken,setAuthToken}) {
         h='99%'
         w='100%'
         templateRows='2em repeat(2,1fr)'
-        templateColumns='max(25vw, 15em) repeat(4,1fr) 1em'
+        templateColumns='max(25vw, 15em) max(32vw, 15em) repeat(2,1fr) 1em'
         gap={1}
         style={{'cursor':cursor}}
       >
@@ -631,7 +569,7 @@ function MainApp({authToken,setAuthToken}) {
         <GridItem  rowSpan={2} colSpan={1} className={'shadow'}>
           {makeThing()}
         </GridItem>
-        <GridItem rowSpan={2} colSpan={2}>
+        <GridItem rowSpan={2} colSpan={1}>
           <Grid
             h="100%"
             w="100%"
@@ -684,7 +622,7 @@ function MainApp({authToken,setAuthToken}) {
             </GridItem>
           </Grid>
         </GridItem>
-        <GridItem rowSpan={2} colSpan={3} className={'shadow'}>
+        <GridItem rowSpan={2} colSpan={2} className={'shadow'}>
           <Grid 
             h="100%"
             w="100%"

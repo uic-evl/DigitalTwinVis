@@ -19,8 +19,10 @@ export default function AuxillaryViews(props){
 
     const container = useRef();
 
-    const auxViewOptions = ['survival','attributions','neighbors','scatterplot'];
-    const auxViewLabels =['Survival','Feature Importance','Similar Patients','Scatterplot']
+    const auxViewOptions = ['attributions','neighbors','scatterplot'];
+    const auxViewLabels =['Feature Importance','Similar Patients','Scatterplot']
+    // const auxViewOptions = ['survival','attributions','neighbors','scatterplot'];
+    // const auxViewLabels =['Survival','Feature Importance','Similar Patients','Scatterplot']
     const [auxView,setAuxView] = useState('attributions');
 
 
@@ -119,9 +121,13 @@ export default function AuxillaryViews(props){
               for(let [key,value] of Object.entries(obj)){
                 //skip unknown hpv
                 if(key === 'hpv' & value < 0){continue}
-                let currVal = meanObj[key] === undefined? 0: meanObj[key];
+                let currVal = meanObj[key] === undefined? 0: meanObj[key]+0;
                 currVal += value/plist.length;
-                meanObj[key] = currVal
+                if(key === 'DC'){
+                  console.log('means',key,value,currVal)
+                }
+        
+                meanObj[key] = currVal+0;
               }
             }
             meanObj.id = -2 - meanObj.decision;

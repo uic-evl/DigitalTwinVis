@@ -1,6 +1,7 @@
 
 
-export const OUTCOMES = ['Overall Survival (4 Years)','FT','Aspiration rate Post-therapy','LRC']
+export const OUTCOMES = ['Overall Survival (4 Years)','FT','Aspiration rate Post-therapy','LRC'];
+export const TOXICITY = ['FT','Aspiration rate Post-therapy'];
 
 export const TEMPORAL_OUTCOMES = ['OS (Calculated)','Locoregional control (Time)','FDM (months)'] //,'time_to_event'
 export const FOURYEAR_OUTCOMES = TEMPORAL_OUTCOMES.map(s => s+'(4yr)')
