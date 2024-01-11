@@ -146,3 +146,5 @@ def get_cohort_predictions():
     pdf_json = pdf.to_dict(orient='index')
     return responsify(pdf_json)
 
+if __name__ == '__main__':
+  app.run(host='0.0.0.0', port=8000, debug=True)

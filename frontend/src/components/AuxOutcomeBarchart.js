@@ -68,7 +68,6 @@ export default function AuxOutcomeBarchart(props){
     useEffect(()=>{
         const outcomeGroups = settings.omap;
         const timePoints = settings.tp;
-        console.log('settings',settings,props.currState)
         if(!Utils.allValid([svg,props.sim,props.altSim,props.neighbors,props.cfs,timePoints,outcomeGroups])){
             console.log('not valid stuff in outcomeplots',props,timePoints,outcomeGroups);
         }else{
@@ -140,13 +139,11 @@ export default function AuxOutcomeBarchart(props){
                         
                     }
                 } else{
-                    console.log(k,varList)
                     let simVals = sim[k];
                     let altVals = altSim[k];
                     for(let varName of varList){
                         if(k === 'outcomes' && constants.TOXICITY.indexOf(varName) < 0){continue}
                         const startX = currX
-                        console.log('sim',sim,varName,sim[k])
                         let vPos = varList.indexOf(varName);
                         const kval = simVals[vPos];
                         const altval = altVals[vPos];
@@ -170,7 +167,6 @@ export default function AuxOutcomeBarchart(props){
                                 'color': lineColors[ii],
                                 'varName': varName,
                             }
-                            console.log('numba',ii,cis.length,ii>cis.length)
                             if(Number(ii) < cis.length){
                                 let ci = cis[ii];
                                 let path = d3.line()(ci.map(v =>[currX+barWidth/2,yScale(v)]));
@@ -250,7 +246,6 @@ export default function AuxOutcomeBarchart(props){
                 .text(d=>(100*d.value).toFixed(0));
             barNotes.exit().remove();
 
-            console.log('ci',confIntervals)
             var confs = svg.selectAll('path').filter('.conf').data(confIntervals,(d,i)=>d.varName+'conf')
             confs.enter()
                 .append('path').attr('class','conf')

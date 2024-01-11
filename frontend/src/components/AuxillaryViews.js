@@ -23,8 +23,9 @@ export default function AuxillaryViews(props){
     const auxViewLabels =['Feature Importance','Similar Patients','Scatterplot']
     // const auxViewOptions = ['survival','attributions','neighbors','scatterplot'];
     // const auxViewLabels =['Survival','Feature Importance','Similar Patients','Scatterplot']
-    const [auxView,setAuxView] = useState('attributions');
+    const [auxView,setAuxView] = useState(props.defaultView? props.defaultView:'attributions');
 
+    const showToggle = props.showToggle === undefined? true:props.showToggle;
 
     function encodeOrdinal(p,key,values,scale=false){
       let val = values[0];
@@ -123,9 +124,9 @@ export default function AuxillaryViews(props){
                 if(key === 'hpv' & value < 0){continue}
                 let currVal = meanObj[key] === undefined? 0: meanObj[key]+0;
                 currVal += value/plist.length;
-                if(key === 'DC'){
-                  console.log('means',key,value,currVal)
-                }
+                // if(key === 'DC'){
+                //   console.log('means',key,value,currVal)
+                // }
         
                 meanObj[key] = currVal+0;
               }
@@ -425,12 +426,16 @@ export default function AuxillaryViews(props){
     }
 
       function outcomeToggle(){
+        if(!showToggle){
+          return <p className="title">{Utils.getVarDisplayName(auxView)}</p>
+        }
         var htext = HelpTexts.attributionHelpText;
         if(auxView === 'scatterplot'){
           htext = HelpTexts.scatterplotHelpText
         } else if(auxView === 'neighbors'){
           htext = HelpTexts.simHelpText;
         }
+
         return (<>
           {Utils.makeStateToggles(auxViewOptions,auxView,setAuxView,auxViewLabels)}
           <HelpText key={auxView} text={htext}/>
@@ -453,7 +458,7 @@ export default function AuxillaryViews(props){
         }
     },[props,auxView])
 
-    return (
+    return ( 
             <div className={'fillSpace'} ref={container}>
             <div style={{'height':'2.5em','width':'100%'}}>
                 {outcomeToggle()}

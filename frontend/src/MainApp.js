@@ -1,9 +1,20 @@
-import React, {useEffect, useState, useMemo} from 'react';
+import React, {useEffect, useState, useMemo, useRef, Fragment} from 'react';
 // import React from 'react';
 import './App.css';
 
 // 1. import `ChakraProvider` component
 import { ChakraProvider, Grid, GridItem,  Button, ButtonGroup, Spinner} from '@chakra-ui/react';
+import {
+  Drawer,
+  DrawerBody,
+  DrawerFooter,
+  DrawerHeader,
+  DrawerOverlay,
+  DrawerContent,
+  DrawerCloseButton,
+} from '@chakra-ui/react'
+
+import { FaChevronRight } from "react-icons/fa";
 
 import DataService from './modules/DataService';
 import Utils from './modules/Utils';
@@ -97,6 +108,8 @@ function MainApp({authToken,setAuthToken}) {
   const [outcomesView, setOutcomesView] = useState('no dlts');
 
   const [cursor, setCursor] = useState('default');
+
+  const [userPanelHidden,setUserPanelHidden] = useState(false);
 
   function queDefaultPatient(){
     let newQ = Object.assign({},defaultPatient);
@@ -445,13 +458,32 @@ function MainApp({authToken,setAuthToken}) {
     )
   }
 
-
+  const [userPanelOpen,setUserPanelOpen] = useState(true);
+  const panelRef = useRef();
+  //patientDrawer
   function makeThing(){
     return (
+      <Fragment style={{'width':'100%','cursor':cursor}}>
+      <button
+        onClick={()=>setUserPanelOpen(true)}
+        style={{'width':'1em','height':'100%','top':'50%','padding':'0em','margin':'0em','backgroundColor':'grey'}}
+      ><FaChevronRight /></button>
+      <Drawer
+       isOpen={userPanelOpen}
+       placement={'left'}
+       finalFocusRef={panelRef}
+       onClose={()=>setUserPanelOpen(false)}
+       w={"100%"}
+       style={{'cursor':cursor}}
+      >
+      <DrawerOverlay style={{'cursor':cursor}}/>
+      <DrawerContent style={{'cursor':cursor+'!important'}}>
+        <DrawerCloseButton/>
         <Grid
         templateRows='1.4em 1fr 10em 2em'
         templateColumns='1fr 1fr'
         className={'fillSpace'}
+        style={{'cursor':cursor}}
 
       >
         <GridItem colSpan={2} rowSpan={1} className={'title'}>
@@ -550,16 +582,19 @@ function MainApp({authToken,setAuthToken}) {
         </GridItem>
 
       </Grid>
+      </DrawerContent>
+      </Drawer>
+      </Fragment>
     )
   }
 
   return (
-    <ChakraProvider>
+    <ChakraProvider style={{'cursor':cursor}}>
       <Grid
         h='99%'
         w='100%'
         templateRows='2em repeat(2,1fr)'
-        templateColumns='max(25vw, 15em) max(32vw, 15em) repeat(2,1fr) 1em'
+        templateColumns='1em max(25vw, 20em) repeat(2,1fr) max(35vw,25em)'
         gap={1}
         style={{'cursor':cursor}}
       >
@@ -651,7 +686,36 @@ function MainApp({authToken,setAuthToken}) {
             
           </Grid>
         </GridItem>
-        
+        <GridItem  rowSpan={3} colSpan={1}>
+              <AuxillaryViews
+                cohortData={cohortData}
+                cohortEmbeddings={cohortEmbeddings}
+                currState={currState}
+                setCurrState={setCurrState}
+                patientFeatures={patientFeatures}
+                currEmbeddings={currEmbeddings}
+                modelOutput={modelOutput}
+                simulation={simulation}
+                getSimulation={getSimulation}
+                patientEmbeddingLoading={patientEmbeddingLoading}
+                patientSimLoading={patientSimLoading}
+                cohortLoading={cohortLoading}
+                cohortEmbeddingsLoading={cohortEmbeddingsLoading}
+                fixedDecisions={fixedDecisions}
+                
+                updatePatient={updatePatient}
+    
+                brushedId={brushedId}
+                setBrushedId={setBrushedId}
+
+                defaultPredictions={defaultPredictions}
+                dltSvgPaths={dltSvgPaths}
+                lnSvgPaths={lnSvgPaths}
+                subsiteSvgPaths={subsiteSvgPaths}
+                defaultView={'neighbors'}
+                showToggle={false}
+              ></AuxillaryViews>
+            </GridItem>
       </Grid>
     </ChakraProvider>
   );
