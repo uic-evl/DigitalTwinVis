@@ -463,7 +463,7 @@ function MainApp({authToken,setAuthToken}) {
   //patientDrawer
   function makeThing(){
     return (
-      <Fragment style={{'width':'100%','cursor':cursor}}>
+      <Fragment>
       <button
         onClick={()=>setUserPanelOpen(true)}
         style={{'width':'1em','height':'100%','top':'50%','padding':'0em','margin':'0em','backgroundColor':'grey'}}
@@ -589,7 +589,7 @@ function MainApp({authToken,setAuthToken}) {
   }
 
   return (
-    <ChakraProvider style={{'cursor':cursor}}>
+    <ChakraProvider >
       <Grid
         h='99%'
         w='100%'

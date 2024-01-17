@@ -24,7 +24,7 @@ export default function OutcomeContainer(props){
     }
 
     const data = useMemo(()=>{
-      if(Utils.allValid([props.simulation,props.cohortData,props.currEmbeddings])){
+      if(Utils.allValid([props.simulation,props.cohortData,props.currEmbeddings,props.cohortEmbeddings])){
         let decision = Utils.getDecision(props.fixedDecisions,props.currState,props.getSimulation);
         if(decision == undefined){return (<Spinner/>)}
         const dString = constants.DECISIONS[props.currState];
