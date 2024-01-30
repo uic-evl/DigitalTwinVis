@@ -590,6 +590,9 @@ function MainApp({authToken,setAuthToken}) {
 
   return (
     <ChakraProvider >
+      <div style={{'position':'absolute','width': '100vw','height':'100vh','opacity': .5, 'display': cursor == 'default'? 'none':'','background-color':'white','zIndex':1000000000000000000}}>
+        <Spinner size={'xl'}></Spinner>
+      </div>
       <Grid
         h='99%'
         w='100%'
@@ -598,6 +601,7 @@ function MainApp({authToken,setAuthToken}) {
         gap={1}
         style={{'cursor':cursor}}
       >
+
         <GridItem rowSpan={1} colSpan={6} className={'shadow'}>
           {makeButtonToggle()}
         </GridItem>
