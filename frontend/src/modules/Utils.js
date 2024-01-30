@@ -71,11 +71,13 @@ export default class Utils {
                 .replace('_1','=1')
                 .replace('_2','=2')
                 .replace('_3','=3')
-                .replace('_4','=4');
+                .replace('_4','=4')
+                .replace('_ipsi',' (Ipsilateral)')
+                .replace('_contra',' (Contralateral)');
             newText = this.getVarDisplayName(newText);
-            if(newText.includes('ipsi') | newText.includes('contra')){
-                newText += '(LN)'
-            }
+            // if(newText.includes('ipsi') | newText.includes('contra')){
+            //     newText += '(LN)'
+            // }
         }
         return newText
     }

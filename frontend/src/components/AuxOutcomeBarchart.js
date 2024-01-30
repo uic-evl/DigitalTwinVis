@@ -271,7 +271,7 @@ export default function AuxOutcomeBarchart(props){
                 .attr('textLength',d=>(d.name.length)*(.5*d.fontSize) >= d.maxWidth? d.maxWidth:'')
                 .text(d=>d.name);
 
-            
+            barNotes.raise();
 
         }
     },[props.sim,props.altSim,props.neighbors,props.cfs,props.currState,svg,settings])

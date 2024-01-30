@@ -49,6 +49,7 @@ export default function DLTisD3(props){
                 }
             }
 
+            let ttipString = 'Dose Limiting Toxicities:</br>';
             for(const [name,entry] of Object.entries(props.dltSvgPaths)){
                 let val = getDlt(name);
                 let objEntry = {
@@ -57,6 +58,7 @@ export default function DLTisD3(props){
                     'val': val,
                     'style': entry.style,
                 }
+                ttipString += val !== undefined? name + ': ' + (100*val).toFixed(0) + '% </br>': '';
                 pathData.push(objEntry);
             }
             svg.selectAll('.dltOutline').remove();
@@ -78,13 +80,24 @@ export default function DLTisD3(props){
                 }).on('mouseout', function(e){
                     tTip.html('')
                     Utils.hideTTip(tTip);
-                });;;
+                });
 
             let box = svg.node().getBBox();
             let translate = 'translate(' + (-box.x)*(width/box.width)  + ',' + (-box.y)*(height/box.height) + ')'
             let scale = 'scale(' + (width/box.width) + ',' + (height/box.height) + ')';
             let transform = translate + ' ' + scale
             svg.selectAll('g').attr('transform',transform);
+                
+            svg.on('mouseover',function(e,d){
+                    let string = ttipString;
+                    tTip.html(string);
+                }).on('mousemove', function(e){
+                    Utils.moveTTipEvent(tTip,e);
+                }).on('mouseout', function(e){
+                    tTip.html('')
+                    Utils.hideTTip(tTip);
+                });
+
 
         }
     },[svg,props.dltSvgPaths,props.data,props.currState]);

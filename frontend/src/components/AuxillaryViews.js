@@ -153,6 +153,7 @@ export default function AuxillaryViews(props){
           const nWidth = thingHeight;
           const titleWidth = thingHeight/2;
           const encodedRef = encodePatient(props.patientFeatures);
+          const fixWidth = v => props.currState == 0? v: v- (dltWidth/6);
         //   const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
           function makeN(d,i,showTicks,bottomBorder=true,name=undefined){
             const borderColor = d[dString] > .5? constants.knnColor: constants.knnColorNo;
@@ -191,7 +192,7 @@ export default function AuxillaryViews(props){
             const viewSize = 'calc(100% - ' + headerSize + ' - 10px)';
             const headerStyle = {'width':'100%','height':headerSize};
             const viewStyle   = {'width':'100%','height':viewSize,'marginTop':'10px'}
-            const componentStyle = w => {return {'margin':0,'width': w,'height':'100%','display':'inline-block','verticalAlign':'top'}}
+            const componentStyle = w => {return {'margin':0,'width': fixWidth(w),'height':'100%','display':'inline-block','verticalAlign':'top'}}
             return (
             <div key={d.id+'-'+i+props.currState} 
                style={{'margin':'.2em','height': thingHeight,
@@ -203,10 +204,10 @@ export default function AuxillaryViews(props){
               }}
               onClick={()=>brush()}
               >
-              <div className={'toggleButtonLabel'} style={{'display':'inline-flex','width': titleWidth,'fontSize':14,'height':'100%','justifyContent':'center','alignItems':'center'}}>
+              <div className={'toggleButtonLabel'} style={{'display':'inline-flex','width': fixWidth(titleWidth),'fontSize':14,'height':'100%','justifyContent':'center','alignItems':'center'}}>
                 {name}
               </div>
-              {/* <div style={componentStyle(dltWidth)}>
+              {props.currState > 0? (<div style={componentStyle(dltWidth)}>
                 <div  className={'title'} style={headerStyle}>{"DLTs"}</div>
                 <div style={viewStyle}>
                   <DLTVisD3
@@ -217,7 +218,7 @@ export default function AuxillaryViews(props){
                   />
                 </div>
                 
-              </div> */}
+              </div>) : <></>}
               <div style={componentStyle(lnWidth)}>
                 <div  className={'title'} style={headerStyle}>{"LN"}</div>
                 <div style={viewStyle}>

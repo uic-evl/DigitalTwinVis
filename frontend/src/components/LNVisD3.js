@@ -106,9 +106,9 @@ export default function LNVisD3(props){
                     pFeatures[d.name] = newVal;
                     props.setFeatureQue(pFeatures)
                 }).on('mouseover',function(e,d){
-                    let string = d.name + ': ' + (100*d.value).toFixed(0) + '%';
+                    let string = Utils.getFeatureDisplayName(d.name) + ': ' + (100*d.value).toFixed(0) + '%';
                     if(useAttention){
-                        string = d.name + '</br>'
+                        string = 'Region ' + Utils.getFeatureDisplayName(d.name) + '</br>'
                         + 'attribution: '+ (100*d.attention).toFixed(3) + '%</br>'
                         + 'current value:' + d.value + '</br>'
                         + 'queued value:' + d.queVal;

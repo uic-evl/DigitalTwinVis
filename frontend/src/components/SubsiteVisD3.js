@@ -119,7 +119,7 @@ export default function SubsiteVisD3(props){
                 .attr('cursor',d=>d.usable? 'pointer':'')
                 .on('mouseover',function(e,d){
                     if(!d.usable | d.plotValue === undefined){ return }
-                    let string = d.name + ' ' + Boolean(d.plotValue);
+                    let string = d.name + ' ' + (100*d.plotValue).toFixed(0) + '%';
                     if(useAttention){
                         let att = d.attribution === undefined? 0: d.attribution;
                         string += '</br> Attribution: ' + (100*att).toFixed(2) + '%';
