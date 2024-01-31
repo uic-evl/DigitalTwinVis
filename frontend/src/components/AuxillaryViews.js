@@ -464,7 +464,7 @@ export default function AuxillaryViews(props){
             <div style={{'height':'2.5em','width':'100%'}}>
                 {outcomeToggle()}
             </div>
-            <div style={{'height':'calc(100% - 2.15em)','width':'100%'}}>
+            <div style={{'height':'calc(100% - 2.6em)','width':'100%'}}>
                 {currView}
             </div>
             </div>

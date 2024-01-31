@@ -6,10 +6,8 @@ import './App.css';
 import { ChakraProvider, Grid, GridItem,  Button, ButtonGroup, Spinner} from '@chakra-ui/react';
 import {
   Drawer,
-  DrawerBody,
-  DrawerFooter,
-  DrawerHeader,
   DrawerOverlay,
+  DrawerBody,
   DrawerContent,
   DrawerCloseButton,
 } from '@chakra-ui/react'
@@ -473,17 +471,17 @@ function MainApp({authToken,setAuthToken}) {
        placement={'left'}
        finalFocusRef={panelRef}
        onClose={()=>setUserPanelOpen(false)}
-       w={"100%"}
-       style={{'cursor':cursor}}
+       style={{'cursor':cursor,'height':'100%'}}
       >
       <DrawerOverlay style={{'cursor':cursor}}/>
-      <DrawerContent style={{'cursor':cursor+'!important'}}>
+      <DrawerContent w={'30%'} maxW={'30%'} minW={'10em'} h={'calc(100% - 2em)'}>
+        <DrawerBody>
         <DrawerCloseButton/>
         <Grid
         templateRows='1.4em 1fr 10em 2em'
         templateColumns='1fr 1fr'
         className={'fillSpace'}
-        style={{'cursor':cursor}}
+        style={{'cursor':cursor,'height':'10em'}}
 
       >
         <GridItem colSpan={2} rowSpan={1} className={'title'}>
@@ -582,19 +580,19 @@ function MainApp({authToken,setAuthToken}) {
         </GridItem>
 
       </Grid>
-      </DrawerContent>
+      </DrawerBody></DrawerContent>
       </Drawer>
       </Fragment>
     )
   }
 
   return (
-    <ChakraProvider >
+    <ChakraProvider style={{'height':'50%'}}>
       <div style={{'position':'absolute','width': '100vw','height':'100vh','opacity': .5, 'display': cursor == 'default'? 'none':'','background-color':'white','zIndex':1000000000000000000}}>
         <Spinner size={'xl'}></Spinner>
       </div>
       <Grid
-        h='99%'
+        h='calc(100% - 3em)'
         w='100%'
         templateRows='2em repeat(2,1fr)'
         templateColumns='1em max(25vw, 20em) repeat(2,1fr) max(35vw,25em)'
