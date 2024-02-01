@@ -141,6 +141,38 @@ class SimulatorAttentionBase(SimulatorBase):
         self.memory= newmemory
 
 # +
+    
+class ClusterImputer(SimulatorBase):
+    def __init__(self,
+                 input_size,
+                 output_clusters=1,
+                 n_clusters=3,
+                 hidden_layers = [100,100],
+                 dropout = 0.3,
+                 input_dropout=0,
+                 state = 0,
+                 **kwargs
+                ):
+        #predicts disease state (sd, pr, cr) for primar and nodal, then dose modications or cc type (depending on state), and [dlt ratings]
+        super().__init__(input_size,hidden_layers=hidden_layers,dropout=dropout,input_dropout=input_dropout,state=0,**kwargs)
+        self.n_clusters = n_clusters
+        self.n_outputs = output_clusters
+        final_dim = hidden_layers[-1]
+        self.final_layers = torch.nn.ModuleList([torch.nn.Linear(final_dim,n_clusters) for i in range(output_clusters)])
+
+   
+    def get_output(self,xin,**kwargs):
+        x = self.normalize(xin)
+        x = self.input_dropout(x)
+        for layer in self.layers:
+            x = layer(x)
+        x = self.dropout(x)
+        xlist = [self.softmax(layer(x)) for layer in self.final_layers]
+        return xlist
+    
+    def forward(self,x,**kwargs):
+        return self.get_output(x)
+    
 class OutcomeSimulator(SimulatorBase):
     
     def __init__(self,
@@ -215,7 +247,7 @@ class OutcomeSimulator(SimulatorBase):
     
     def forward(self,x,**kwargs):
         return self.get_output(x)
-    
+
 class BayesianOutcomeSimulator(OutcomeSimulator):
 
     def quantile(self,xlist,q,from_ll=False):
