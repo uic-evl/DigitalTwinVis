@@ -69,8 +69,9 @@ export default function AuxOutcomeBarchart(props){
         const outcomeGroups = settings.omap;
         const timePoints = settings.tp;
         if(!Utils.allValid([svg,props.sim,props.altSim,props.neighbors,props.cfs,timePoints,outcomeGroups])){
-            console.log('not valid stuff in outcomeplots',props,timePoints,outcomeGroups);
-        }else{
+            // console.log('not valid stuff in outcomeplots',props,timePoints,outcomeGroups);
+        }
+        else{
             
             const sim = props.sim;
             const altSim = props.altSim;

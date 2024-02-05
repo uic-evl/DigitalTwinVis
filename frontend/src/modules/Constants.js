@@ -85,7 +85,7 @@ export const inductionModifications = [
         'unknown'
 ]
 
-export const validSubsites = ['GPS','BOT','NOS','Pharyngeal_wall','Tonsil','Soft palate'];
+export const validSubsites = ['GPS','NOS','BOT','Pharyngeal_wall','Tonsil','Soft palate'];
 
 export const noColor = '#af8dc3';
 export const yesColor = '#7fbf7b';

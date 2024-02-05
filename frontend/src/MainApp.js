@@ -267,6 +267,9 @@ function MainApp({authToken,setAuthToken}) {
   useEffect(()=>{
     fetch('subsite_diagrams.json').then(paths=>{
       paths.json().then(data=>{
+        //quick hack to make the outline the NOS subsite instead
+        data['NOS'] = ''+data['outline'];
+        delete data['outline'];
         setSubsiteSvgPaths(data);
       })
     })
@@ -588,7 +591,7 @@ function MainApp({authToken,setAuthToken}) {
 
   return (
     <ChakraProvider style={{'height':'50%'}}>
-      <div style={{'position':'absolute','width': '100vw','height':'100vh','opacity': .5, 'display': cursor == 'default'? 'none':'','background-color':'white','zIndex':1000000000000000000}}>
+      <div style={{'position':'absolute','width': '100vw','height':'100vh','opacity': .5, 'display': cursor == 'default'? 'none':'','backgroundColor':'white','zIndex':1000000000000000000}}>
         <Spinner size={'xl'}></Spinner>
       </div>
       <Grid

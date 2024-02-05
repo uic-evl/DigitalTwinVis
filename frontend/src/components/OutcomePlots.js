@@ -193,10 +193,10 @@ export default function OutcomePlots(props){
 
             function getOpacity(d){
                 return .8;
-                if(!isTreatment(d)){
-                    return 1;
-                }
-                return .5;
+                // if(!isTreatment(d)){
+                //     return 1;
+                // }
+                // return .5;
             }
 
             const rects = svg.selectAll('.rect').data(rectData,d=> d.name + d.model);

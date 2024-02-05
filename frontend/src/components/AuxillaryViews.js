@@ -72,42 +72,6 @@ export default function AuxillaryViews(props){
       return values;
   }
 
-  // function getNeighbors(decision,currEmbeddings,currState,cohortData){
-  //   const dString = constants.DECISIONS[currState];
-  //   const getNeighbor = id => encodePatient(Object.assign({},cohortData[id+'']));
-  //   var neighbors = [];
-  //   var cfs = [];
-  //   for(let i in currEmbeddings.neighbors){
-  //     var id = currEmbeddings.neighbors[i];
-  //     var sim = currEmbeddings.similarities[i];
-  //     var nData = getNeighbor(id);
-  //     nData.id = id;
-  //     nData.similarity = sim;
-  //     nData.decision = nData[dString];
-  //     var isCf = nData[dString] !== decision;
-  //     nData.isCf = isCf;
-  //     const maxCfs = cfs.length >= nToShow;
-  //     const maxN = neighbors.length >= nToShow;
-  //     if(!maxCfs & isCf){
-  //       cfs.push(nData);
-  //     } else if(!maxN & !isCf){
-  //       neighbors.push(nData);
-  //     }
-  //     if((cfs.length >= nToShow) & (neighbors.length >= nToShow)){
-  //       break
-  //     }
-  //   }
-  //   return [neighbors, cfs]
-  // }
-
- 
-  // if(Utils.allValid([props.simulation,props.cohortData,props.currEmbeddings,props.cohortEmbeddings])){
-  //   let decision = Utils.getDecision(props.fixedDecisions,props.currState,props.getSimulation);
-  //   const dString = constants.DECISIONS[props.currState];
-  //   var neighborsToShow = 20;
-  //   const [sim,altSim] = props.getSimulation(true);
-  //   const [neighbors,cfs,caliperVal] = Utils.getTreatmentGroups(sim,props.currEmbeddings,props.cohortData,props.currState,props.cohortEmbeddings);
-
     function makeNeighborView(props){
         if(Utils.allValid([props.currEmbeddings,props.cohortData,props.simulation,props.cohortEmbeddings])){
         const getSimulation = props.getSimulation;

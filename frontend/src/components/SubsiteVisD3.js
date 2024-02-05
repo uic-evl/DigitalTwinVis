@@ -20,17 +20,16 @@ export default function SubsiteVisD3(props){
         return string;
     }
 
-
+    //so this originall had outline but I just replace it with NOS in post so some code my have weird filters for the nonexistant outline plot for now
     // const toDraw = constants.validSubsites.concat(['outline']);
     useEffect(()=>{
         if(Utils.allValid([svg,props.subsiteSvgPaths,props.data])){
             let pathData = [];
             const data = props.data;
-
             var getColor = d3.interpolateGreys;
             var  getFill = (d) => {
                 if(d.name === 'outline'){
-                    return 'none'
+                    return 'none';
                 }
                 if(!d.usable){
                     return 'none'
@@ -56,7 +55,7 @@ export default function SubsiteVisD3(props){
                         getAttribution = key => attributions.baseline['subsite_'+key];
                         getFill = d => {
                             if(d.name === 'outline'){
-                                return 'none'
+                                return props.data.subsite_NOS? 'grey': 'none';
                             }
                             if(!d.usable){
                                 return 'none'
@@ -92,8 +91,9 @@ export default function SubsiteVisD3(props){
                     'queVal': queVal,
                     'plotValue': plotVal,
                     'attribution': getAttribution(key),
-                    'usable': constants.validSubsites.indexOf(key) > -1
+                    'usable': constants.validSubsites.indexOf(key) > -1,
                 }
+                entry.raise = entry.usable && entry.name !== 'NOS';
                 pathData.push(entry)
             }
             
@@ -109,7 +109,7 @@ export default function SubsiteVisD3(props){
             outlineGroup.selectAll('.subsiteOutline')
                 .data(pathData).enter()
                 .append('path')
-                .attr('class',d=> d.name === 'outline'? 'subsiteOutline': 'subsiteOutline usable')
+                .attr('class',d=> d.name === 'NOS'? 'subsiteOutline': 'subsiteOutline usable')
                 .attr('id',d=>'subsite'+d.name)
                 .attr('d',d=>d.path)
                 .attr('stroke','black')
