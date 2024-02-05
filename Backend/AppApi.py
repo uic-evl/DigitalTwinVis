@@ -237,6 +237,7 @@ def get_embedding_df(dataset,dm,states=[0,1,2],pcas=None,**kwargs):
 def get_default_input(dataset,state=0,ids=None):
     output = get_decision_input(dataset,state=state,ids=ids)
     output = [o.median().to_dict() for o in output]
+    output = [{k: (0 if '_ipsi' in k or '_contra' in k else v) for k,v in output[0].items()}]
     return output
 
 def format_patient(dataset,input_dict):

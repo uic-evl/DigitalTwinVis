@@ -49,7 +49,7 @@ export default function PatientEditor(props){
     const allVars = Object.keys(ordinalVars)
     .concat(continuousVars)
     .concat(booleanVars)
-    .concat(getProgressionVars(props.currState));
+    .concat(getProgressionVars(2));//replace with props.currState inside funciton to make conditional setting of disease response
     // .concat(['placeholder'])
     // .concat(constants.DECISIONS);
     // .concat(['placeholder2'])

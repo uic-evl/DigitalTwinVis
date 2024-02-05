@@ -98,7 +98,7 @@ export default function SurvivalPlots(props){
                 for(let time of times){
                     // const nAbove = nList.filter(d => d[name] >= time);
                     //patient who are either censored or died later (basically we assume alive)
-                    const nAbove = nList.filter(d => d[name] >= time || d[censorVar] > .5);
+                    const nAbove = nList.filter(d => d[name] > time || d[censorVar] > .5);
                     let pctAbove = nAbove.length/nList.length;
                     pcts.push(pctAbove);
                     let cx = xScale(time);

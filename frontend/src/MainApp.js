@@ -82,7 +82,7 @@ function MainApp({authToken,setAuthToken}) {
   const [cohortData,setCohortData] = useState(localStorage.getItem('cohortData') !== null? JSON.parse(localStorage.getItem('cohortData')) : undefined);
   const [cohortEmbeddings, setCohortEmbeddings] = useState();
   const [fixedDecisions,setFixedDecisions] = useState([-1,-1,-1]);//-1 is not fixed ,0 is no, 1 is yes
-  const [modelOutput,setModelOutput] = useState('optimal');
+  const [modelOutput,setModelOutput] = useState('imitation');
   const [currState, setCurrState] = useState(0);//0-2
 
   const [cohortPredictions,setCohortPredictions] = useState();

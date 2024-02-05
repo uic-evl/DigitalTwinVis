@@ -10,6 +10,7 @@ import DLTVisD3 from './DLTVisD3';
 import SubsiteVisD3 from './SubsiteVisD3.js';
 import AttributionLegend from './AttributionLegend.js';
 import SurvivalPlots from './SurvivalPlots.js';
+import ClusterVisD3 from './ClusterVisD3.js';
 import {Spinner} from '@chakra-ui/react';
 
 import * as HelpTexts from '../modules/Text';
@@ -20,7 +21,7 @@ export default function AuxillaryViews(props){
     const container = useRef();
 
     const auxViewOptions = ['attributions','neighbors','scatterplot'];
-    const auxViewLabels =['Feature Importance','Similar Patients','Scatterplot']
+    const auxViewLabels =['Feature Importance','Clusters','Scatterplot']
     // const auxViewOptions = ['survival','attributions','neighbors','scatterplot'];
     // const auxViewLabels =['Survival','Feature Importance','Similar Patients','Scatterplot']
     const [auxView,setAuxView] = useState(props.defaultView? props.defaultView:'attributions');
@@ -71,48 +72,60 @@ export default function AuxillaryViews(props){
       return values;
   }
 
-  function getNeighbors(decision,currEmbeddings,currState,cohortData,nToShow){
-    
-    const dString = constants.DECISIONS[currState];
-    const getNeighbor = id => encodePatient(Object.assign({},cohortData[id+'']));
-    var neighbors = [];
-    var cfs = [];
-    for(let i in currEmbeddings.neighbors){
-      var id = currEmbeddings.neighbors[i];
-      var sim = currEmbeddings.similarities[i];
-      var nData = getNeighbor(id);
-      nData.id = id;
-      nData.similarity = sim;
-      nData.decision = nData[dString];
-      var isCf = nData[dString] !== decision;
-      nData.isCf = isCf;
-      const maxCfs = cfs.length >= nToShow;
-      const maxN = neighbors.length >= nToShow;
-      if(!maxCfs & isCf){
-        cfs.push(nData);
-      } else if(!maxN & !isCf){
-        neighbors.push(nData);
-      }
-      if((cfs.length >= nToShow) & (neighbors.length >= nToShow)){
-        break
-      }
-    }
-    return [neighbors, cfs]
-  }
+  // function getNeighbors(decision,currEmbeddings,currState,cohortData){
+  //   const dString = constants.DECISIONS[currState];
+  //   const getNeighbor = id => encodePatient(Object.assign({},cohortData[id+'']));
+  //   var neighbors = [];
+  //   var cfs = [];
+  //   for(let i in currEmbeddings.neighbors){
+  //     var id = currEmbeddings.neighbors[i];
+  //     var sim = currEmbeddings.similarities[i];
+  //     var nData = getNeighbor(id);
+  //     nData.id = id;
+  //     nData.similarity = sim;
+  //     nData.decision = nData[dString];
+  //     var isCf = nData[dString] !== decision;
+  //     nData.isCf = isCf;
+  //     const maxCfs = cfs.length >= nToShow;
+  //     const maxN = neighbors.length >= nToShow;
+  //     if(!maxCfs & isCf){
+  //       cfs.push(nData);
+  //     } else if(!maxN & !isCf){
+  //       neighbors.push(nData);
+  //     }
+  //     if((cfs.length >= nToShow) & (neighbors.length >= nToShow)){
+  //       break
+  //     }
+  //   }
+  //   return [neighbors, cfs]
+  // }
 
  
+  // if(Utils.allValid([props.simulation,props.cohortData,props.currEmbeddings,props.cohortEmbeddings])){
+  //   let decision = Utils.getDecision(props.fixedDecisions,props.currState,props.getSimulation);
+  //   const dString = constants.DECISIONS[props.currState];
+  //   var neighborsToShow = 20;
+  //   const [sim,altSim] = props.getSimulation(true);
+  //   const [neighbors,cfs,caliperVal] = Utils.getTreatmentGroups(sim,props.currEmbeddings,props.cohortData,props.currState,props.cohortEmbeddings);
 
-    function makeNeighborView(currEmbeddings,currState,cohortData,simulation,fixedDecisions,brushedId){
-        if(Utils.allValid([currEmbeddings,cohortData,simulation])){
+    function makeNeighborView(props){
+        if(Utils.allValid([props.currEmbeddings,props.cohortData,props.simulation,props.cohortEmbeddings])){
         const getSimulation = props.getSimulation;
         const dltSvgPaths=props.dltSvgPaths;
         const subsiteSvgPaths=props.subsiteSvgPaths;
         const lnSvgPaths=props.lnSvgPaths;
-      
+        const currState = props.currState;
+        const cohortData = props.cohortData;
+        const fixedDecisions = props.fixedDecisions;
+        const brushedId = props.brushedId;
         let decision = Utils.getDecision(fixedDecisions,currState,getSimulation);
         const dString = constants.DECISIONS[currState];
         var neighborsToShow = 10;
-        const [neighbors,cfs] = getNeighbors(decision,currEmbeddings,currState,cohortData,neighborsToShow);
+        const [sim,altSim] = props.getSimulation(true);
+
+        const [neighbors,cfs,caliperVal] = Utils.getTreatmentGroups(sim,props.currEmbeddings,props.cohortData,props.currState,props.cohortEmbeddings);
+        console.log(neighbors);
+        // const [neighbors,cfs] = getNeighbors(decision,currEmbeddings,currState,cohortData,neighborsToShow);
 
     
           const dname = constants.DECISIONS_SHORT[props.currState];
@@ -399,7 +412,7 @@ export default function AuxillaryViews(props){
       }
 
     function makeSurvivalPlot(props){
-      if(Utils.allValid([props.simulation,props.cohortData,props.currEmbeddings])){
+      if(Utils.allValid([props.simulation,props.cohortData,props.currEmbeddings,props.cohortEmbeddings])){
         let decision = Utils.getDecision(props.fixedDecisions,props.currState,props.getSimulation);
         const dString = constants.DECISIONS[props.currState];
         var neighborsToShow = 20;
@@ -426,6 +439,18 @@ export default function AuxillaryViews(props){
 
     }
 
+    function makeClusterPlot(props){
+
+      if(Utils.allValid([props.cohortData,props.simulation,props.currEmbeddings])){
+        return <ClusterVisD3
+          {...props}
+        ></ClusterVisD3>
+      } else{
+        return (<Spinner/>)
+      }
+      
+    }
+
       function outcomeToggle(){
         if(!showToggle){
           return <p className="title">{Utils.getVarDisplayName(auxView)}</p>
@@ -446,13 +471,16 @@ export default function AuxillaryViews(props){
       const currView = useMemo(()=>{
         switch(auxView){
             case 'neighbors':
-                return makeNeighborView(props.currEmbeddings,props.currState,props.cohortData,props.simulation,props.fixedDecisions,props.modelOutput,props.brushedId);
+                return makeNeighborView(props);
                 break;
             case 'scatterplot':
                 return makeScatterplot(props);
                 break;
             case 'survival':
               return makeSurvivalPlot(props);
+              break;
+            case 'clusters':
+              return makeClusterPlot(props);
               break;
             default:
                 return makeAttributionPlot(props);

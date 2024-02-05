@@ -109,8 +109,8 @@ export default function AuxOutcomeBarchart(props){
                             let censorVar = constants.censorVars[varIdx];
                             let kval = survivalCurves[varName][tIdx];
                             let altval = altCurves[varName][tIdx];
-                            let nPct = props.neighbors.filter(d => d[censorVar] > 0  && d[varName] > times[tIdx]).length/props.neighbors.length;
-                            let cfPct = props.cfs.filter(d => d[censorVar] > 0  || d[varName] > times[tIdx]).length/props.cfs.length;
+                            let nPct = props.neighbors.filter(d => d[censorVar] > .5  || d[varName] > times[tIdx]).length/props.neighbors.length;
+                            let cfPct = props.cfs.filter(d => d[censorVar] > .5  || d[varName] > times[tIdx]).length/props.cfs.length;
                             let stuff = [kval,altval,nPct,cfPct];
                             const startX = currX;
                             for(let ii in stuff){
@@ -147,8 +147,8 @@ export default function AuxOutcomeBarchart(props){
                         let vPos = varList.indexOf(varName);
                         const kval = simVals[vPos];
                         const altval = altVals[vPos];
-                        const nPct = Utils.mean(props.neighbors.map(d=>d[varName]));
-                        const cfPct = Utils.mean(props.cfs.map(d=>d[varName]));
+                        const nPct = Utils.mean(props.neighbors.map(d=>parseFloat(d[varName])));
+                        const cfPct = Utils.mean(props.cfs.map(d=>parseFloat(d[varName])));
                         let stuff = [kval,altval,nPct,cfPct];
 
                         const confI = [sim[k+'_5%'][vPos],sim[k+'_95%'][vPos]];

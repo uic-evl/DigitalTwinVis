@@ -20,16 +20,15 @@ export default function ModelLegend(props){
         var decisionName = constants.DECISIONS_SHORT[props.state];
         var legendData = [];
         let lBarHeight = (height - topMargin - bottomMargin - spacing)/2;
-        for(let model of ['model','neighbors']){
+        for(let model of ['model','Similar Patients']){
             for(let treated of [true,false]){
                 let color = treated? constants.dnnColor: constants.dnnColorNo;
                 let xPos = model === 'model'? xMargin: width/2;
                 let yPos = treated? topMargin: topMargin + lBarHeight + spacing;
-                if( model === 'neighbors'){
+                if( model === 'Similar Patients'){
                     color = treated? constants.knnColor: constants.knnColorNo;
                 }
-                let text = decisionName + ' (' + model + ' pred.)';
-                text = treated? text: 'No '+text;
+                let text = 'Prediction for ' + (treated? '': 'No ') + decisionName + ' (' + model + ')';
                 let strokeWidth = treated? 0: 1;
                 let entry = {
                     'fill': color,

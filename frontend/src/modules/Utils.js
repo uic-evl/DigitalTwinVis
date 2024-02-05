@@ -450,7 +450,9 @@ export default class Utils {
 
         const currDecision = sim.currDecision;
         const propensity = sim['propensity'+(currState+1)];
-        const getNeighbor = id => Object.assign(Object.assign({},cohortData[id+'']),cohortEmbeddings[id+'']);
+
+        //compiles all the data from the joint {'id': id, 'similarity': similarity_score} object in allNeighbors with cohortData and cohortEmbeddings items
+        const getNeighbor = p => Object.assign(Object.assign(Object.assign({},cohortData[p.id+'']),cohortEmbeddings[p.id+'']),p);
     
         var neighbors= [];
         var cfs = [];
@@ -465,18 +467,23 @@ export default class Utils {
         const caliperDist = Utils.std(logits);
         var cScale = .1;
         const cIncrement = .1;
-        var allNeighbors = currEmbeddings.neighbors.map(i=>i);
+
+        //get the ID and similarity score from the embeddings
+        var allNeighbors = currEmbeddings.neighbors.map((i,idx)=> {return {'id': i, 'similarity': currEmbeddings.similarities[idx]};});
+        
         //only update number of counts on each iteratio so we use the whole group to get a more specific outcome mean
         var nCount = 0;
         var cfCount = 0;
         //add people until we have enough of each group or we are down to like 5 people in the neighbors
         while((cfs.length < minN || neighbors.length < minN) && allNeighbors.length && cScale < 1){
-        const valid = allNeighbors.filter(nId=> Math.abs(propensity - getPropensity(nId)) <=  caliperDist*cScale);
-        allNeighbors = allNeighbors.filter(v => valid.indexOf(v) < 0);
+        const valid = allNeighbors.filter(nId=> Math.abs(propensity - getPropensity(nId.id)) <=  caliperDist*cScale);
+        allNeighbors = allNeighbors.filter(v => valid.indexOf(v.id) < 0);
         const patients = valid.map(getNeighbor);
         for(let p of patients){
             const prediction = p[constants.DECISIONS[currState]];
             //add patient if we didn't get enough on the last loop
+            p = Object.assign({},p);
+            
             if(prediction === currDecision && nCount < minN){
             neighbors.push(p);
             } else if(cfCount < minN){

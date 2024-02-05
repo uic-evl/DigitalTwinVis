@@ -17,11 +17,24 @@ export default function LNVisD3(props){
 
     const getStrokeWidth = (d)=>{
         if(d.name === 'outline'){ return 3;}
-        //nochange or que is empt for this node
-        if(d.value === d.queVal | d.queVal < 0){ return .1; }
-        return 2;
+        if(d.value !== d.queVal && d.queVal !== -1){
+            return d.queVal > 0? 8: 8;
+        }
+        if(d.value > 0){ return 1.5}
+        return .1;
+        // //nochange or que is empt for this node
+        // if(d.value === d.queVal | d.queVal < 0){ return .1; }
+        // return 2;
     }
 
+    const getStrokeColor = (d) =>{
+        if(d.name === 'outline'){return 'black';}
+        if(d.value !== d.queVal && d.queVal !== -1){
+            return d.queVal > 0? 'black': 'blue';
+        }
+        if(d.value > 0){ return 'grey';}
+        return 'white';
+    }
     useEffect(()=>{
         if(Utils.allValid([svg,props.lnSvgPaths,props.data])){
             let getColorVal = (name,d) => {
@@ -94,7 +107,7 @@ export default function LNVisD3(props){
                 .data(pathData).enter()
                 .append('path').attr('class','lnOutline')
                 .attr('d',d=>d.path)
-                .attr('stroke','black')
+                .attr('stroke',getStrokeColor)
                 .attr('opacity',1)
                 .attr('stroke-width',getStrokeWidth)
                 .attr('fill',getColor)
