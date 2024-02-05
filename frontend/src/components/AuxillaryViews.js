@@ -416,15 +416,19 @@ export default function AuxillaryViews(props){
     }
 
       function outcomeToggle(){
-        if(!showToggle){
-          return <p className="title">{Utils.getVarDisplayName(auxView)}</p>
-        }
         var htext = HelpTexts.attributionHelpText;
         if(auxView === 'scatterplot'){
           htext = HelpTexts.scatterplotHelpText
         } else if(auxView === 'neighbors'){
           htext = HelpTexts.simHelpText;
         }
+        if(!showToggle){
+          return <span style={{'display':'inline-block'}}>
+            <p className="title" style={{'display':'inline'}}>{Utils.getVarDisplayName(auxView)}</p>
+            <HelpText key={auxView} text={htext}/>  
+          </span>
+        }
+
 
         return (<>
           {Utils.makeStateToggles(auxViewOptions,auxView,setAuxView,auxViewLabels)}

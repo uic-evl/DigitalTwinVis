@@ -433,7 +433,7 @@ function MainApp({authToken,setAuthToken}) {
       return (<ButtonGroup 
         key={'fixedB'+i}
         isAttached
-        style={{'display':'inline','margin':10}}
+        style={{'display':'inline-block','margin':10,'marginTop':'.75em'}}
         spacing={0}
       >
         {btns}
@@ -597,7 +597,7 @@ function MainApp({authToken,setAuthToken}) {
       <Grid
         h='calc(100% - 3em)'
         w='100%'
-        templateRows='2em repeat(2,1fr)'
+        templateRows='3em repeat(2,1fr)'
         templateColumns='1em max(25vw, 20em) repeat(2,1fr) max(35vw,25em)'
         gap={1}
         style={{'cursor':cursor}}
