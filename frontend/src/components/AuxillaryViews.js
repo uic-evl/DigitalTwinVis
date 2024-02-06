@@ -73,7 +73,7 @@ export default function AuxillaryViews(props){
   }
 
     function makeNeighborView(props){
-        if(Utils.allValid([props.currEmbeddings,props.cohortData,props.simulation,props.cohortEmbeddings])){
+        if(!props.patientSimLoading & Utils.allValid([props.currEmbeddings,props.cohortData,props.simulation,props.cohortEmbeddings])){
         const getSimulation = props.getSimulation;
         const dltSvgPaths=props.dltSvgPaths;
         const subsiteSvgPaths=props.subsiteSvgPaths;
@@ -90,8 +90,11 @@ export default function AuxillaryViews(props){
         if(sim === undefined){
           return (<Spinner/>)
         }
-        const [neighbors,cfs,caliperVal] = Utils.getTreatmentGroups(sim,props.currEmbeddings,props.cohortData,props.currState,props.cohortEmbeddings);
-        console.log(neighbors);
+        const [neighborsUF,cfsUF,caliperVal] = Utils.getTreatmentGroups(sim,props.currEmbeddings,props.cohortData,props.currState,props.cohortEmbeddings);
+        const neighbors = neighborsUF.map(encodePatient);
+        const cfs = cfsUF.map(encodePatient);
+        console.log('n',neighbors.map(encodePatient).map(d=>d.id));
+        console.log('cf',cfs.map(encodePatient).map(d=>d.id));
         // const [neighbors,cfs] = getNeighbors(decision,currEmbeddings,currState,cohortData,neighborsToShow);
 
     
@@ -174,7 +177,7 @@ export default function AuxillaryViews(props){
             const viewStyle   = {'width':'100%','height':viewSize,'marginTop':'10px'}
             const componentStyle = w => {return {'margin':0,'width': fixWidth(w),'height':'100%','display':'inline-block','verticalAlign':'top'}}
             return (
-            <div key={d.id+'-'+i+props.currState} 
+            <div key={d.id+props.currState+i} 
                style={{'margin':'.2em','height': thingHeight,
                'width': 'auto',
                'diplay': 'inline-flex',
@@ -227,7 +230,7 @@ export default function AuxillaryViews(props){
                 <NeighborVisD3
                   data={d}
                   referenceData={encodedRef}
-                  key={d.id+i}
+                  // key={d.id+i}
                   lnSvgPaths={lnSvgPaths}
                   valRanges={ranges}
                   dltSvgPaths={dltSvgPaths}
@@ -244,7 +247,7 @@ export default function AuxillaryViews(props){
                 <NeighborVisD3
                   data={d}
                   referenceData={encodedRef}
-                  key={d.id+i}
+                  // key={d.id+i}
                   lnSvgPaths={lnSvgPaths}
                   valRanges={ranges}
                   dltSvgPaths={dltSvgPaths}
@@ -261,7 +264,7 @@ export default function AuxillaryViews(props){
                 <NeighborVisD3
                   data={d}
                   referenceData={undefined}
-                  key={d.id+i+'outcomes'}
+                  // key={d.id+i+'outcomes'}
                   lnSvgPaths={lnSvgPaths}
                   valRanges={ranges}
                   dltSvgPaths={dltSvgPaths}
@@ -279,7 +282,9 @@ export default function AuxillaryViews(props){
     
           if(nPerRow < 2){
             return (
-              <div className={'centerText scroll'} style={{'width':'100%!important','height':'100%',
+              <div className={'centerText scroll'} 
+              key={props.currState+'neighbors'}
+              style={{'width':'100%!important','height':'100%',
                       'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
                   {makeN(meanTreated,'n',true)}
                   {makeN(meanUntreated,'cf',true)}
@@ -288,7 +293,7 @@ export default function AuxillaryViews(props){
               </div>
               );
           } else{
-            return (<div className={'fillSpace'}>
+            return (<div className={'fillSpace'} key={props.currState+'neighbors'}>
               <div className={'scroll'} style={{'width':'49%','height':'100%',
                       'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
                   {makeN(meanUntreated,'cf',true)}
@@ -463,7 +468,7 @@ export default function AuxillaryViews(props){
             <div style={{'height':'2.5em','width':'100%'}}>
                 {outcomeToggle()}
             </div>
-            <div style={{'height':'calc(100% - 2.6em)','width':'100%'}}>
+            <div key={props.currState+auxView} style={{'height':'calc(100% - 2.6em)','width':'100%'}}>
                 {currView}
             </div>
             </div>
