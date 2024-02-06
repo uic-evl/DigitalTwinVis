@@ -87,6 +87,9 @@ export default function AuxillaryViews(props){
         var neighborsToShow = 10;
         const [sim,altSim] = props.getSimulation(true);
 
+        if(sim === undefined){
+          return (<Spinner/>)
+        }
         const [neighbors,cfs,caliperVal] = Utils.getTreatmentGroups(sim,props.currEmbeddings,props.cohortData,props.currState,props.cohortEmbeddings);
         console.log(neighbors);
         // const [neighbors,cfs] = getNeighbors(decision,currEmbeddings,currState,cohortData,neighborsToShow);
@@ -303,7 +306,7 @@ export default function AuxillaryViews(props){
           
         } 
         else{
-          return <Spinner>{'No'}</Spinner>
+          return <Spinner/>
         }
     }
 
