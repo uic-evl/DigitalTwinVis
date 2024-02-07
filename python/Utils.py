@@ -66,9 +66,6 @@ def transition_sample(state,dataset=None):
     return xtrain,xtest,ytrain,ytest
 
 
-
-
-
 # +
 def load_models():
     files = [
