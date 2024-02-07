@@ -11,6 +11,96 @@ from sklearn.base import clone
 from sklearn.calibration import CalibratedClassifierCV
 
 
+class SymptomPredictor(torch.nn.Module):
+    
+    def __init__(self,
+                 input_size,
+                 output_size,
+                 max_rating=10,
+                 hidden_layers = [1000,100],
+                 dropout = 0.4,
+                 input_dropout=0,
+                 eps=.01,
+                ):
+        torch.nn.Module.__init__(self)
+        first_layer =torch.nn.Linear(input_size,hidden_layers[0],bias=True)
+        layers = [first_layer,torch.nn.ReLU()]
+        curr_size = hidden_layers[0]
+        for ndim in hidden_layers[1:]:
+            layer = torch.nn.Linear(curr_size,ndim)
+            curr_size = ndim
+            layers.append(layer)
+            layers.append(torch.nn.ReLU())
+        self.layers = torch.nn.ModuleList(layers)
+        self.batchnorm = torch.nn.BatchNorm1d(hidden_layers[-1])
+        
+        self.dropout = torch.nn.Dropout(dropout)
+        self.relu = torch.nn.ReLU()
+        input_mean = torch.tensor([0])
+        input_std = torch.tensor([1])
+        max_rating = torch.tensor([max_rating])
+        self.eps = eps
+        self.register_buffer('input_mean', input_mean)
+        self.register_buffer('input_std',input_std)
+        self.register_buffer('max_rating',max_rating)
+        
+        self.sigmoid = torch.nn.Sigmoid()
+        
+        self.final_layer = torch.nn.Linear(hidden_layers[-1],output_size)
+        
+        
+    def set_device(self,device,**kwargs):
+        self.to(device)
+        self.input_mean = self.input_mean.to(device)
+        self.input_std = self.input_std.to(device)
+        for parameter in self.parameters():
+            parameter.to(device)
+    
+    def get_device(self):
+        return next(self.parameters()).device
+
+    def enable_dropout(self):
+        for m in self.modules():
+            if m.__class__.__name__.startswith('Dropout'):
+                m.train()
+    
+    def disable_dropout(self):
+        for m in self.modules():
+            if m.__class__.__name__.startswith('Dropout'):
+                m.eval()
+        
+    def normalize(self,x):
+        x = torch.subtract(x,self.input_mean)
+        x = torch.add(x, self.eps)
+        x= torch.div(x,self.input_std+self.eps)
+        return x
+    
+    def fit_normalizer(self,x):
+        input_mean = x.mean(axis=0)
+        input_std = x.std(axis=0)
+        self.register_buffer('input_mean', input_mean)
+        self.register_buffer('input_std',input_std)
+        return True
+    
+    def get_embedding(self,x):
+        x = self.normalize(x)
+        for layer in self.layers:
+            x = layer(x)
+        x = self.batchnorm(x)
+        return x
+        
+    def forward(self,x):
+        x = self.normalize(x)
+        for layer in self.layers:
+            x = layer(x)
+        x = self.batchnorm(x)
+        x = self.dropout(x)
+        x = self.final_layer(x)
+#         x = self.relu(x)*self.max_rating
+        x = torch.clip(x,0,self.max_rating.item())
+#         x = torch.mul(self.max_rating,self.sigmoid(x))
+        return x
+
 
 class SimulatorBase(torch.nn.Module):
     
@@ -77,8 +167,6 @@ class SimulatorBase(torch.nn.Module):
         x = torch.add(x, self.eps)
         x= torch.div(x,self.input_std+self.eps)
         return x
-#         x = (x - self.input_mean + self.eps)/(self.input_std + self.eps)
-#         return x
     
     def fit_normalizer(self,x):
         input_mean = x.mean(axis=0)
@@ -141,6 +229,38 @@ class SimulatorAttentionBase(SimulatorBase):
         self.memory= newmemory
 
 # +
+    
+class ClusterImputer(SimulatorBase):
+    def __init__(self,
+                 input_size,
+                 output_clusters=1,#how many different clusters we're inputing
+                 n_clusters=3,#number of clusters per cluster group (currently only fixed idk)
+                 hidden_layers = [100,100],
+                 dropout = 0.3,
+                 input_dropout=0,
+                 state = 0,
+                 **kwargs
+                ):
+        #predicts disease state (sd, pr, cr) for primar and nodal, then dose modications or cc type (depending on state), and [dlt ratings]
+        super().__init__(input_size,hidden_layers=hidden_layers,dropout=dropout,input_dropout=input_dropout,state=0,**kwargs)
+        self.n_clusters = n_clusters
+        self.n_outputs = output_clusters
+        final_dim = hidden_layers[-1]
+        self.final_layers = torch.nn.ModuleList([torch.nn.Linear(final_dim,n_clusters) for i in range(output_clusters)])
+
+   
+    def get_output(self,xin,**kwargs):
+        x = self.normalize(xin)
+        x = self.input_dropout(x)
+        for layer in self.layers:
+            x = layer(x)
+        x = self.dropout(x)
+        xlist = [self.softmax(layer(x)) for layer in self.final_layers]
+        return xlist
+    
+    def forward(self,x,**kwargs):
+        return self.get_output(x)
+    
 class OutcomeSimulator(SimulatorBase):
     
     def __init__(self,
@@ -215,7 +335,7 @@ class OutcomeSimulator(SimulatorBase):
     
     def forward(self,x,**kwargs):
         return self.get_output(x)
-    
+
 class BayesianOutcomeSimulator(OutcomeSimulator):
 
     def quantile(self,xlist,q,from_ll=False):

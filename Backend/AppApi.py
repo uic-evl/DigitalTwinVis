@@ -8,6 +8,8 @@ from Preprocessing import *
 from sklearn.decomposition import PCA
 from scipy.spatial.distance import cdist
 from Constants import Const
+from Models import *
+from SymptomPrediction import *
 
 def load_dataset():
     data = DTDataset()
@@ -29,6 +31,11 @@ def load_models():
     decision_model,transition_model1,transition_model2, outcome_model,survival_model = [torch.load(file) for file in files]
     print(len(files))
     return decision_model,transition_model1,transition_model2,outcome_model,survival_model
+
+def load_mdasi_stuff():
+    model = torch.load('../resources/symptomImputer.pt')
+    mdasi = pd.read_excel('../data/mdasi_updated.xlsx').drop('Unnamed: 0',axis=1)
+    return model, mdasi
 
 def np_converter(obj):
     #converts stuff to vanilla python  for json since it gives an error with np.int64 and arrays
@@ -378,7 +385,9 @@ def get_default_model_inputs(dataset):
     return res
 
 
+#changed
 def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisionmodel,survival_model,
+                          symptom_model=None,mdasi_data=None,
                           override_outcome_model=True,
                           state=0,
                           model_type='optimal',
@@ -388,8 +397,8 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     #currently if state > 0 it will check if prior transition states are all zero and if not, will input them
     #currently works with categorical, might have to experiment with passing like -1 for fixed "no" with fixed no dlts
     pdata = format_patient(data,patient_dict)
-    baseline_inputs = dict_to_model_input(data,pdata,state=0,concat=False) 
     
+    baseline_inputs = dict_to_model_input(data,pdata,state=0,concat=False) 
     
     
     tmodel1.eval()
@@ -651,4 +660,11 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     for k,v in embeddings.items():
         embeddings[k] = v.cpu().detach().numpy()
     embedding_results = get_neighbors_and_embeddings_from_sim(embeddings,data,decisionmodel,**kwargs)
-    return {'simulation': results,'embeddings': embedding_results}
+    
+    res = {'simulation': results,'embeddings': embedding_results}
+    
+    symptoms = {}
+    if symptom_model is not None and mdasi_data is not None:
+        symptoms = get_knn_predictions(pdata,symptom_model,mdasi_data)
+        res['symptoms'] = symptoms
+    return res

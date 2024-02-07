@@ -10,7 +10,7 @@ import DLTVisD3 from './DLTVisD3';
 import SubsiteVisD3 from './SubsiteVisD3.js';
 import AttributionLegend from './AttributionLegend.js';
 import SurvivalPlots from './SurvivalPlots.js';
-import ClusterVisD3 from './ClusterVisD3.js';
+import Symptoms from './Symptoms.js';
 import {Spinner} from '@chakra-ui/react';
 
 import * as HelpTexts from '../modules/Text';
@@ -20,8 +20,8 @@ export default function AuxillaryViews(props){
 
     const container = useRef();
 
-    const auxViewOptions = ['attributions','neighbors','scatterplot'];
-    const auxViewLabels =['Feature Importance','Clusters','Scatterplot']
+    const auxViewOptions = ['attributions','symptoms','scatterplot'];
+    const auxViewLabels =['Feature Importance','Symptoms','Scatterplot']
     // const auxViewOptions = ['survival','attributions','neighbors','scatterplot'];
     // const auxViewLabels =['Survival','Feature Importance','Similar Patients','Scatterplot']
     const [auxView,setAuxView] = useState(props.defaultView? props.defaultView:'attributions');
@@ -414,12 +414,12 @@ export default function AuxillaryViews(props){
 
     }
 
-    function makeClusterPlot(props){
+    function makeSymptomPlot(props){
 
-      if(Utils.allValid([props.cohortData,props.simulation,props.currEmbeddings])){
-        return <ClusterVisD3
+      if(Utils.allValid([props.symptoms])){
+        return <Symptoms
           {...props}
-        ></ClusterVisD3>
+        ></Symptoms>
       } else{
         return (<Spinner/>)
       }
@@ -458,8 +458,8 @@ export default function AuxillaryViews(props){
             case 'survival':
               return makeSurvivalPlot(props);
               break;
-            case 'clusters':
-              return makeClusterPlot(props);
+            case 'symptoms':
+              return makeSymptomPlot(props);
               break;
             default:
                 return makeAttributionPlot(props);

@@ -79,6 +79,7 @@ function MainApp({authToken,setAuthToken}) {
   const [previousPatientStack,setPreviousPatientStack] = useState([]);
   const [simulation,setSimulation] = useState();
   const [currEmbeddings,setCurrEmbeddings] = useState();
+  const [symptoms,setSymptoms] = useState();
   const [cohortData,setCohortData] = useState(localStorage.getItem('cohortData') !== null? JSON.parse(localStorage.getItem('cohortData')) : undefined);
   const [cohortEmbeddings, setCohortEmbeddings] = useState();
   const [fixedDecisions,setFixedDecisions] = useState([-1,-1,-1]);//-1 is not fixed ,0 is no, 1 is yes
@@ -222,11 +223,14 @@ function MainApp({authToken,setAuthToken}) {
     setPatientSimLoading(true);
     const sim = await api.getPatientSimulation(patientFeatures,modelOutput,currState);
     setSimulation(undefined);
+    setSymptoms(undefined);
+    setCurrEmbeddings(undefined);
     if(sim !== undefined ){
       if(sim.data !== undefined){
         console.log('patient simulation',sim);
         setSimulation(sim.data.simulation);
         setCurrEmbeddings(sim.data.embeddings[currState])
+        setSymptoms(sim.data.symptoms)
         setPatientSimLoading(false);
         setCursor('default');
       }
@@ -634,6 +638,7 @@ function MainApp({authToken,setAuthToken}) {
             <GridItem  className={'shadow'} style={{'overflowY':'hidden'}}>
               <AuxillaryViews
                 cohortData={cohortData}
+                symptoms={symptoms}
                 cohortEmbeddings={cohortEmbeddings}
                 currState={currState}
                 setCurrState={setCurrState}

@@ -22,6 +22,7 @@ CORS(app)
 print('code start')
 DATA = load_dataset()
 decision_model,transition_model1,transition_model2,outcome_model,survival_model = load_models()
+symptom_model, mdasi = load_mdasi_stuff()
 PCAS = get_embedding_pcas(DATA,decision_model,components=10)
 embedding_df = get_embedding_df(DATA,decision_model,pcas=PCAS)
 m_dists = [test_mahalanobis_distances(DATA,decision_model,s,embedding_df).tolist() for s in [0,1,2]]
@@ -104,7 +105,9 @@ def get_newpatient_stuff():
         del patient_dict['state']
     if 'model' in patient_dict:
         del patient_dict['model']
-    return_vals = get_stuff_for_patient(patient_dict,DATA,transition_model1,transition_model2,outcome_model,decision_model,survival_model,state=state,pcas=PCAS,embedding_df=embedding_df,model_type=model_type)
+    return_vals = get_stuff_for_patient(patient_dict,DATA,transition_model1,transition_model2,outcome_model,decision_model,survival_model,
+                                        symptom_model=symptom_model,mdasi_data=mdasi,
+                                        state=state,pcas=PCAS,embedding_df=embedding_df,model_type=model_type)
     # print(return_vals)
     print('-------')
     return responsify(return_vals)

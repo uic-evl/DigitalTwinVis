@@ -269,7 +269,7 @@ export default function AuxOutcomeBarchart(props){
                 .attr('text-anchor','middle')
                 .attr('dominant-baseline','middle')
                 .attr('lengthAdjust','spacingAndGlyphs')
-                .attr('textLength',d=>(d.name.length)*(.5*d.fontSize) >= d.maxWidth? d.maxWidth:'')
+                .attr('text-length',d=>(d.name.length)*(.5*d.fontSize) >= d.maxWidth? d.maxWidth:'')
                 .text(d=>d.name);
 
             barNotes.raise();
