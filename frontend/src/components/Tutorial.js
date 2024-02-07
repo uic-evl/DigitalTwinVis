@@ -4,14 +4,15 @@ import { Progress } from '@chakra-ui/react'
 
 export default function Tutorial(props){
 
-  const images = ['/overview.png','topbar_tutorial.png','/input_tutorial.png','recomendation_histogram_tutorial.png','/outcome_tutorial.png','/attribution_tutorial.png'];
+  const images = ['/workflows.png','topbar_tutorial.png','/input_tutorial.png','recomendation_histogram_tutorial.png','/outcome_tutorial.png','/neighbor_tutorial.png','/overview.png'];
   const titles = [
-    'Overview of the Model',
+    'User Workflows',
     'Top Bar',
     'Inputting Patient Information',
     'Model Recommendation',
     'Predicted Outcomes',
-    'Model Recommendation Explanations'
+    'Similar Patients',
+    'Overview of the Model',
   ]
   const [stage,setStage] = useState(0);
   const { isOpen, onOpen, onClose } = useDisclosure()

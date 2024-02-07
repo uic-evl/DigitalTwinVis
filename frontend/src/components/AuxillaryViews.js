@@ -93,8 +93,8 @@ export default function AuxillaryViews(props){
         const [neighborsUF,cfsUF,caliperVal] = Utils.getTreatmentGroups(sim,props.currEmbeddings,props.cohortData,props.currState,props.cohortEmbeddings);
         const neighbors = neighborsUF.map(encodePatient);
         const cfs = cfsUF.map(encodePatient);
-        console.log('n',neighbors.map(encodePatient).map(d=>d.id));
-        console.log('cf',cfs.map(encodePatient).map(d=>d.id));
+        // console.log('n',neighbors.map(encodePatient).map(d=>d.id));
+        // console.log('cf',cfs.map(encodePatient).map(d=>d.id));
         // const [neighbors,cfs] = getNeighbors(decision,currEmbeddings,currState,cohortData,neighborsToShow);
 
     
@@ -138,7 +138,10 @@ export default function AuxillaryViews(props){
           const encodedRef = encodePatient(props.patientFeatures);
           const fixWidth = v => props.currState == 0? v: v- (dltWidth/6);
         //   const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
+          // var renderedIds = new Set();
           function makeN(d,i,showTicks,bottomBorder=true,name=undefined){
+            // if(renderedIds.has(d.id)){return <></>}
+            // renderedIds.add(d.id);
             const borderColor = d[dString] > .5? constants.knnColor: constants.knnColorNo;
             const bBorder = bottomBorder? '.4em solid ' + borderColor:'';
             const marginBottom = bottomBorder? '.4em': '.01em';
@@ -177,7 +180,7 @@ export default function AuxillaryViews(props){
             const viewStyle   = {'width':'100%','height':viewSize,'marginTop':'10px'}
             const componentStyle = w => {return {'margin':0,'width': fixWidth(w),'height':'100%','display':'inline-block','verticalAlign':'top'}}
             return (
-            <div key={d.id+props.currState+i} 
+            <div key={d.id+props.currState+i+'nodsfiadf'} 
                style={{'margin':'.2em','height': thingHeight,
                'width': 'auto',
                'diplay': 'inline-flex',
