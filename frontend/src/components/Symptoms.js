@@ -15,23 +15,22 @@ export default function Symptoms(props){
 
     useEffect(()=>{
         if(props.symptoms !== undefined){
-            
-            const symptomData = props.symptoms.symptoms;
-            const sIds = props.symptoms.ids;
-            const sDists = props.symptoms.dists;
-            const dates = props.symptoms.dates;
-            const sList = Object.keys(symptomData);
-            console.log('sdfsd',props.symptoms);
+            const sList = Object.keys(props.symptoms.treated.symptoms);
+            const treated = props.symptoms.treated;
+            const untreated = props.symptoms.untreated;
+            console.log('here',treated)
             const newPlots = sList.map((sName,i)=>{
                 i = parseInt(i);
-                const sData = symptomData[sName]
                 return (<div key={'symptoms'+sName+i} style={{'height': '10em','width': '95%','margin': '.1em','marginTop':'1em'}}>
                     <SymptomVisD3
                         name={sName}
-                        data={sData}
-                        ids= {sIds}
-                        dates={dates}
-                        distance={sDists}
+                        treated={treated.symptoms[sName]}
+                        untreated={untreated.symptoms[sName]}
+                        treatedIds={treated.ids}
+                        untreatedIds={untreated.ids}
+                        treatedDists={treated.dists}
+                        untreatedDists={untreated.dists}
+                        dates={props.symptoms.dates}
                     ></SymptomVisD3>
                     </div>
                     )

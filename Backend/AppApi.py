@@ -34,8 +34,10 @@ def load_models():
 
 def load_mdasi_stuff():
     model = torch.load('../resources/symptomImputer.pt')
-    mdasi = pd.read_excel('../data/mdasi_updated.xlsx').drop('Unnamed: 0',axis=1)
-    return model, mdasi
+    mdasi_imputed = pd.read_csv('../data/mdasi_imputed.csv').drop('Unnamed: 0',axis=1)
+    mdasi_imputed['id'] = mdasi_imputed['ID'].apply(lambda x: int(x.replace('STIEFEL_','')))
+    return model, mdasi_imputed
+
 
 def np_converter(obj):
     #converts stuff to vanilla python  for json since it gives an error with np.int64 and arrays
@@ -665,6 +667,6 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
     
     symptoms = {}
     if symptom_model is not None and mdasi_data is not None:
-        symptoms = get_knn_predictions(pdata,symptom_model,mdasi_data)
+        symptoms = get_knn_predictions(pdata,symptom_model,mdasi_data,decision_state=state+1)
         res['symptoms'] = symptoms
     return res

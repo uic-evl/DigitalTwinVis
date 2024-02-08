@@ -16,12 +16,10 @@ export default function SymptomVisD3(props){
     const xMargin = [10,10];
     const yMargin = [25,20];
     useEffect(()=>{
-        if(svg !== undefined & props.data !== undefined){
-            const data = props.data; //data, -1 is unknown for now
-            const ratings = data.ratings;//lists of ratings shape (props.ids, weeks)
-            const means = data.means;//lists of mean ratings shape weeks
-            const weeks = props.dates;//
-            console.log('weeks',weeks)
+        console.log('stuff',props)
+        if(svg !== undefined & props.treated !== undefined){
+
+            const weeks = props.dates;
             const xScale = d3.scaleLinear()
                 .domain([weeks[0],weeks[weeks.length-1]])
                 .range([xMargin[0], width-xMargin[1]]);
@@ -30,48 +28,71 @@ export default function SymptomVisD3(props){
                 .range([height-yMargin[1],yMargin[0]]);
 
             var line = d3.line().curve(d3.curveBumpX);
-            var lineData = ratings.map(d=>[]);
-            var meanLine=[];
-            var textData = [{
-                'text': props.name,
-                'x': width/2,
-                'y': yMargin[0]/2,
-                'fontSize': yMargin[0]*.8,
-            }];
-            var dotData = [];
-            for(let i in means){
-                i = parseInt(i);
-                const mVal = means[i];
-                const wk = weeks[i];
-                const x = xScale(wk);
-                const nVals = ratings.map(d=>d[i]);
-                meanLine.push([x,yScale(mVal)]);
-                for(let ii in nVals){
-                    ii = parseInt(ii)
-                    const nVal = nVals[ii];
-                    if(nVal >= 0){
-                        let currLine = lineData[ii];
-                        currLine.push([x,yScale(nVal)]);
-                        lineData[ii] = currLine;
+
+            function makeDataset(data,lineColor,isFirst){
+                const ratings = data.ratings;//lists of ratings shape (props.ids, weeks)
+                const means = data.means;//lists of mean ratings shape weeks
+                
+                var lineData = ratings.map(d=>[]);
+                var meanLine=[];
+                var textData = [];
+                if(isFirst){
+                    textData = [{
+                        'text': props.name,
+                        'x': width/2,
+                        'y': yMargin[0]/2,
+                        'fontSize': yMargin[0]*.8,
+                    }];
+                }
+                var dotData = [];
+                for(let i in means){
+                    i = parseInt(i);
+                    const mVal = means[i];
+                    const wk = weeks[i];
+                    const x = xScale(wk);
+                    const nVals = ratings.map(d=>d[i]);
+                    meanLine.push([x,yScale(mVal)]);
+                    for(let ii in nVals){
+                        ii = parseInt(ii)
+                        const nVal = nVals[ii];
+                        if(nVal >= 0){
+                            let currLine = lineData[ii];
+                            currLine.push([x,yScale(nVal)]);
+                            lineData[ii] = currLine;
+                        }
+                    }
+                    if(isFirst){
+                        textData.push({
+                            'text': wk,
+                            'x': x,
+                            'y': height-yMargin[1]/2,
+                            'fontSize': yMargin[1]*.6,
+                        });
                     }
                 }
-                textData.push({
-                    'text': wk,
-                    'x': x,
-                    'y': height-yMargin[1]/2,
-                    'fontSize': yMargin[1]*.6,
-                })
+                lineData.splice(0,0,meanLine);
+
+                let lines = lineData.map((d,i)=>{ return {
+                    'path': line(d),
+                    'color': lineColor,
+                    'isMean': i===0,
+                }});
+                console.log('lines',lines,lineData)
+                return [lines, textData];
             }
-            lineData.splice(0,0,meanLine);
+            
+            let [lineD, textD]= makeDataset(props.treated,constants.knnColor,true);
+            let [lineD2, textD2] = makeDataset(props.untreated, constants.knnColorNo,false);
+
             
             svg.selectAll('.symptomLine').remove();
             const lineD3 = svg.selectAll('path').filter('.symptomLine')
-                .data(lineData).enter().append('path')
-                .attr('class', (d,i) => i===0? 'symptomLine meanLine':'symptomLine')
-                .attr('d',d=>line(d))
-                .attr('stroke',(d,i)=> i===0? 'black':'grey')
-                .attr('stroke-width',(d,i)=> i===0? 8:4)
-                .attr('opacity',(d,i)=> i===0? 1:.4)
+                .data(lineD.concat(lineD2)).enter().append('path')
+                .attr('class', (d,i) => d.isMean? 'symptomLine meanLine':'symptomLine')
+                .attr('d',d=>d.path)
+                .attr('stroke',d => d.color)
+                .attr('stroke-width',d => d.isMean? 8:4)
+                .attr('opacity',d => d.isMean? 1:.1)
                 .attr('fill','none');
 
             svg.selectAll('.meanLine').raise();
@@ -100,7 +121,7 @@ export default function SymptomVisD3(props){
 
             svg.selectAll('.annotationText').remove();
             svg.selectAll('text').filter('annotationText')
-                .data(textData).enter().append('text')
+                .data(textD).enter().append('text')
                 .attr('class','annotationText')
                 .attr('x',d=>d.x)
                 .attr('y',d=>d.y)
@@ -111,7 +132,7 @@ export default function SymptomVisD3(props){
                 .text(d=>Utils.getVarDisplayName(d.text))
 
         }
-    },[svg,props.data]);
+    },[svg,props.treated,props.untreated]);
 
     return (
         <div
