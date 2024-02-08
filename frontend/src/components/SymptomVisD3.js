@@ -16,7 +16,6 @@ export default function SymptomVisD3(props){
     const xMargin = [10,10];
     const yMargin = [25,20];
     useEffect(()=>{
-        console.log('stuff',props)
         if(svg !== undefined & props.treated !== undefined){
 
             const weeks = props.dates;
@@ -29,7 +28,7 @@ export default function SymptomVisD3(props){
 
             var line = d3.line().curve(d3.curveBumpX);
 
-            function makeDataset(data,lineColor,isFirst){
+            function makeDataset(data,lineColor,isFirst,ids,dists){
                 const ratings = data.ratings;//lists of ratings shape (props.ids, weeks)
                 const means = data.means;//lists of mean ratings shape weeks
                 
@@ -76,13 +75,14 @@ export default function SymptomVisD3(props){
                     'path': line(d),
                     'color': lineColor,
                     'isMean': i===0,
+                    'pId': ids[parseInt(i)],
+                    'distance': dists[parseInt(i)]
                 }});
-                console.log('lines',lines,lineData)
                 return [lines, textData];
             }
             
-            let [lineD, textD]= makeDataset(props.treated,constants.knnColor,true);
-            let [lineD2, textD2] = makeDataset(props.untreated, constants.knnColorNo,false);
+            let [lineD, textD]= makeDataset(props.treated,constants.knnColor,true,props.treatedIds,props.treatedDists);
+            let [lineD2, textD2] = makeDataset(props.untreated, constants.knnColorNo,false,props.untreatedIds,props.untreatedDists);
 
             
             svg.selectAll('.symptomLine').remove();
@@ -93,7 +93,15 @@ export default function SymptomVisD3(props){
                 .attr('stroke',d => d.color)
                 .attr('stroke-width',d => d.isMean? 8:4)
                 .attr('opacity',d => d.isMean? 1:.1)
-                .attr('fill','none');
+                .attr('fill','none')
+                .on('mouseover',function(e,d){
+                    let string = d.pId + ': ' + d.distance
+                    tTip.html(string);
+                }).on('mousemove', function(e){
+                    Utils.moveTTipEvent(tTip,e);
+                }).on('mouseout', function(e){
+                    Utils.hideTTip(tTip);
+                });
 
             svg.selectAll('.meanLine').raise();
 

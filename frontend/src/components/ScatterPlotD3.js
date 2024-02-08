@@ -165,7 +165,7 @@ export default function ScatterPlotD3(props){
             let string = d.id;
             string += '</br> model decision ' + d.modelDecision;
             string += '</br> true decision ' + d.trueDecision;
-            console.log('brush',d.embeddings)
+            // console.log('brush',d.embeddings)
             tTip.html(string);
         }).on('mousemove', function(e){
             Utils.moveTTipEvent(tTip,e);
@@ -174,7 +174,7 @@ export default function ScatterPlotD3(props){
             props.setBrushedId();
         }).on('dblclick',(e,d)=>{
             let pData = props.cohortData[d.id+''];
-            console.log('scatterplot click',pData)
+            // console.log('scatterplot click',pData)
             if(pData !== undefined){
                 //second argument clears the previous stuff
                 props.updatePatient(pData,true);

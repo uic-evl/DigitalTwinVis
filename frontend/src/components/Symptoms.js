@@ -18,7 +18,7 @@ export default function Symptoms(props){
             const sList = Object.keys(props.symptoms.treated.symptoms);
             const treated = props.symptoms.treated;
             const untreated = props.symptoms.untreated;
-            console.log('here',treated)
+            console.log('here',treated.ids)
             const newPlots = sList.map((sName,i)=>{
                 i = parseInt(i);
                 return (<div key={'symptoms'+sName+i} style={{'height': '10em','width': '95%','margin': '.1em','marginTop':'1em'}}>
