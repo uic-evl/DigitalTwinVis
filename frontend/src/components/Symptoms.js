@@ -15,7 +15,9 @@ export default function Symptoms(props){
 
     useEffect(()=>{
         if(props.symptoms !== undefined){
-            const sList = Object.keys(props.symptoms.treated.symptoms);
+            var sList = Object.keys(props.symptoms.treated.symptoms)
+            const sSort = s => props.symptoms.treated.symptoms[s].means[props.symptoms.treated.symptoms[s].means.length-1] + props.symptoms.untreated.symptoms[s].means[props.symptoms.untreated.symptoms[s].means.length-1];
+            sList.sort((a,b) => sSort(b) - sSort(a));
             const treated = props.symptoms.treated;
             const untreated = props.symptoms.untreated;
             console.log('here',treated.ids)

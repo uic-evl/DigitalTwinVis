@@ -73,10 +73,12 @@ export default function SymptomVisD3(props){
 
                 let lines = lineData.map((d,i)=>{ return {
                     'path': line(d),
+                    'ratings': d.map(v => yScale.invert(v[1])),
                     'color': lineColor,
                     'isMean': i===0,
                     'pId': ids[parseInt(i)],
-                    'distance': dists[parseInt(i)]
+                    'distance': dists[parseInt(i)],
+                    'treated': isFirst,
                 }});
                 return [lines, textData];
             }
@@ -95,7 +97,16 @@ export default function SymptomVisD3(props){
                 .attr('opacity',d => d.isMean? 1:.1)
                 .attr('fill','none')
                 .on('mouseover',function(e,d){
-                    let string = d.pId + ': ' + d.distance
+                    let string = (d.treated? 'Treated':'Untreated');
+                    if(d.isMean){
+                        string += " (Mean)"
+                    } else{
+                        string += '</br>similiarty: ' + (1/(1+d.distance)).toFixed(2);
+                    }
+                    string += '</br> Ratings: ';
+                    for(let r in d.ratings){
+                        string += '| wk ' + weeks[r] + ': ' + d.ratings[r].toFixed(0);
+                    }
                     tTip.html(string);
                 }).on('mousemove', function(e){
                     Utils.moveTTipEvent(tTip,e);
@@ -125,6 +136,7 @@ export default function SymptomVisD3(props){
                 .attr('fill','none')
                 .attr('stroke',d=>d.color)
                 .attr('stroke-dasharray',d=>d.style)
+                .attr('pointer-events','none')
                 .attr('stroke-width',4);
 
             svg.selectAll('.annotationText').remove();
