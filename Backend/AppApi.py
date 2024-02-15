@@ -394,6 +394,7 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
                           state=0,
                           model_type='optimal',
                           timepoints = [1,6,12,18,24,30,36,42,48,54,60],
+                          fixed_decisions = [-1,-1,-1],
                           **kwargs):
     #this takes a patient dict and returns the results for a full treatment simulation
     #currently if state > 0 it will check if prior transition states are all zero and if not, will input them
@@ -483,9 +484,9 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         return results
     fixed_transitions = get_fixed_transitions()
 
-    def run_simulation(modifier,decision1=None,decision2=None,decision3=None):
+    def run_simulation(modifier,decision1=None,decision2=None,decision3=None,is_alt=False):
         #do this to track malahanobis distances?
-        is_default = (modifier == modifiers[0] and decision1 is None and decision2 is None and decision3 is None)
+        is_default = (modifier == modifiers[0] and not is_alt)
         if is_default:
             embeddings[0] = decisionmodel.get_embedding(cat(baseline_inputs),position=0,
                                                                   use_saved_memory=True)
@@ -497,8 +498,10 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         else:
             d1 = o1[0+modifier].view(1,-1)
             d1_attention = get_attention(cat(baseline_inputs),0,modifier)
-            
         propensity1 = o1[0+3].view(1,-1)
+        if is_alt and state == 0:
+            d1 = 1-d1    
+        
             
         tinput1 = cat([baseline_inputs[0],thresh(d1)])
         
@@ -540,8 +543,9 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
         else:
             d2 = d2_full[0,1+modifier].view(1,-1)
             d2_attention = get_attention(cat(oinput2),1,modifier)
-            
         propensity2 = d2_full[0,4].view(1,-1)
+        if is_alt and state == 1:
+            d2 = 1-d2
             
         if is_default:
             embeddings[1] = decisionmodel.get_embedding(cat(oinput2),position=1,use_saved_memory=True)
@@ -582,7 +586,9 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
             d3 = d3_full[0,2+modifier].view(1,-1)
             d3_attention = get_attention(cat(oinput3),2,modifier)
         propensity3= d3_full[0,4].view(1,-1)
-        
+        if is_alt and state == 2:
+            d3 = 1-d3
+            
         if is_default:
             embeddings[2] = decisionmodel.get_embedding(cat(oinput3),position=2,use_saved_memory=True)
         #outcomes uses baseline + pd2 + nd2 + cc type + dlt2 + decision 1,2,3
@@ -640,24 +646,30 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
             probs = probs[0].detach().cpu().numpy()[0]
             entry[name+'(4yr)'] = np.round(probs,3)
         key = 'optimal' if modifier < 1 else 'imitation'
-        if decision1 is not None:
-            key += '_decision1-'+str(decision1)
-        if decision2 is not None:
-            key += '_decision2-'+str(decision2)
-        if decision3 is not None:
-            key += '_decision3-'+str(decision3)
+        if is_alt:
+            key = key + '_alt'
+#         if decision1 is not None:
+#             key += '_decision1-'+str(decision1)
+#         if decision2 is not None:
+#             key += '_decision2-'+str(decision2)
+#         if decision3 is not None:
+#             key += '_decision3-'+str(decision3)
+            
         results[key] = entry
 
-    
+    getfixed = lambda i: None if fixed_decisions[i] < 0 else fixed_decisions[i]
     with torch.no_grad():
         for modifier in modifiers:
-            for d1_fixed in [None,0,1]:
-                for d2_fixed in [None,0,1]:
-                    for d3_fixed in [None,0,1]:
-                        #we only need to do all fixed outcomes once
-                        if d1_fixed is not None and d2_fixed is not None and d3_fixed is not None and modifier != modifiers[0]:
-                            continue
-                        run_simulation(modifier,d1_fixed,d2_fixed,d3_fixed)
+            for alt in [False,True]:
+                #is alt inverts the decisions for the current state and uses key + '_alt'
+                run_simulation(modifier,getfixed(0),getfixed(1),getfixed(2),is_alt=alt)
+#             for d1_fixed in [None,0,1]:
+#                 for d2_fixed in [None,0,1]:
+#                     for d3_fixed in [None,0,1]:
+#                         #we only need to do all fixed outcomes once
+#                         if d1_fixed is not None and d2_fixed is not None and d3_fixed is not None and modifier != modifiers[0]:
+#                             continue
+#                         run_simulation(modifier,d1_fixed,d2_fixed,d3_fixed)
 
     for k,v in embeddings.items():
         embeddings[k] = v.cpu().detach().numpy()

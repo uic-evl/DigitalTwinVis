@@ -99,14 +99,18 @@ def get_newpatient_stuff():
     print(patient_dict)
     print('---')
     state = patient_dict.get('state',0)
-    model_type = patient_dict.get('model','optimal')
+    model_type = patient_dict.get('model','both')
     #I this this is unneccesary but just in case I edit something that causes a bug I'm deleteing this from the model args
     if 'state' in patient_dict:
         del patient_dict['state']
     if 'model' in patient_dict:
         del patient_dict['model']
+    fixed_decisions = patient_dict.get('fixedDecisions',[-1,-1,-1])
+    if 'fixedDecision' in patient_dict:
+        del patient_dict['fixedDecisions']
     return_vals = get_stuff_for_patient(patient_dict,DATA,transition_model1,transition_model2,outcome_model,decision_model,survival_model,
                                         symptom_model=symptom_model,mdasi_data=mdasi,
+                                        fixed_decisions=fixed_decisions,
                                         state=state,pcas=PCAS,embedding_df=embedding_df,model_type=model_type)
     # print(return_vals)
     print('-------')

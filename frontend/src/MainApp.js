@@ -125,19 +125,19 @@ function MainApp({authToken,setAuthToken}) {
     setFeatureQue(newQ)
   }
 
-  function getSimulation(){
-    if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
-    let key = modelOutput;
-    for(let i in fixedDecisions){
-      let d = fixedDecisions[i];
-      let di = parseInt(i) + 1
-      if(d >= 0){
-        let suffix = '_decision'+(di)+'-'+d;
-        key += suffix;
-      }
-    }
-    return simulation[key]
-  }
+  // function getSimulation(){
+  //   if(!Utils.allValid([simulation,modelOutput])){return undefined}
+  //   let key = modelOutput;
+  //   // for(let i in fixedDecisions){
+  //   //   let d = fixedDecisions[i];
+  //   //   let di = parseInt(i) + 1
+  //   //   if(d >= 0){
+  //   //     let suffix = '_decision'+(di)+'-'+d;
+  //   //     key += suffix;
+  //   //   }
+  //   // }
+  //   return simulation[key]
+  // }
 
   function getUpdatedPatient(features,clear=false){
     let p = clear? {}: Object.assign({},patientFeatures);
@@ -221,7 +221,7 @@ function MainApp({authToken,setAuthToken}) {
     if(patientSimLoading){ return }
     setCursor('wait')
     setPatientSimLoading(true);
-    const sim = await api.getPatientSimulation(patientFeatures,modelOutput,currState);
+    const sim = await api.getPatientSimulation(patientFeatures,modelOutput,fixedDecisions,currState);
     setSimulation(undefined);
     setSymptoms(undefined);
     setCurrEmbeddings(undefined);
@@ -292,7 +292,7 @@ function MainApp({authToken,setAuthToken}) {
   // i.e. (fixed outcomes in higher state, query with lower state, then swich back  without updating anything)
   useEffect(()=>{
     fetchPatientSimulation();
-  },[patientFeatures,currState,modelOutput])
+  },[patientFeatures,currState,modelOutput,fixedDecisions])
 
   useEffect(()=>{
     if(patientFeatures!== undefined && patientFeatures !== null){
@@ -308,38 +308,21 @@ function MainApp({authToken,setAuthToken}) {
 
 
   function getSimulation(useAlt=false){
-    if(!Utils.allValid([simulation,modelOutput,fixedDecisions])){return undefined}
+    if(!Utils.allValid([simulation,modelOutput])){return undefined}
 
     //for data loading if we switch outputs we have to wait for a new query
     if(simulation[modelOutput] === undefined){ return useAlt? [undefined,undefined]:undefined }
     let currKey = modelOutput;
-    let altKey = modelOutput;
+    let altKey = modelOutput + '_alt';
     let currPredictions = ['1','2','3'].map(i=> (simulation[modelOutput]['decision'+i] > .5) + 0);
     let currDecision = 0;
 
-    //check if the fixed decisions actually matter or they're all the same as the default
-    let nEq = currPredictions.map((d,i) => (((d > .5) === (fixedDecisions[i] > .5)) & fixedDecisions[i] > -.1)? 1: 0).reduce((partialSum, a) => partialSum + a, 0);
-    let nFixed = fixedDecisions.filter(d=> d > -.1).map(d => 1).reduce((partialSum, a) => partialSum + a, 0);
-    let allEq = nEq >= nFixed;
+
     //go through fixed decisions to find the correct key for the simulation
-    //This is currently still using a different simuatlion for the alternative outcome when you toggle the current simulation for some reason
-    //This jsut changes the error bounds since they're different bootstrap iterations
-    //but also there is no point in doing that so hopefully wont be an issue
     for(let i in fixedDecisions){
       let d = fixedDecisions[i];
-      let di = parseInt(i) + 1;
       let trueDecision = d >= 0? d: currPredictions[i];
-      let suffix = '';
-      if(d >= 0 & !allEq){
-        suffix = '_decision'+(di)+'-'+d;
-      }
-      currKey += suffix;
-      if(parseInt(i) !== parseInt(currState)){
-        altKey += d < 0 | allEq? '': '_decision'+(di)+'-'+d;
-      } else{
-        let altDecision = trueDecision > 0? 0: 1;
-        let altSuffix = '_decision' + (di) + '-' + altDecision;
-        altKey += altSuffix;
+      if(parseInt(i) === parseInt(currState)){
         currDecision = trueDecision;
       }
     }
@@ -351,6 +334,8 @@ function MainApp({authToken,setAuthToken}) {
       return [sim, altSim]
     }
     return sim
+
+    // return useAlt? [simulation[modelOutput],simulation[modelOutput+'_alt']]: simulation[modelOutput];
   }
 
   const Recommendation = useMemo(()=>{

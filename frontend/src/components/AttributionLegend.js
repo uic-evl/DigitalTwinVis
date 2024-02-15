@@ -18,16 +18,9 @@ export default function AttributionLegend(props){
     function getSimulationKey(){
         if(!Utils.allValid([props.simulation,props.modelOutput,props.fixedDecisions])){return undefined}
         let key = props.modelOutput;
-        for(let i in props.fixedDecisions){
-          let d = props.fixedDecisions[i];
-          let di = parseInt(i) + 1
-          if(d >= 0){
-            let suffix = '_decision'+(di)+'-'+d;
-            key += suffix;
-          }
-        }
         return key
     }
+
     function formatText(v){
         let t = (v.value*100).toFixed(0) + '%';
         if(v.value > 0){
@@ -42,6 +35,8 @@ export default function AttributionLegend(props){
             var res = props.simulation[simKey]['decision'+(props.currState+1)+'_attention'];
             //for the case of a fixed decision on the current attribution view
             if(res === undefined | res === 0){
+                console.log('res',res,props.simulation[simKey],simKey)
+                return
                 simKey = props.modelOutput;
                 res = props.simulation[props.modelOutput]['decision'+(props.currState+1)+'_attention'];
             }

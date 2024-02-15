@@ -297,7 +297,7 @@ export default function OutcomePlots(props){
                 .attr('y',(d,i) => (barWidth+pathPoints[i][0][1] + pathPoints[i][1][1])/2)
                 .attr('x',labelSpacing)
                 .attr('font-size',barWidth)
-                .attr('textLength',d=> fixName(d.name).length > 6? labelSpacing*.9: '')
+                .attr('text-length',d=> fixName(d.name).length > 6? labelSpacing*.9: '')
                 .attr('lengthAdjust','spacingAndGlyphs')
                 .text(d=>fixName(d.name));
             

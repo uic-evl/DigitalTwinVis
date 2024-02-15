@@ -240,10 +240,10 @@ export default function AuxOutcomeBarchart(props){
                 .attr('y', d=> (d.minY - 15) < topMargin? d.maxY + annotationSize*.6: d.minY - annotationSize*.6)
                 .attr('font-size',barWidth/2)
                 .attr('font-weight','bold')
-                .attr('textLength',d=> d.value >= .1? barWidth-6: (barWidth-6)/2)
+                .attr('text-length',d=> d.value >= .1? barWidth-6: (barWidth-6)/2)
                 .attr('text-anchor','middle')
                 .attr('dominant-baseline','middle')
-                .attr('lengthAdjust','spacingAndGlyphs')
+                .attr('length-adjust','spacingAndGlyphs')
                 .text(d=>(100*d.value).toFixed(0));
             barNotes.exit().remove();
 

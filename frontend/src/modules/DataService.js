@@ -125,8 +125,8 @@ export default class DataService {
         }
     }
 
-    async getPatientSimulation(patientFeatures,currModel,state=0){
-        let goodPostData = {'state': state,'model': currModel}
+    async getPatientSimulation(patientFeatures,currModel,fixedDecisions,state=0){
+        let goodPostData = {'state': state,'model': currModel,'fixedDecisions': fixedDecisions}
         for(let key of Object.keys(patientFeatures)){
             let entry = patientFeatures[key];
             if(entry !== undefined & entry !== null){

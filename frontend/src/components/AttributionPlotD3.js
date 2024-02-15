@@ -48,21 +48,12 @@ export default function AttributionPlotD3(props){
     // },[props.defaultPredictions,props.modelOutput,props.currState]);
     function getSimulationKey(){
         if(!Utils.allValid([props.simulation,props.modelOutput,props.fixedDecisions])){return undefined}
-        let key = props.modelOutput;
-        for(let i in props.fixedDecisions){
-          let d = props.fixedDecisions[i];
-          let di = parseInt(i) + 1
-          if(d >= 0){
-            let suffix = '_decision'+(di)+'-'+d;
-            key += suffix;
-          }
-        }
-        return key
+        return props.modelOutput
     }
     
 
     useMemo(()=>{
-        if(svg !== undefined & props.simulation !== undefined){
+        if(svg !== undefined & props.simulation !== undefined & props.defaultPredictions !== undefined){
             var simKey = getSimulationKey();
             var res = props.simulation[simKey]['decision'+(props.currState+1)+'_attention'];
             //when we have a fixed decision for the current state, or a bug
