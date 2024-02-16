@@ -84,14 +84,14 @@ export default function PatientEditor(props){
             // if(allFixed){
             //     key = key.replace('imitation','optimal')
             // }
-            return props.simulation[key]
+            
         }
 
     function getY(key){
         let pos = allVars.indexOf(key);
-        if(pos < 0){
-            console.log('bad x key',key,allVars);
-        }
+        // if(pos < 0){
+        //     console.log('bad x key',key,allVars);
+        // }
         return yScale(pos);
     }
 
@@ -210,7 +210,7 @@ export default function PatientEditor(props){
         for(let key of constants.DECISIONS){
             if(isSimulated){
                 let loc = constants.DECISIONS.indexOf(key);
-                let decision = getSim()['decision'+(loc+1)];
+                let decision = props.getSimulation(false)['decision'+(loc+1)];
                 values[key] = decision;
             } else{
                 let val = p[key] === undefined? 0:p[key] > .5;
@@ -220,7 +220,7 @@ export default function PatientEditor(props){
         for(let key of constants.OUTCOMES){
             if(isSimulated){
                 let loc = constants.OUTCOMES.indexOf(key);
-                let outcome = getSim()['outcomes'][loc];
+                let outcome = props.getSimulation(false)['outcomes'][loc];
                 values[key] = outcome;
             } else{
                 let val = p[key] === undefined? 0:p[key];
@@ -313,11 +313,14 @@ export default function PatientEditor(props){
         const encodedQue = encodeFeatureQue(props.featureQue);
         const simResults = props.simulation[props.modelOutput];
         const attention = simResults['decision'+(props.currState+1)+'_attention'];
-
-        const attentionScale = Utils.getColorScale('attributions',attention.range[0],attention.range[1]);
+        const aRange = attention.range === undefined? [0,1]: attention.range;
+        const attentionScale = Utils.getColorScale('attributions',aRange[0],aRange[1]);
 
         function getAttention(key){
             let aVal = 0;
+            if(attention.baseline === undefined){
+                return 0
+            }
             if(ordinalVars[key] !== undefined){
                 let vals = ordinalVars[key];
                 let keys = vals.map(i => key + '_' + i);

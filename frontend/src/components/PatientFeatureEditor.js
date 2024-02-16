@@ -121,7 +121,7 @@ export default function PatientFeatureEditor(props){
 
         svg.selectAll('.clickable')
             .on('click',(e,d)=>{
-                if(d.active){return}
+                // if(d.active){return}
                 const newQ = Object.assign({},props.featureQue)
                 //iterate through ordinal vars to map to onehot, if value is invalid it will just zero them all
                 if(constants.ordinalVars[data.name] !== undefined){

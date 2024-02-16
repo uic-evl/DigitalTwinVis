@@ -35,10 +35,7 @@ export default function AttributionLegend(props){
             var res = props.simulation[simKey]['decision'+(props.currState+1)+'_attention'];
             //for the case of a fixed decision on the current attribution view
             if(res === undefined | res === 0){
-                console.log('res',res,props.simulation[simKey],simKey)
                 return
-                simKey = props.modelOutput;
-                res = props.simulation[props.modelOutput]['decision'+(props.currState+1)+'_attention'];
             }
             const colorScale = Utils.getColorScale('attributions',res.range[0],res.range[1]);
             

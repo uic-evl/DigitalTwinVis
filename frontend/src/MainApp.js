@@ -27,6 +27,7 @@ import DistanceHistogramD3 from './components/DistanceHistogramD3';
 import * as HelpTexts from './modules/Text';
 import HelpText from './modules/HelpText';
 import Tutorial from './components/Tutorial';
+import Feedback from './components/Feedback';
 import OutcomeContainer from './components/OutcomeContainer.js';
 
 function MainApp({authToken,setAuthToken}) {
@@ -86,7 +87,10 @@ function MainApp({authToken,setAuthToken}) {
   const [modelOutput,setModelOutput] = useState('imitation');
   const [currState, setCurrState] = useState(0);//0-2
 
-  const [cohortPredictions,setCohortPredictions] = useState();
+  const [fixedDecisionsCue, setFixedDecisionsCue] = useState([null,null,null]);
+  const [modelOutputCue,setModelOutputCue] = useState();
+  const [currStateCue, setCurrStateCue] = useState();
+
 
   const [cohortLoading,setCohortLoading] = useState(false);
   const [cohortEmbeddingsLoading,setCohortEmbeddingsLoading] = useState(false);
@@ -125,19 +129,6 @@ function MainApp({authToken,setAuthToken}) {
     setFeatureQue(newQ)
   }
 
-  // function getSimulation(){
-  //   if(!Utils.allValid([simulation,modelOutput])){return undefined}
-  //   let key = modelOutput;
-  //   // for(let i in fixedDecisions){
-  //   //   let d = fixedDecisions[i];
-  //   //   let di = parseInt(i) + 1
-  //   //   if(d >= 0){
-  //   //     let suffix = '_decision'+(di)+'-'+d;
-  //   //     key += suffix;
-  //   //   }
-  //   // }
-  //   return simulation[key]
-  // }
 
   function getUpdatedPatient(features,clear=false){
     let p = clear? {}: Object.assign({},patientFeatures);
@@ -153,7 +144,9 @@ function MainApp({authToken,setAuthToken}) {
     return p;
   }
 
-  
+  // const [fixedDecisionsCue, setFixedDecisionsCue] = useState([null,null,null]);
+  // const [modelOutputCue,setModelOutputCue] = useState();
+  // const [currStateCue, setCurrStateCue] = useState();
 
   function updatePatient(fQue){
     let newStack = [...previousPatientStack];
@@ -166,7 +159,31 @@ function MainApp({authToken,setAuthToken}) {
     setPreviousPatientStack(newStack);
     setFeatureQue({});
     
+    let newDecisions = [...fixedDecisions]
+    let fdChanged=false;
+    for(let i in newDecisions){
+      let qVal = fixedDecisionsCue[i]
+      if(qVal !== null && qVal !== newDecisions[i]){
+        newDecisions[i] = qVal;
+        fdChanged=true;
+      }
+    }
+    if(fdChanged){
+      setFixedDecisions(newDecisions);
+    }
+    setFixedDecisionsCue([null,null,null]);
+
+    if(modelOutputCue !== undefined && modelOutputCue !== modelOutput){
+      setModelOutput(modelOutputCue+"");
+    }
+    setModelOutputCue(undefined);
+
+    if(currStateCue !== undefined && currStateCue !== currState){
+      setCurrState(currStateCue+0);
+    }
+    setCurrStateCue(undefined);
   };
+
 
   async function fetchCohort(){
     if(cohortData !== undefined){ return }
@@ -237,17 +254,6 @@ function MainApp({authToken,setAuthToken}) {
     } else{
       console.log('error setting patient simulation');
       setCursor('default');
-    }
-  }
-
-  async function fetchCohortPredictions(){
-    setCohortPredictions(undefined);
-    const pred = await api.getCohortPredictions();
-    console.log('cohort predictions', pred);
-    if(pred.data !== undefined){
-      setCohortPredictions(pred.data)
-    } else{
-      console.log('error setting cohort predictions');
     }
   }
 
@@ -335,7 +341,6 @@ function MainApp({authToken,setAuthToken}) {
     }
     return sim
 
-    // return useAlt? [simulation[modelOutput],simulation[modelOutput+'_alt']]: simulation[modelOutput];
   }
 
   const Recommendation = useMemo(()=>{
@@ -380,7 +385,7 @@ function MainApp({authToken,setAuthToken}) {
   
   function makeButtonToggle(){
     var makeButton = (state,text)=>{
-      return Utils.makeStateToggles([state],currState,setCurrState,[text]);
+      return Utils.makeStateToggles([state],currStateCue,setCurrStateCue,[text],currState);
     }
 
     let toggles = [0,1,2];
@@ -390,9 +395,9 @@ function MainApp({authToken,setAuthToken}) {
     })
 
     function fixDecision(i,v){
-      let fd = fixedDecisions.map(i=>i);
+      let fd = fixedDecisionsCue.map(i=>i);
       fd[i] = v;
-      setFixedDecisions(fd);
+      setFixedDecisionsCue(fd);
     }
 
     let radioButtons = [0,1,2].map(i=>{
@@ -403,7 +408,7 @@ function MainApp({authToken,setAuthToken}) {
         return 'solid'
       }
       let getColor = (val) => {
-        if(fixedDecisions[i] == val){
+        if(fixedDecisionsCue[i] == val){
           return 'teal'
         } 
         return 'blue'
@@ -422,66 +427,60 @@ function MainApp({authToken,setAuthToken}) {
       return (<ButtonGroup 
         key={'fixedB'+i}
         isAttached
-        style={{'display':'inline-block','margin':10,'marginTop':'.75em'}}
+        style={{'display':'inline-block','margin':10,'marginTop':'.2em'}}
         spacing={0}
       >
         {btns}
       </ButtonGroup>)
     })
 
-    const ModelToggle = Utils.makeStateToggles(['optimal','imitation'],modelOutput,setModelOutput);
+    const ModelToggle = Utils.makeStateToggles(['optimal','imitation'],modelOutputCue,setModelOutputCue,undefined,modelOutput);
 
-    
     return (
       <>
+      <div style={{'textAlign': 'left','marginTop':'.2em'}}>
         <div className={'toggleButtonLabel'} key={'modelB'}>{"Model"}<HelpText text={HelpTexts.modelHelpText}></HelpText>{':'}</div>
         {ModelToggle}
-        <div style={{'display': 'inline','width':'auto'}}>{' | '}</div>
+      </div>
+      <div  style={{'textAlign': 'left','marginTop':'.2em'}}>
         <div className={'toggleButtonLabel'} key={'decisionB'}>{"Decision"}<HelpText text={HelpTexts.decisionHelpText}></HelpText>{':'}</div>
         {tempButtons}
-        <div style={{'display': 'inline','width':'auto'}}>{' | '}</div>
+      </div>
+      <div  style={{'textAlign': 'left','marginTop':'.2em'}}>
         <div className={'toggleButtonLabel'} key={'fixB'}>{'Fix Decisions'}<HelpText text={HelpTexts.fixHelpText}></HelpText>{':'}</div>
+        <br/>
         {radioButtons}
-        <div  style={{'display': 'inline','width':'auto'}}>{" |  "}</div>
-        <Tutorial style={{'display':'inline','width':'auto'}}></Tutorial>
+      </div>
       </>
     )
   }
 
-  const [userPanelOpen,setUserPanelOpen] = useState(true);
-  const panelRef = useRef();
+
   //patientDrawer
+
   function makeThing(){
     return (
       <Fragment>
-      <button
-        onClick={()=>setUserPanelOpen(true)}
-        style={{'width':'1em','height':'100%','top':'50%','padding':'0em','margin':'0em','backgroundColor':'grey'}}
-      ><FaChevronRight /></button>
-      <Drawer
-       isOpen={userPanelOpen}
-       placement={'left'}
-       finalFocusRef={panelRef}
-       onClose={()=>setUserPanelOpen(false)}
-       style={{'cursor':cursor,'height':'100%'}}
-      >
-      <DrawerOverlay style={{'cursor':cursor}}/>
-      <DrawerContent w={'30%'} maxW={'30%'} minW={'10em'} h={'calc(100% - 2em)'}>
-        <DrawerBody>
-        <DrawerCloseButton/>
         <Grid
-        templateRows='1.4em 1fr 10em 2em'
+        templateRows='1.6em 10em 1.4em 1fr 10em 2em'
         templateColumns='1fr 1fr'
         className={'fillSpace'}
         style={{'cursor':cursor,'height':'10em'}}
 
       >
         <GridItem colSpan={2} rowSpan={1} className={'title'}>
+          {'Model Parameters'}
+        </GridItem>
+        <GridItem colSpan={2} rowSpan={1} className={'scroll'}>
+          {makeButtonToggle()}
+        </GridItem>
+        <GridItem colSpan={2} rowSpan={1} className={'title'}>
           {'Patient Features'}
           <HelpText
             text={HelpTexts.featureHelpText}
           ></HelpText>
         </GridItem>
+
         <GridItem colSpan={2} rowSpan={1} className={'scroll'}>
             <PatientEditor
                 cohortData={cohortData}
@@ -505,6 +504,13 @@ function MainApp({authToken,setAuthToken}) {
                 setFixedDecisions={setFixedDecisions}
                 getSimulation={getSimulation}
                 brushedId={brushedId}
+
+                fixedDecisionsCue={fixedDecisionsCue}
+                modelOutputCue={modelOutputCue}
+                currStateCue={currStateCue}
+                setFixedDecisionsCue={fixedDecisionsCue}
+                setModelOutputCue={modelOutputCue}
+                setCurrStateCue={currStateCue}
 
             ></PatientEditor>
         </GridItem>
@@ -546,6 +552,7 @@ function MainApp({authToken,setAuthToken}) {
             featureQue={featureQue}
             modelOutput={modelOutput}
             simulation={simulation}
+            getSimulation={getSimulation}
             fixedDecisions={fixedDecisions}
             state={currState}
             useAttention={true}
@@ -572,10 +579,63 @@ function MainApp({authToken,setAuthToken}) {
         </GridItem>
 
       </Grid>
-      </DrawerBody></DrawerContent>
-      </Drawer>
       </Fragment>
     )
+  }
+
+  function makeRecomendationColumn(){
+    return (<Grid
+      h="100%"
+      w="100%"
+      templateRows='6em 1fr'
+    >
+      <GridItem className={'shadow'}>
+        {Recommendation}
+      </GridItem>
+      {/* <GridItem className={'shadow'}>
+        <div style={{'height': '1.5em','width':'100%'}} className={'title'}>
+          {'Dist. From Training Cohort'}
+          <HelpText text={HelpTexts.distHelpText} />
+        </div>
+        <div style={{'height': 'calc(100% - 1.5em)','width':'100%'}} >
+          <DistanceHistogramD3
+            mDists={mDists}
+            currState={currState}
+            currEmbeddings={currEmbeddings}
+          />
+        </div>
+      </GridItem> */}
+      <GridItem  className={'shadow'} style={{'overflowY':'hidden'}}>
+        <AuxillaryViews
+          cohortData={cohortData}
+          symptoms={symptoms}
+          cohortEmbeddings={cohortEmbeddings}
+          currState={currState}
+          setCurrState={setCurrState}
+          patientFeatures={patientFeatures}
+          currEmbeddings={currEmbeddings}
+          modelOutput={modelOutput}
+          simulation={simulation}
+          getSimulation={getSimulation}
+          patientEmbeddingLoading={patientEmbeddingLoading}
+          patientSimLoading={patientSimLoading}
+          cohortLoading={cohortLoading}
+          cohortEmbeddingsLoading={cohortEmbeddingsLoading}
+          fixedDecisions={fixedDecisions}
+          
+          updatePatient={updatePatient}
+
+          brushedId={brushedId}
+          setBrushedId={setBrushedId}
+
+          defaultPredictions={defaultPredictions}
+          setBrushedId={setBrushedId}
+          dltSvgPaths={dltSvgPaths}
+          lnSvgPaths={lnSvgPaths}
+          subsiteSvgPaths={subsiteSvgPaths}
+        ></AuxillaryViews>
+      </GridItem>
+    </Grid>)
   }
 
   return (
@@ -584,73 +644,23 @@ function MainApp({authToken,setAuthToken}) {
         <Spinner size={'xl'}></Spinner>
       </div>
       <Grid
-        h='calc(100% - 3em)'
+        h='calc(100% - 2em)'
         w='100%'
-        templateRows='3em repeat(2,1fr)'
-        templateColumns='1em max(25vw, 20em) repeat(2,1fr) max(35vw,25em)'
+        templateRows='2.5em repeat(2,1fr)'
+        templateColumns='1em max(20vw, 20em) repeat(2,1fr) max(25vw,20em)'
         gap={1}
         style={{'cursor':cursor}}
       >
 
-        <GridItem rowSpan={1} colSpan={6} className={'shadow'}>
-          {makeButtonToggle()}
+        <GridItem rowSpan={1} colSpan={6} className={'shadow title'} style={{'fontSize':'1.5em'}}>
+          {"OPC Digital Twin Outcome Predictions"}
+          <div  style={{'display': 'inline','width':'auto'}}>{" |  "}</div>
+          <Tutorial style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Tutorial>
+          {'  '}
+          <Feedback style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Feedback>
         </GridItem>
-        <GridItem  rowSpan={2} colSpan={1} className={'shadow'}>
-          {makeThing()}
-        </GridItem>
-        <GridItem rowSpan={2} colSpan={1}>
-          <Grid
-            h="100%"
-            w="100%"
-            templateRows='6em 8em 1fr'
-          >
-            <GridItem className={'shadow'}>
-              {Recommendation}
-            </GridItem>
-            <GridItem className={'shadow'}>
-              <div style={{'height': '1.5em','width':'100%'}} className={'title'}>
-                {'Dist. From Training Cohort'}
-                <HelpText text={HelpTexts.distHelpText} />
-              </div>
-              <div style={{'height': 'calc(100% - 1.5em)','width':'100%'}} >
-                <DistanceHistogramD3
-                  mDists={mDists}
-                  currState={currState}
-                  currEmbeddings={currEmbeddings}
-                />
-              </div>
-            </GridItem>
-            <GridItem  className={'shadow'} style={{'overflowY':'hidden'}}>
-              <AuxillaryViews
-                cohortData={cohortData}
-                symptoms={symptoms}
-                cohortEmbeddings={cohortEmbeddings}
-                currState={currState}
-                setCurrState={setCurrState}
-                patientFeatures={patientFeatures}
-                currEmbeddings={currEmbeddings}
-                modelOutput={modelOutput}
-                simulation={simulation}
-                getSimulation={getSimulation}
-                patientEmbeddingLoading={patientEmbeddingLoading}
-                patientSimLoading={patientSimLoading}
-                cohortLoading={cohortLoading}
-                cohortEmbeddingsLoading={cohortEmbeddingsLoading}
-                fixedDecisions={fixedDecisions}
-                
-                updatePatient={updatePatient}
-    
-                brushedId={brushedId}
-                setBrushedId={setBrushedId}
-
-                defaultPredictions={defaultPredictions}
-                setBrushedId={setBrushedId}
-                dltSvgPaths={dltSvgPaths}
-                lnSvgPaths={lnSvgPaths}
-                subsiteSvgPaths={subsiteSvgPaths}
-              ></AuxillaryViews>
-            </GridItem>
-          </Grid>
+        <GridItem  rowSpan={2} colSpan={2}>
+              {makeThing()}
         </GridItem>
         <GridItem rowSpan={2} colSpan={2} className={'shadow'}>
           <Grid 
@@ -681,36 +691,9 @@ function MainApp({authToken,setAuthToken}) {
             
           </Grid>
         </GridItem>
-        <GridItem  rowSpan={3} colSpan={1}>
-              <AuxillaryViews
-                cohortData={cohortData}
-                cohortEmbeddings={cohortEmbeddings}
-                currState={currState}
-                setCurrState={setCurrState}
-                patientFeatures={patientFeatures}
-                currEmbeddings={currEmbeddings}
-                modelOutput={modelOutput}
-                simulation={simulation}
-                getSimulation={getSimulation}
-                patientEmbeddingLoading={patientEmbeddingLoading}
-                patientSimLoading={patientSimLoading}
-                cohortLoading={cohortLoading}
-                cohortEmbeddingsLoading={cohortEmbeddingsLoading}
-                fixedDecisions={fixedDecisions}
-                
-                updatePatient={updatePatient}
-    
-                brushedId={brushedId}
-                setBrushedId={setBrushedId}
-
-                defaultPredictions={defaultPredictions}
-                dltSvgPaths={dltSvgPaths}
-                lnSvgPaths={lnSvgPaths}
-                subsiteSvgPaths={subsiteSvgPaths}
-                defaultView={'neighbors'}
-                showToggle={false}
-              ></AuxillaryViews>
-            </GridItem>
+        <GridItem rowSpan={2} colSpan={1}>
+          {makeRecomendationColumn()}
+        </GridItem>
       </Grid>
     </ChakraProvider>
   );

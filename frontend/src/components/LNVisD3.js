@@ -51,19 +51,13 @@ export default function LNVisD3(props){
                 if(props.simulation[props.modelOutput] !== undefined){
                     if(props.fixedDecisions[props.state] < 0){
                         let key = props.modelOutput;
-                        for(let i in props.fixedDecisions){
-                            let d = props.fixedDecisions[i];
-                            let di = parseInt(i) + 1
-                            if(d >= 0){
-                                let suffix = '_decision'+(di)+'-'+d;
-                                key += suffix;
-                            }
-                        }
                         const attributions = props.simulation[key]['decision'+(props.state + 1)+'_attention'];
-                        colorScale = Utils.getColorScale('attributions',attributions.range[0],attributions.range[1]);
-                        getAttention = name => attributions.baseline[name];
-                        getColorVal = (name,d) =>{
-                            return aScale(getAttention(name));
+                        if(attributions.range !== undefined){
+                            colorScale = Utils.getColorScale('attributions',attributions.range[0],attributions.range[1]);
+                            getAttention = name => attributions.baseline[name];
+                            getColorVal = (name,d) =>{
+                                return aScale(getAttention(name));
+                            }
                         }
                     }
                 }

@@ -20,7 +20,7 @@ export default function OutcomeContainer(props){
     const [outcomesView, setOutcomesView] = useState(outcomeViewOptions[outcomeViewOptions.length-1]);
     // const outcomeViewOptions = props.currState < 2? ['survival','all','endpoints','disease response','dlts','no dlts']: ['survival','endpoints'];
     function makeOutcomeToggle(){
-        return Utils.makeStateToggles(outcomeViewOptions,outcomesView,setOutcomesView);
+        return Utils.makeStateToggles(outcomeViewOptions,outcomesView,setOutcomesView,undefined,undefined);
     }
 
     const data = useMemo(()=>{
@@ -49,7 +49,7 @@ export default function OutcomeContainer(props){
         </div>
         <div style={{'height': 'calc(100% - 4em)','width':'100%'}} className={'noGutter'}>
         <div className={'fillSpace'} style={{'overflowX':'hidden'}}>
-            <div key={'survival'} style={{'height':'calc(100% - 12em)','width':'100%'}}>
+            <div key={'survival'} style={{'height':'100%','width':'100%'}}>
               <SurvivalPlots 
               sim={data.sim}
               altSim={data.altSim}
@@ -60,22 +60,7 @@ export default function OutcomeContainer(props){
               {...props}
               />
             </div>
-            <div style={{'height': '1.5em','width':'100%'}}>
-            <HelpText text={HelpTexts.outcomeHelpText}/>
-                {makeOutcomeToggle()}
-            </div>
-              <div style={{'height':'10em','width':'98%','margin':'.5%','overflow':'hidden'}}>
-                <AuxOutcomeBarchart
-                  className={'shadow'}
-                  sim={data.sim}
-                  altSim={data.altSim}
-                  neighbors={data.neighbors}
-                  cfs={data.cfs}
-                  decision={data.decision}
-                  currState={props.currState}
-                  outcomesView={outcomesView}
-                />
-              </div>
+           
               </div>
           </div>
         </>

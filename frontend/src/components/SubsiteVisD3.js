@@ -42,30 +42,24 @@ export default function SubsiteVisD3(props){
                 if(props.simulation[props.modelOutput] !== undefined){
                     if(props.fixedDecisions[props.state] < 0){
                         let key = props.modelOutput;
-                        for(let i in props.fixedDecisions){
-                            let d = props.fixedDecisions[i];
-                            let di = parseInt(i) + 1
-                            if(d >= 0){
-                                let suffix = '_decision'+(di)+'-'+d;
-                                key += suffix;
-                            }
-                        }
                         const attributions = props.simulation[key]['decision'+(props.state + 1)+'_attention'];
-                        const colorScale = Utils.getColorScale('attributions',attributions.range[0],attributions.range[1]);
-                        getAttribution = key => attributions.baseline['subsite_'+key];
-                        getFill = d => {
-                            if(d.name === 'outline'){
-                                return props.data.subsite_NOS? 'grey': 'none';
+                        if(attributions.range !== undefined){
+                            const colorScale = Utils.getColorScale('attributions',attributions.range[0],attributions.range[1]);
+                            getAttribution = key => attributions.baseline['subsite_'+key];
+                            getFill = d => {
+                                if(d.name === 'outline'){
+                                    return props.data.subsite_NOS? 'grey': 'none';
+                                }
+                                if(!d.usable){
+                                    return 'none'
+                                } 
+                                let cval = getAttribution(d.key);
+                                //if zero, use white. If a value that isn't in the model (pharyngeal wall), use 0 attribution color
+                                if(cval === 0 | cval === undefined){
+                                    return d.value >= 1? colorScale(0): 'white';
+                                }
+                                return colorScale(cval);
                             }
-                            if(!d.usable){
-                                return 'none'
-                            } 
-                            let cval = getAttribution(d.key);
-                            //if zero, use white. If a value that isn't in the model (pharyngeal wall), use 0 attribution color
-                            if(cval === 0 | cval === undefined){
-                                return d.value >= 1? colorScale(0): 'white';
-                            }
-                            return colorScale(cval);
                         }
                     }
                 }

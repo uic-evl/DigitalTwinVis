@@ -40,12 +40,7 @@ export default function AttributionPlotD3(props){
         }
         return t;
     }
-    // useMemo(()=>{
-    //     if(props.defaultPredictions !== undefined){
-    //         const defaultP = props.defaultPredictions[props.modelOutput][constants.DECISIONS[props.currState]]
-    //         console.log('default pred',defaultP);
-    //     }
-    // },[props.defaultPredictions,props.modelOutput,props.currState]);
+ 
     function getSimulationKey(){
         if(!Utils.allValid([props.simulation,props.modelOutput,props.fixedDecisions])){return undefined}
         return props.modelOutput
@@ -93,7 +88,6 @@ export default function AttributionPlotD3(props){
                 let isPd = key == 'pd';
                 let isNd = key == 'nd';
                 if(newData === undefined){
-                    console.log('key invalid',key,res);
                     continue
                 }
                 for(const [key2,val] of Object.entries(newData)){
@@ -159,7 +153,6 @@ export default function AttributionPlotD3(props){
             // const centerX = negativeTotal > positiveTotal? labelSpacing + xScale(negativeTotal) - xScale(positiveTotal): labelSpacing;
             const centerX = width/2;
             if(res.range === undefined){
-                console.log('nooo',res)
                 return
             }
             const colorScale = Utils.getColorScale('attributions',res.range[0],res.range[1]);

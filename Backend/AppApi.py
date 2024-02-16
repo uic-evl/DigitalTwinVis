@@ -386,6 +386,20 @@ def get_default_model_inputs(dataset):
         res.append(xin)
     return res
 
+def get_inputs(dataset,states=[0,1,2],decimals=2):
+    inputs = []
+    for i,state in enumerate(states):
+        x = get_decision_input(dataset,state=state)
+        inputs.append(np.concatenate([xx.values for xx in x],axis=1))
+    return inputs
+
+def alt_mahalanobis_distances(dataset,state=1):
+    inputs = get_inputs(dataset,states=[state])[0].astype(float)
+    dists =calculateMahalanobis(inputs,inputs) 
+    return np.array(dists)
+
+def alt_mdist_outlier_threshold(dataset):
+    return [m.mean() + 2*m.std() for m in [alt_mahalanobis_distances(dataset,s) for s in [0,1,2]]]
 
 #changed
 def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisionmodel,survival_model,
@@ -640,6 +654,18 @@ def get_stuff_for_patient(patient_dict,data,tmodel1,tmodel2,outcomemodel,decisio
             scurve_entry[name] = scurve
         scurve_entry['times'] = timepoints
         entry['survival_curves'] = scurve_entry
+        
+        scurve_bootstrap_entries = {}
+        for i in range(20):
+            survival_model.enable_dropout()
+            survival_curves_sample = survival_model(tinput3,timepoints)
+            for name,scurve in zip(tte_order,survival_curves_sample):
+                e = scurve_bootstrap_entries.get(name,[])
+                scurve = [np.round(v.cpu().detach().numpy()[0],3) for v in scurve]
+                e.append(scurve)
+                scurve_bootstrap_entries[name] = e
+        survival_model.disable_dropout()
+        entry['survival_curves_bootstrapped'] = scurve_bootstrap_entries
         #put the 4year probability for the timeseries input in case I want to override the other model
         fouryear_probs = survival_model(tinput3,48)
         for name, probs in zip(tte_order,fouryear_probs):

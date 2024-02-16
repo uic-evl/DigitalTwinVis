@@ -67,10 +67,23 @@ hr:after {
   padding-top: .2em;
   padding-bottom: .2em;
   border-radius: .2em!important;
+  border: .1rem solid white;
   margin: 0em;
   font-weight: bold;
   cursor: pointer;
   box-shadow: 1px 1px 5px 1px rgba(0, 0, 0, 0.25);
+}
+
+
+.toggleButtonCue {
+  background-color: #eeeeee;
+  cursor: default!important;
+  color: black;
+  box-shadow: none;
+}
+
+.toggleButtonActive {
+  border: .2rem solid black;
 }
 
 .toggleButtonLabel{
@@ -113,13 +126,6 @@ hr:after {
   padding: 0!important;
 }
 
-.toggleButtonActive {
-  border: .1rem solid grey;
-  background-color: #eeeeee;
-  cursor: default!important;
-  color: black;
-  box-shadow: none;
-}
 
 .d3-component{
   height: 100%!important;

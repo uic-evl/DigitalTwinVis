@@ -430,13 +430,20 @@ export default class Utils {
         return false
     }
 
-    static makeStateToggles(names,stateAttr,setStateAttr,displayNames=undefined){
+    static makeStateToggles(names,stateAttr,setStateAttr,displayNames=undefined,secondaryAttr=undefined){
         return names.map((n,i)=>{
             const active = n === stateAttr;
             const onClick = active? ()=>{}: ()=>setStateAttr(n);
             var className = 'toggleButton';
             if(active){
-                className += ' toggleButtonActive';
+                if(secondaryAttr === undefined){
+                    className += ' toggleButtonCue'
+                } else{
+                    className += ' toggleButtonActive';
+                }
+            }
+            if(n === secondaryAttr){
+                className += ' toggleButtonCue'
             }
             let displayName =  this.getVarDisplayName(n);
             if(displayNames !== undefined){
@@ -447,7 +454,7 @@ export default class Utils {
     }
 
     static getTreatmentGroups(sim,currEmbeddings,cohortData,currState,cohortEmbeddings,minN=5){
-
+        if(sim === undefined){ return [[],[],0]}
         const currDecision = sim.currDecision;
         const propensity = sim['propensity'+(currState+1)];
 
@@ -494,7 +501,6 @@ export default class Utils {
         cfCount = cfs.length;
         cScale += cIncrement;
         }
-        console.log('neighbors',neighbors,cfs)
         return [neighbors, cfs,(cScale-cIncrement)*propensity]
     }
 
