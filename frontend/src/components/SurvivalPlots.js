@@ -34,8 +34,9 @@ export default function SurvivalPlots(props){
     const xTickSpacing = 20;
     const yTickSpacing = 40;
     const titleSpacing = 20;
-    const legendSpacing = Math.min(width/2,Math.max(80,width/10));
+    const legendSpacing = Math.min(width/2,Math.max(150,width/5));
     const maxTime = 60;
+    const fixedTimes = [24,60];
     useEffect(()=>{
         if(svg === undefined | props.sim === undefined | props.altSim === undefined){return}
         const sim = props.sim;
@@ -49,9 +50,10 @@ export default function SurvivalPlots(props){
         const chartHeight = (height/curvesToPlot.length) - 1.5*yMargin;
         const chartWidth = width - 2*xMargin;
         const times = survivalCurves.times.filter(d=>d<=maxTime);
+        const legendStart = width-xMargin-legendSpacing;
         const xScale = d3.scaleLinear()
             .domain([times[0],times[times.length-1]])
-            .range([xMargin + yTickSpacing,width-xMargin-legendSpacing]);
+            .range([xMargin + yTickSpacing,legendStart]);
         const lineColors = sim.currDecision >= .5? [constants.dnnColor,constants.dnnColorNo,constants.knnColor,constants.knnColorNo]: [constants.dnnColorNo,constants.dnnColor,constants.knnColorNo,constants.knnColor];
         
         function makeChart(name,topPos){
@@ -68,11 +70,6 @@ export default function SurvivalPlots(props){
                 .domain([0,1])
                 .range([topPos + chartHeight - xTickSpacing, topPos + titleSpacing]);
             const lineFunc = d3.line()
-                // .x(d=>d.x)
-                // .y(d=>d.y);
-                // .x((d,i) => xScale(times[i]))
-                // .y(d=>yScale(d));
-
             const selector=name.replace('.','').replace(')','').replace('(','').replace('.','').replace(' ','').replace(' ','');
 
             svg.selectAll('g').filter('.g'+selector).remove();
@@ -98,14 +95,15 @@ export default function SurvivalPlots(props){
                     let cx = xScale(times[i]);
                     let cy = yScale(cVals[i]);
                     path.push([cx,cy]);
-                    pointData.push({
+                    const pEntry = {
                         'x': cx,
                         'y': cy,
                         'color': lineColors[ii],
                         'value': cVals[i],
                         'time': times[i],
                         'name': curveNames[curveData.length],
-                    })
+                    };
+                    pointData.push(pEntry);
                 }
                 curveData.push({
                     'path': lineFunc(path),
@@ -116,6 +114,7 @@ export default function SurvivalPlots(props){
                 })
             }
 
+            
             for(let nList of [props.neighbors,props.cfs]){
                 let pCurve = [];
                 let pcts = [];
@@ -128,14 +127,15 @@ export default function SurvivalPlots(props){
                     let cx = xScale(time);
                     let cy = yScale(pctAbove);
                     pCurve.push([xScale(time),yScale(pctAbove)]);
-                    pointData.push({
+                    const pEntry = {
                         'x': cx,
                         'y': cy,
                         'color': lineColors[curveData.length],
                         'value': pctAbove,
                         'time': time,
                         'name': curveNames[curveData.length],
-                    })
+                    }
+                    pointData.push(pEntry);
                 }
                 curveData.push({
                     'path': lineFunc(pCurve),
@@ -145,6 +145,7 @@ export default function SurvivalPlots(props){
                     'values': pcts,
                 });
             }
+
 
             var currCurve = 0;
             var curveStuff = [[curvesTop,curvesBottom],[altTop,altBottom]];
@@ -173,7 +174,6 @@ export default function SurvivalPlots(props){
 
                 currCurve += 1;
             }
-            console.log(CICurveData)
             var CIPath = g.selectAll('path').filter('.ciPath'+selector).data(CICurveData,(d,i) =>d.name+i+'ci');
             //use different lines, keep extents so people don't see 
             CIPath.enter()
@@ -311,65 +311,85 @@ export default function SurvivalPlots(props){
                 .attr('pointer-events','none')
                 .attr('stroke-opacity',d=>d.isBound? .5:1);
 
-            //old code to draw a legend with fixed dates
-            // const lX = xScale.range()[1]+2;
-            // var lY = yScale(1);
-            // const lTextSize = Math.min(16,xTickSpacing*.8);
-            // const lWidth = Math.min(legendSpacing/2,lTextSize);
-            // var legendData = [{
-            //     'color': 'none',
-            //     'x': 0,
-            //     'y': lY,
-            //     'textX': lX + (lWidth),
-            //     'text': 'Median Time',
-            //     'size': lTextSize,
-            //     'name': ''
-            // }];
-            // lY += lWidth*1.2 + 2
-            // for(let tte of ttes){
-            //     let color = lineColors[legendData.length-1];
-            //     legendData.push({
-            //         'color': color,
-            //         'x': lX,
-            //         'textX': lX+lWidth+2,
-            //         'y': lY,
-            //         'text': tte === Infinity? 'Indefinite' : tte.toFixed(0) + ' m',// tte <= 48? tte.toFixed(0)+'m': '>4Yr' ,
-            //         'size': lTextSize,
-            //         'name': curveNames[legendData.length-1],
-            //     });
-            //     lY += lWidth + 2;
-            // }
-            // g.selectAll('.legendItem'+selector).remove();
-            // g.selectAll('.legendItem'+selector).filter('rect')
-            //     .data(legendData).enter()
-            //     .append('rect').attr('class','legendItem'+selector)
-            //     .attr('x',d=>d.x).attr('y',d=>d.y)
-            //     .attr('width',lWidth).attr('height',lWidth)
-            //     .attr('fill',d=>d.color)
-            //     .on('mouseover',function(e,d){
-            //         let string=d.name;
-            //         if(d.text === 'Indefinite'){
-            //             string += '</br> >50% Survive after their last follow up'
-            //         } else{
-            //             string += '</br>Median Survival: '+d.text + 'onths';
-            //         }
-                    
-            //         tTip.html(string);
-            //     }).on('mousemove', function(e){
-            //         Utils.moveTTipEvent(tTip,e);
-            //     }).on('mouseout', function(e){
-            //         Utils.hideTTip(tTip);
-            //     });
+            const lXScale = d3.scaleLinear()
+                .domain([0,1])
+                .range([0, width- 2*xMargin - legendStart]);
+            var lData = [];
+            var lTitles = [];
+            var lYPos = topPos - yMargin/2;
+            const lStroke = 2;
+            var lMargin = .5;
+            var lBarHeight = (chartHeight)/(fixedTimes.length*5) - lMargin - lStroke;
+            for(let t of fixedTimes){
+                lTitles.push({
+                    'y': lYPos,
+                    'text': Utils.getNameShort(name) + ' @ ' + (t/12).toFixed(0) + ' Yrs',
+                })
+                lYPos += lBarHeight;
+                let fPoints = pointData.filter(d=>d.time === t);
+                let ii = 0;
+                for(let fp of fPoints){
+                    let lEntry = {
+                        'color': fp.color,
+                        'name': fp.name,
+                        'time': t,
+                        'value': fp.value,
+                        'width': lXScale(fp.value),
+                        'x': legendStart + xMargin,
+                        'y': lYPos,
+                        'height': lBarHeight,
+                    }
+                    lData.push(lEntry);
+                    lYPos += lBarHeight + lMargin + lStroke;
+                }
+                lYPos += yMargin/2
+            }
 
-            // g.selectAll('.legendItem'+selector).filter('text')
-            //     .data(legendData).enter()
-            //     .append('text').attr('class','legendItem'+selector)
-            //     .attr('x',d=>d.textX).attr('y',d=>d.y+(lWidth/2))
-            //     .attr('font-size',d=>d.size)
-            //     .attr('dominant-baseline','middle')
-            //     .attr('font-weight',(d,i)=> i===0? 'bold':'')
-            //     .attr('text-anchor',(d,i)=> i===0? 'middle':'start')
-            //     .text(d=>d.text)
+            g.selectAll('.legendBar'+selector).remove();
+            g.selectAll('.legendBar'+selector).data(lData)
+                .enter().append('rect')
+                .attr('class','legendBar'+selector)
+                .attr('x',d=>d.x).attr('y',d=>d.y)
+                .attr('fill',d=>d.color)
+                .attr('height',d=>d.height)
+                .attr('width',d=>d.width)
+                .attr('opacity',.75);
+
+            g.selectAll('.legendBarOutline'+selector).remove();
+            g.selectAll('.legendBarOutline'+selector).data(lData)
+                .enter().append('rect')
+                .attr('class','legendBarOutline'+selector)
+                .attr('x',d=>d.x).attr('y',d=>d.y)
+                .attr('stroke','black')
+                .attr('fill','none').attr('stroke-width',lStroke)
+                .attr('height',d=>d.height)
+                .attr('width',lXScale(1));
+
+            g.selectAll('.legendBarText'+selector).remove();
+            g.selectAll('.legendBarText'+selector).data(lData)
+                .enter().append('text')
+                .attr('class','legendBarOutline'+selector)
+                .attr('x',legendStart+lXScale(.5))
+                .attr('y',d=>d.y + (lBarHeight/2) + (lStroke/2))
+                .attr('text-anchor','middle')
+                .attr('dominant-baseline','middle')
+                .attr('font-size',lBarHeight/1.3)
+                .attr('font-weight','bold')
+                .attr('stroke','white').attr('stroke-width',.2)
+                .text(d=>(100*d.value).toFixed(0)+'%');
+
+            g.selectAll('.legendBarTitle'+selector).remove();
+            g.selectAll('.legendBarTitle'+selector).data(lTitles)
+                .enter().append('text')
+                .attr('class','legendBarOutline'+selector)
+                .attr('x',legendStart + xMargin)
+                .attr('y',d=>d.y + (lBarHeight/2) + (lStroke/2))
+                .attr('text-anchor','start')
+                .attr('dominant-baseline','middle')
+                .attr('font-size',lBarHeight/1)
+                .attr('font-weight','bold')
+                .text(d=>d.text);
+            
         }
         var currPos = yMargin;
         for(let cName of curvesToPlot){

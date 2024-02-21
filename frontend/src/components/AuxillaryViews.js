@@ -20,8 +20,8 @@ export default function AuxillaryViews(props){
 
     const container = useRef();
 
-    const auxViewOptions = ['attributions','symptoms','scatterplot'];
-    const auxViewLabels =['Feature Importance','Symptoms','Scatterplot']
+    const auxViewOptions = ['attributions','symptoms','neighbors','scatterplot'];
+    const auxViewLabels =['Features','Symptoms','Similar','Scatterplot']
     // const auxViewOptions = ['survival','attributions','neighbors','scatterplot'];
     // const auxViewLabels =['Survival','Feature Importance','Similar Patients','Scatterplot']
     const [auxView,setAuxView] = useState(props.defaultView? props.defaultView:'attributions');

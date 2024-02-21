@@ -395,7 +395,7 @@ export default function PatientEditor(props){
 
         function makeEditorRow(data,i){
             return (
-            <div  key={i+data.name+props.featureQue[data.name]} style={{'height':'3em','width':'100%','marginTop':'.1em'}}>
+            <div  key={i+data.name+props.featureQue[data.name]+container.current.clientWidth} style={{'height':'3em','width':'100%','marginTop':'.1em'}}>
                 <div style={{'width':'100%','height':'1.3em','margin':'0px'}}>
                     <div className={'centerText'} style={{'display':'inline-flex','width':'100%','height':'100%','fontSize':'.8em','fontWeight':'bold'}}>
                         {Utils.getFeatureDisplayName(data.name)}
@@ -438,10 +438,13 @@ export default function PatientEditor(props){
             </div>
             )
         }
-
-        const views = markers.map((d,i)=>makeEditorRow(d,i));
-        setPatientViews(views);
+        if(container.current){
+            const views = markers.map((d,i)=>makeEditorRow(d,i));
+            setPatientViews(views);
+        }
     };
+
+    const cWidth = container.current? container.current.clientWidth: 0;
 
     useEffect(()=>{
         draw();
@@ -451,6 +454,7 @@ export default function PatientEditor(props){
         props.simulation,
         props.featureQue,
         // allVars,
+        cWidth,
         props.fixedDecisions,
         props.modelOutput]) 
 

@@ -42,6 +42,7 @@ export default class Utils {
         'time_to_event': 'Event',
     }
 
+    
     static getColorScale(name,min,max){
         if(name === 'attention' | name === 'attributions'){
             min = min === undefined? -.1: min;
@@ -108,6 +109,14 @@ export default class Utils {
             name = this.nameDict[varName]
         } else{
             name = this.unPythonCase(varName);
+        }
+        return name;
+    }
+
+    static getNameShort(vname){
+        let name = this.nameDictShort[vname];
+        if(name === undefined){
+            return this.getVarDisplayName(name);
         }
         return name;
     }

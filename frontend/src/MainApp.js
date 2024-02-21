@@ -4,15 +4,7 @@ import './App.css';
 
 // 1. import `ChakraProvider` component
 import { ChakraProvider, Grid, GridItem,  Button, ButtonGroup, Spinner} from '@chakra-ui/react';
-import {
-  Drawer,
-  DrawerOverlay,
-  DrawerBody,
-  DrawerContent,
-  DrawerCloseButton,
-} from '@chakra-ui/react'
 
-import { FaChevronRight } from "react-icons/fa";
 
 import DataService from './modules/DataService';
 import Utils from './modules/Utils';
@@ -30,7 +22,8 @@ import Tutorial from './components/Tutorial';
 import Feedback from './components/Feedback';
 import OutcomeContainer from './components/OutcomeContainer.js';
 
-function MainApp({authToken,setAuthToken}) {
+export default function MainApp({authToken,setAuthToken}) {
+
 
   const defaultPatient = {
     'T-category_1': 1,
@@ -460,28 +453,29 @@ function MainApp({authToken,setAuthToken}) {
 
   function makeThing(){
     return (
-      <Fragment>
-        <Grid
-        templateRows='1.6em 10em 1.4em 1fr 10em 2em'
-        templateColumns='1fr 1fr'
-        className={'fillSpace'}
-        style={{'cursor':cursor,'height':'10em'}}
+      // <Fragment>
+      //   <Grid
+      //   templateRows='1.6em 10em 1.4em 1fr 10em 2em'
+      //   templateColumns='1fr 1fr'
+      //   className={'fillSpace'}
+      //   style={{'cursor':cursor,'height':'10em'}}
 
-      >
-        <GridItem colSpan={2} rowSpan={1} className={'title'}>
+      // >
+      <div className={'fillSpace'} style={{'overflowY':'hidden','width':'100%','height':'100%'}}>
+        <div className={'title'} style={{'height':'1.6em','width':'100%'}}>
           {'Model Parameters'}
-        </GridItem>
-        <GridItem colSpan={2} rowSpan={1} className={'scroll'}>
+        </div>
+        <div style={{'height':'10em','width':'100%'}} className={'scroll'}>
           {makeButtonToggle()}
-        </GridItem>
-        <GridItem colSpan={2} rowSpan={1} className={'title'}>
+        </div>
+        <div style={{'display':'flex','height':'1.4em','width':'100%'}} className={'title'}>
           {'Patient Features'}
           <HelpText
             text={HelpTexts.featureHelpText}
           ></HelpText>
-        </GridItem>
+        </div>
 
-        <GridItem colSpan={2} rowSpan={1} className={'scroll'}>
+        <div style={{'display':'flex','height':'calc(100% - 13em - 12em - 1em)','width':'100%'}} className={'scroll'}>
             <PatientEditor
                 cohortData={cohortData}
                 cohortEmbeddings={cohortEmbeddings}
@@ -513,13 +507,13 @@ function MainApp({authToken,setAuthToken}) {
                 setCurrStateCue={currStateCue}
 
             ></PatientEditor>
-        </GridItem>
-        <GridItem>
+        </div>
+        <div style={{'display':'inline-block','height':'10em','width':'45%'}}>
           <div className={'title'} style={{'height': '1.5em'}}>
             {'Subsite'}
             <HelpText text={HelpTexts.subsiteHelpText}/>
             </div>
-          <div style={{'height': 'calc(100% - 1.5em)'}}>
+          <div style={{'height': 'calc(100% - 1.5em)','width':'100%'}}>
           <SubsiteVisD3
             data={patientFeatures}//required
             featureQue={featureQue}
@@ -535,13 +529,13 @@ function MainApp({authToken,setAuthToken}) {
           />
           </div>
           
-        </GridItem>
-        <GridItem colSpan={1} rowSpan={1}>
+        </div>
+        <div style={{'display':'inline-block','height':'10em','width':'45%'}}>
           <div className={'title'} style={{'height': '1.5em'}}>
             {'Lymph Nodes'}
             <HelpText text={HelpTexts.LNHelpText}/>
           </div>
-          <div style={{'height': 'calc(100% - 1.5em)'}}>
+          <div style={{'height': 'calc(100% - 1.5em)','width':'100%'}}>
           <LNVisD3
             lnSvgPaths={lnSvgPaths}
             data={patientFeatures}
@@ -558,8 +552,8 @@ function MainApp({authToken,setAuthToken}) {
             useAttention={true}
           />
           </div>
-        </GridItem>
-        <GridItem w='100%' h='100%' colSpan={2} rowSpan={1} mt={2}>
+        </div>
+        <div style={{'height':'1.5em','width':'100%'}}>
           <Button 
             onClick={()=>updatePatient(featureQue)}
             variant={'outline'}
@@ -576,36 +570,19 @@ function MainApp({authToken,setAuthToken}) {
             colorScheme={'grey'}
             onClick={()=>queDefaultPatient()}
             >{'Default'}</Button>
-        </GridItem>
+        </div>
 
-      </Grid>
-      </Fragment>
+      </div>
     )
   }
 
   function makeRecomendationColumn(){
-    return (<Grid
-      h="100%"
-      w="100%"
-      templateRows='6em 1fr'
-    >
-      <GridItem className={'shadow'}>
+    return (
+      <div className={'fillSpace'}>
+      <div className={'shadow'} style={{'width':'100%','height':'6em'}}>
         {Recommendation}
-      </GridItem>
-      {/* <GridItem className={'shadow'}>
-        <div style={{'height': '1.5em','width':'100%'}} className={'title'}>
-          {'Dist. From Training Cohort'}
-          <HelpText text={HelpTexts.distHelpText} />
-        </div>
-        <div style={{'height': 'calc(100% - 1.5em)','width':'100%'}} >
-          <DistanceHistogramD3
-            mDists={mDists}
-            currState={currState}
-            currEmbeddings={currEmbeddings}
-          />
-        </div>
-      </GridItem> */}
-      <GridItem  className={'shadow'} style={{'overflowY':'hidden'}}>
+      </div>
+      <div className={'shadow'} style={{'overflowY':'hidden','width':'100%','height':'calc(100% - 6em)'}}>
         <AuxillaryViews
           cohortData={cohortData}
           symptoms={symptoms}
@@ -634,69 +611,156 @@ function MainApp({authToken,setAuthToken}) {
           lnSvgPaths={lnSvgPaths}
           subsiteSvgPaths={subsiteSvgPaths}
         ></AuxillaryViews>
-      </GridItem>
-    </Grid>)
+      </div>
+    </div>)
   }
 
+  function makeOutcomeStuff(){
+    return (
+      <div style={{'overflowY':'scroll','width':'100%','height':'100%'}}>
+        <OutcomeContainer
+          cohortData={cohortData}
+          cohortEmbeddings={cohortEmbeddings}
+          currState={currState}
+          setCurrState={setCurrState}
+          patientFeatures={patientFeatures}
+          currEmbeddings={currEmbeddings}
+          modelOutput={modelOutput}
+          simulation={simulation}
+          getSimulation={getSimulation}
+          patientEmbeddingLoading={patientEmbeddingLoading}
+          patientSimLoading={patientSimLoading}
+          cohortLoading={cohortLoading}
+          cohortEmbeddingsLoading={cohortEmbeddingsLoading}
+          fixedDecisions={fixedDecisions}
+        ></OutcomeContainer>
+      </div>
+      )
+  }
+
+  const colWidths = ['25vw','45vw','25vw'];
+  const [colAdjust, setColAdjust] = useState([0,0,0]);
+
+  function getColWidth(i){
+    return colAdjust[i] > 0? 'calc(' + colWidths[i] + ' + ' + colAdjust[i] + 'px)': 'calc(' + colWidths[i] + ' - ' + Math.abs(colAdjust[i]) + 'px)';
+  }
+
+
+
   return (
-    <ChakraProvider style={{'height':'50%'}}>
-      <div style={{'position':'absolute','width': '100vw','height':'100vh','opacity': .5, 'display': cursor == 'default'? 'none':'','backgroundColor':'white','zIndex':1000000000000000000}}>
+    <ChakraProvider style={{'height':'100%'}}>
+      <div style={{'position':'absolute','width': '100vw','height':'100vh','opacity': .5, 'display': cursor == 'default'? 'none':'','backgroundColor':'white','zIndex':100000000000000}}>
         <Spinner size={'xl'}></Spinner>
       </div>
-      <Grid
-        h='calc(100% - 2em)'
-        w='100%'
-        templateRows='2.5em repeat(2,1fr)'
-        templateColumns='1em max(20vw, 20em) repeat(2,1fr) max(25vw,20em)'
-        gap={1}
-        style={{'cursor':cursor}}
-      >
-
-        <GridItem rowSpan={1} colSpan={6} className={'shadow title'} style={{'fontSize':'1.5em'}}>
-          {"OPC Digital Twin Outcome Predictions"}
-          <div  style={{'display': 'inline','width':'auto'}}>{" |  "}</div>
-          <Tutorial style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Tutorial>
-          {'  '}
-          <Feedback style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Feedback>
-        </GridItem>
-        <GridItem  rowSpan={2} colSpan={2}>
-              {makeThing()}
-        </GridItem>
-        <GridItem rowSpan={2} colSpan={2} className={'shadow'}>
-          <Grid 
-            h="100%"
-            w="100%"
-            templateRows='1fr 6em'
-            templateColumns='1fr'
-          >
-            <GridItem rowSpan={2} style={{'overflowY':'scroll'}}>
-              <OutcomeContainer
-                cohortData={cohortData}
-                cohortEmbeddings={cohortEmbeddings}
-                currState={currState}
-                setCurrState={setCurrState}
-                patientFeatures={patientFeatures}
-                currEmbeddings={currEmbeddings}
-                modelOutput={modelOutput}
-                simulation={simulation}
-                getSimulation={getSimulation}
-                patientEmbeddingLoading={patientEmbeddingLoading}
-                patientSimLoading={patientSimLoading}
-                cohortLoading={cohortLoading}
-                cohortEmbeddingsLoading={cohortEmbeddingsLoading}
-                fixedDecisions={fixedDecisions}
-              ></OutcomeContainer>
-              {/* {Outcomes} */}
-            </GridItem>
-            
-          </Grid>
-        </GridItem>
-        <GridItem rowSpan={2} colSpan={1}>
+      <div className={'shadow title'} style={{'fontSize': '1.5em','width': '95%','height': '2em','margin':'0px'}}>
+        {"OPC Digital Twin Outcome Predictions"}
+        <div  style={{'display': 'inline','width':'auto'}}>{" |  "}</div>
+        <Tutorial style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Tutorial>
+        {'  '}
+        <Feedback style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Feedback>
+      </div>
+      <div style={{'display':'flex','justifyContent':'center', 'height': 'calc(95vh - 2em)','overflow':'hidden'}}>
+        <div style={{'height': '100%','width': getColWidth(0),'margin':'.2em','display':'inline-flex'}} className={'shadow'}>
+          {makeThing()}
+        </div>
+        <DraggableComponentX colAdjust={colAdjust} setColAdjust={setColAdjust} index={0} style={{'width':'1em','height':'100%'}}/>
+        <div style={{'height': '100%','width': getColWidth(1),'margin':'.2em','display':'inline-flex'}} className={'shadow scroll'}>
+          {makeOutcomeStuff()}
+        </div>
+        <DraggableComponentX colAdjust={colAdjust} setColAdjust={setColAdjust} index={1} style={{'width':'1em','height':'100%'}}/>
+        <div style={{'height': '100%','width': getColWidth(2),'margin':'.2em','display':'inline-flex'}} className={'shadow'}>
           {makeRecomendationColumn()}
-        </GridItem>
-      </Grid>
+        </div>
+      </div>
     </ChakraProvider>
-  );
+  )
+
+  // return (
+  //   <ChakraProvider style={{'height':'50%'}}>
+  //     <div style={{'position':'absolute','width': '100vw','height':'100vh','opacity': .5, 'display': cursor == 'default'? 'none':'','backgroundColor':'white','zIndex':1000000000000000000}}>
+  //       <Spinner size={'xl'}></Spinner>
+  //     </div>
+  //     <Grid
+  //       h='calc(100% - 2em)'
+  //       w='100%'
+  //       templateRows='2.5em 1fr 1em'
+  //       templateColumns={`${getColWidth(0)} .5em ${getColWidth(1)} .5em ${getColWidth(2)}`}
+  //       gap={1}
+  //       style={{'cursor':cursor}}
+  //     >
+
+  //       <GridItem rowSpan={1} colSpan={5} className={'shadow title'} style={{'fontSize':'1.5em'}}>
+  //         {"OPC Digital Twin Outcome Predictions"}
+  //         <div  style={{'display': 'inline','width':'auto'}}>{" |  "}</div>
+  //         <Tutorial style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Tutorial>
+  //         {'  '}
+  //         <Feedback style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Feedback>
+  //       </GridItem>
+    
+  //       <GridItem rowSpan={1} colSpan={1} className={'shadow'} style={{'overflowY':'hidden'}}>
+  //           {makeThing()}
+  //       </GridItem>
+  //       <GridItem rowSpan={1} colSpan={1}>
+  //         <DraggableComponentX colAdjust={colAdjust} setColAdjust={setColAdjust} index={0} />
+  //       </GridItem>
+  //       <GridItem rowSpan={1} colSpan={1} className={'shadow'} style={{'overflowY':'scroll'}}>
+  //       {makeOutcomeStuff()}
+  //       </GridItem>
+  //       <GridItem rowSpan={1} colSpan={1}>
+  //         <DraggableComponentX colAdjust={colAdjust} setColAdjust={setColAdjust} index={1} />
+  //       </GridItem>
+  //       <GridItem rowSpan={1} colSpan={1}> 
+  //         {makeRecomendationColumn()}
+  //       </GridItem>
+  //     </Grid>
+  //   </ChakraProvider>
+  // );
+
 }
 
-export default MainApp;
+const DraggableComponentX = (props) => {
+  const [pressed, setPressed] = useState(false)
+  const [position, setPosition] = useState(0);
+  const [startPosition, setStartPosition] = useState(0);
+
+  const [linePosition,setLinePosition] = useState(0);
+  const [lineHeight,setLineHeight] = useState(0);
+  const ref = useRef()
+
+  // Update the current position if mouse is down
+  const upDatePosition = (event,target) => {
+    if (ref.current) {
+      var moveX = (event.clientX - startPosition);
+      if(Math.abs(moveX) > window.screen.width/5){
+        moveX = Math.sign(moveX) * (window.screen.width/5);
+      }
+      var newAdjusts = [...props.colAdjust];
+      newAdjusts[props.index] = newAdjusts[props.index] + moveX;
+      newAdjusts[props.index+1] = newAdjusts[props.index+1] - moveX;
+      props.setColAdjust(newAdjusts);
+    }
+    setPressed(false);
+    setStartPosition(event.clientX);
+  }
+
+  const startDrag  = (event) => {
+    setStartPosition(event.clientX);
+    setPressed(true)
+  }
+
+  const style = Object.assign({'cursor':'pointer','width':'auto','height':'100%','display':'inline-flex'},props.style)
+
+  return (
+    <div
+      draggable={true}
+      ref={ ref }
+      style={ style }
+      onDragEnd={upDatePosition}
+      onMouseDown={ startDrag }
+    >
+      <svg style={{'height':'100%','width':'inherit','position':'absolute'}}>
+        <rect height={ref.current? ref.current.clientHeight: '50%'} width={5} fill="black" x={ref.current? (ref.current.clientWidth - 5)/2: '.1em'} />
+      </svg>
+    </div>
+  )
+}
