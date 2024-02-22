@@ -44,6 +44,10 @@ export default function SurvivalPlots(props){
         const survivalCurves = sim['survival_curves'];
         const altCurves = altSim['survival_curves'];
 
+        const outcomesToShow = props.outcomesToShow? props.outcomesToShow: ['Treatment (predicted)','No Treatment (predicted)'];
+
+        // const outcomesToShow = ['Treatment (predicted)','Treatment (neighbors)'];
+
         const survivalBootstrapped = sim['survival_curves_bootstrapped'];
         const altSurvivalBootstrapped = altSim['survival_curves_bootstrapped'];
 
@@ -86,9 +90,14 @@ export default function SurvivalPlots(props){
             const knnTTE = Utils.mean(props.neighbors.map(d=>d[censorVar])) > .5? Infinity: Utils.median(props.neighbors.map(d=>d[name]));
             const altKnnTTE = Utils.mean(props.cfs.map(d=>d[censorVar])) > .5? Infinity: Utils.median(props.cfs.map(d=>d[name]));
             const ttes =  [timeToEvent,altTimeToEvent,knnTTE,altKnnTTE];
-            const curveNames = sim.currDecision >= .5? ['Treatment (predicted)', 'No Treatment (predicted)','Treated (neighbors)','No Treatment (neighbors)']: ['No Treatment (predicted)', 'Treatment (predicted)','No Treated (neighbors)','Treatment (neighbors)'];
+            const curveNames = sim.currDecision >= .5? ['Treatment (predicted)', 'No Treatment (predicted)','Treatment (neighbors)','No Treatment (neighbors)']: ['No Treatment (predicted)', 'Treatment (predicted)','No Treated (neighbors)','Treatment (neighbors)'];
             
+            let cPos = 0;
             for(let ii in [curves,alt]){
+                if(outcomesToShow.indexOf(curveNames[cPos]) < 0){
+                    cPos += 1;
+                    continue
+                }
                 let cVals = [curves,alt][ii];
                 let path = [];
                 for(let i in cVals){
@@ -101,21 +110,25 @@ export default function SurvivalPlots(props){
                         'color': lineColors[ii],
                         'value': cVals[i],
                         'time': times[i],
-                        'name': curveNames[curveData.length],
+                        'name': curveNames[cPos],
                     };
                     pointData.push(pEntry);
                 }
                 curveData.push({
                     'path': lineFunc(path),
                     'color': lineColors[ii],
-                    'medianTime': ttes[curveData.length],
-                    'name': curveNames[curveData.length],
+                    'medianTime': ttes[cPos],
+                    'name': curveNames[cPos],
                     'values': cVals,
-                })
+                });
+                cPos+=1;
             }
 
-            
             for(let nList of [props.neighbors,props.cfs]){
+                if(outcomesToShow.indexOf(curveNames[cPos]) < 0){
+                    cPos += 1;
+                    continue
+                }
                 let pCurve = [];
                 let pcts = [];
                 for(let time of times){
@@ -130,27 +143,33 @@ export default function SurvivalPlots(props){
                     const pEntry = {
                         'x': cx,
                         'y': cy,
-                        'color': lineColors[curveData.length],
+                        'color': lineColors[cPos],
                         'value': pctAbove,
                         'time': time,
-                        'name': curveNames[curveData.length],
+                        'name': curveNames[cPos],
                     }
                     pointData.push(pEntry);
                 }
                 curveData.push({
                     'path': lineFunc(pCurve),
-                    'color': lineColors[curveData.length],
-                    'medianTime': ttes[curveData.length],
-                    'name': curveNames[curveData.length],
+                    'color': lineColors[cPos],
+                    'medianTime': ttes[cPos],
+                    'name': curveNames[cPos],
                     'values': pcts,
                 });
+                cPos += 1;
             }
 
 
             var currCurve = 0;
             var curveStuff = [[curvesTop,curvesBottom],[altTop,altBottom]];
+            const ciCurveNames = [curveNames[0], curveNames[1]];
             var CICurveData = [];
             for(const [top,bottom] of curveStuff){
+                if(outcomesToShow.indexOf(ciCurveNames[currCurve]) < 0){
+                    currCurve += 1;
+                    continue;
+                }
                 var path = [];
                 // var pathBottom = [];
                 for(let i in top){
@@ -174,6 +193,7 @@ export default function SurvivalPlots(props){
 
                 currCurve += 1;
             }
+            console.log('here',CICurveData);
             var CIPath = g.selectAll('path').filter('.ciPath'+selector).data(CICurveData,(d,i) =>d.name+i+'ci');
             //use different lines, keep extents so people don't see 
             CIPath.enter()
@@ -183,7 +203,7 @@ export default function SurvivalPlots(props){
                 .attr('stroke-width',1)
                 .attr('stroke',d=>d.color)
                 .attr('stroke-opacity',1)
-                .attr('fill-opacity',.2)
+                .attr('fill-opacity',.25)
                 .attr('fill',d=>d.color);
             CIPath.exit().remove();
 

@@ -18,6 +18,14 @@ export default function OutcomeContainer(props){
 
     const outcomeViewOptions = props.currState < 2? ['survival','endpoints','dlts','disease response']: ['survival','endpoints'];
     const [outcomesView, setOutcomesView] = useState(outcomeViewOptions[outcomeViewOptions.length-1]);
+
+    const [outcomesToShow,setOutcomesToShow] = useState([
+      'Treatment (predicted)',
+      // 'No Treatment (predicted)',
+      // 'Treatment (neighbors)',
+      'No Treatment (neighbors)'
+    ])
+
     // const outcomeViewOptions = props.currState < 2? ['survival','all','endpoints','disease response','dlts','no dlts']: ['survival','endpoints'];
     function makeOutcomeToggle(){
         return Utils.makeStateToggles(outcomeViewOptions,outcomesView,setOutcomesView,undefined,undefined);
@@ -45,24 +53,28 @@ export default function OutcomeContainer(props){
       return(
         <>
         <div style={{'height': '4em','width': '100%'}}>
-            <ModelLegend state={props.currState}/>'
+            <ModelLegend state={props.currState}
+              outcomesToShow={outcomesToShow}
+              setOutcomesToShow={setOutcomesToShow}
+            />'
         </div>
         <div style={{'height': 'calc(100% - 4em)','width':'100%'}} className={'noGutter'}>
-        <div className={'fillSpace'} style={{'overflowX':'hidden'}}>
-            <div key={'survival'} style={{'height':'100%','width':'100%'}}>
-              <SurvivalPlots 
-              sim={data.sim}
-              altSim={data.altSim}
-              neighbors={data.neighbors}
-              cfs={data.cfs}
-              decision={data.decision}
-              dString={constants.DECISIONS[props.currState]}
-              {...props}
-              />
-            </div>
-           
+          <div className={'fillSpace'} style={{'overflowX':'hidden'}}>
+              <div key={'survival'} style={{'height':'100%','width':'100%'}}>
+                <SurvivalPlots 
+                sim={data.sim}
+                altSim={data.altSim}
+                neighbors={data.neighbors}
+                cfs={data.cfs}
+                decision={data.decision}
+                dString={constants.DECISIONS[props.currState]}
+                outcomesToShow={outcomesToShow}
+                {...props}
+                />
               </div>
+            
           </div>
+        </div>
         </>
       )
     }
