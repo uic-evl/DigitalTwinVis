@@ -20,6 +20,7 @@ import * as HelpTexts from './modules/Text';
 import HelpText from './modules/HelpText';
 import Tutorial from './components/Tutorial';
 import Feedback from './components/Feedback';
+import About from './components/About';
 import OutcomeContainer from './components/OutcomeContainer.js';
 
 export default function MainApp({authToken,setAuthToken}) {
@@ -107,6 +108,14 @@ export default function MainApp({authToken,setAuthToken}) {
 
   const [userPanelHidden,setUserPanelHidden] = useState(false);
 
+  const colWidths = ['25vw','45vw','25vw'];
+  const [colAdjust, setColAdjust] = useState([0,0,0]);
+
+  function getColWidth(i){
+    return colAdjust[i] > 0? 'calc(' + colWidths[i] + ' + ' + colAdjust[i] + 'px)': 'calc(' + colWidths[i] + ' - ' + Math.abs(colAdjust[i]) + 'px)';
+  }
+
+  
   function queDefaultPatient(){
     let newQ = Object.assign({},defaultPatient);
     for(let [key,val] of Object.entries(patientFeatures)){
@@ -367,6 +376,9 @@ export default function MainApp({authToken,setAuthToken}) {
               decision={recommendedDecision}
               state={currState}
               neighborDecisions={similarDecisions}
+              mDists={mDists}
+              currEmbeddings={currEmbeddings}
+              currState={currState}
             ></RecommendationPlot>
           </div>
         </div>
@@ -633,16 +645,10 @@ export default function MainApp({authToken,setAuthToken}) {
           cohortLoading={cohortLoading}
           cohortEmbeddingsLoading={cohortEmbeddingsLoading}
           fixedDecisions={fixedDecisions}
+          width={getColWidth(1)}
         ></OutcomeContainer>
       </div>
       )
-  }
-
-  const colWidths = ['25vw','45vw','25vw'];
-  const [colAdjust, setColAdjust] = useState([0,0,0]);
-
-  function getColWidth(i){
-    return colAdjust[i] > 0? 'calc(' + colWidths[i] + ' + ' + colAdjust[i] + 'px)': 'calc(' + colWidths[i] + ' - ' + Math.abs(colAdjust[i]) + 'px)';
   }
 
 
@@ -658,6 +664,8 @@ export default function MainApp({authToken,setAuthToken}) {
         <Tutorial style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Tutorial>
         {'  '}
         <Feedback style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Feedback>
+        {'  '}
+        <About style={{'display':'inline','height': '1em','fontSize':'.75em'}}></About>
       </div>
       <div style={{'display':'flex','justifyContent':'center', 'height': 'calc(95vh - 2em)','overflow':'hidden'}}>
         <div style={{'height': '100%','width': getColWidth(0),'margin':'.2em','display':'inline-flex'}} className={'shadow'}>
@@ -675,46 +683,6 @@ export default function MainApp({authToken,setAuthToken}) {
     </ChakraProvider>
   )
 
-  // return (
-  //   <ChakraProvider style={{'height':'50%'}}>
-  //     <div style={{'position':'absolute','width': '100vw','height':'100vh','opacity': .5, 'display': cursor == 'default'? 'none':'','backgroundColor':'white','zIndex':1000000000000000000}}>
-  //       <Spinner size={'xl'}></Spinner>
-  //     </div>
-  //     <Grid
-  //       h='calc(100% - 2em)'
-  //       w='100%'
-  //       templateRows='2.5em 1fr 1em'
-  //       templateColumns={`${getColWidth(0)} .5em ${getColWidth(1)} .5em ${getColWidth(2)}`}
-  //       gap={1}
-  //       style={{'cursor':cursor}}
-  //     >
-
-  //       <GridItem rowSpan={1} colSpan={5} className={'shadow title'} style={{'fontSize':'1.5em'}}>
-  //         {"OPC Digital Twin Outcome Predictions"}
-  //         <div  style={{'display': 'inline','width':'auto'}}>{" |  "}</div>
-  //         <Tutorial style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Tutorial>
-  //         {'  '}
-  //         <Feedback style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Feedback>
-  //       </GridItem>
-    
-  //       <GridItem rowSpan={1} colSpan={1} className={'shadow'} style={{'overflowY':'hidden'}}>
-  //           {makeThing()}
-  //       </GridItem>
-  //       <GridItem rowSpan={1} colSpan={1}>
-  //         <DraggableComponentX colAdjust={colAdjust} setColAdjust={setColAdjust} index={0} />
-  //       </GridItem>
-  //       <GridItem rowSpan={1} colSpan={1} className={'shadow'} style={{'overflowY':'scroll'}}>
-  //       {makeOutcomeStuff()}
-  //       </GridItem>
-  //       <GridItem rowSpan={1} colSpan={1}>
-  //         <DraggableComponentX colAdjust={colAdjust} setColAdjust={setColAdjust} index={1} />
-  //       </GridItem>
-  //       <GridItem rowSpan={1} colSpan={1}> 
-  //         {makeRecomendationColumn()}
-  //       </GridItem>
-  //     </Grid>
-  //   </ChakraProvider>
-  // );
 
 }
 

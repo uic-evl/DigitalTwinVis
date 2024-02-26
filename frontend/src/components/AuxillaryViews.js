@@ -447,7 +447,9 @@ export default function AuxillaryViews(props){
         </>);
       }
 
-      const currView = useMemo(()=>{
+      const [currView,setCurrView] = useState();
+
+      function makeView(){
         switch(auxView){
             case 'neighbors':
                 return makeNeighborView(props);
@@ -464,6 +466,9 @@ export default function AuxillaryViews(props){
             default:
                 return makeAttributionPlot(props);
         }
+    }
+    useEffect(()=>{
+      setCurrView(makeView());
     },[props,auxView])
 
     return ( 

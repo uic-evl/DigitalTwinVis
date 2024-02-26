@@ -6,18 +6,18 @@ import * as constants from "../modules/Constants.js";
 
 
 
-
 export default function SymptomVisD3(props){
 
     const d3Container = useRef(null);
     // const weeks = [0, 7, 13, 27];//should put these somewhere on the backend in case this changes idk;
-    const [svg, height, width, tTip] = useSVGCanvas(d3Container);
+    const [svg, height, width, tTip] = useSVGCanvas(d3Container,'symptoms');
 
+    
     const xMargin = [10,10];
     const yMargin = [25,20];
     useEffect(()=>{
         if(svg !== undefined & props.treated !== undefined){
-
+            svg.selectAll().remove();
             const weeks = props.dates;
             const xScale = d3.scaleLinear()
                 .domain([weeks[0],weeks[weeks.length-1]])
@@ -152,13 +152,14 @@ export default function SymptomVisD3(props){
                 .text(d=>Utils.getVarDisplayName(d.text))
 
         }
-    },[svg,props.treated,props.untreated]);
+    },[svg,width,height,props.treated,props.untreated,props.width]);
 
     return (
         <div
             className={"d3-component"}
-            style={{'height':'95%','width':'95%'}}
+            style={{'height':'95%','width': (props.width? props.width: '95%')}}
             ref={d3Container}
-        ></div>
+        >
+        </div>
     );
 }

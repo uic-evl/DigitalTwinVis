@@ -380,7 +380,7 @@ export default function OutcomePlots(props){
             svg.selectAll('text').raise();
             svg.attr('height',pos+10)
         }
-    },[props.sim,props.altSim,props.neighborOutcomes,props.counterfactualOutcomes,simStates,svg,xScale,props.mainDecision,simStates])
+    },[props.sim,props.altSim,props.neighborOutcomes,props.counterfactualOutcomes,simStates,svg,xScale,props.mainDecision,simStates,props.width])
 
     return (
         <div

@@ -1,8 +1,9 @@
 import React, { useEffect, useState, useLayoutEffect } from 'react';
 import * as d3 from 'd3';
 
-export default function useSVGCanvas(d3Container){
+export default function useSVGCanvas(d3Container,name){
     //takes a ref to a container, makes an svg over it, and returns the svg selection, size ,and a tooltip
+    const [windowHeight, windowWidth] = useWindowSize();
     const [height, setHeight] = useState(0);
     const [width, setWidth] = useState(0);
     const [svg, setSvg] = useState();
@@ -24,7 +25,6 @@ export default function useSVGCanvas(d3Container){
 
     useEffect(function makeSvg(){
         if(d3Container.current){
-            
             d3.select(d3Container.current).selectAll('svg').remove();
 
             var h = d3Container.current.clientHeight;
@@ -33,7 +33,6 @@ export default function useSVGCanvas(d3Container){
             var canvas = d3.select(d3Container.current)
                 .append('svg')
                 .attr('class','frameEntryD3')
-                // .attr('viewbox',[0,0,width,height])
                 .attr('width',w)
                 .attr('height',h);
 
@@ -49,7 +48,20 @@ export default function useSVGCanvas(d3Container){
             setSvg(canvas);
             setTTip(tip);
         }
-    },[cHeight,cWidth]);
+    },[cHeight,cWidth,windowWidth, windowHeight,d3Container.current]);
 
     return [svg, height, width, tTip]
 }
+
+function useWindowSize() {
+    const [size, setSize] = useState([0, 0]);
+    useLayoutEffect(() => {
+      function updateSize() {
+        setSize([window.innerWidth, window.innerHeight]);
+      }
+      window.addEventListener('resize', updateSize);
+      updateSize();
+      return () => window.removeEventListener('resize', updateSize);
+    }, []);
+    return size;
+  }

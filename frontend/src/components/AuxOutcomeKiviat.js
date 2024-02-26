@@ -6,7 +6,7 @@ import * as constants from "../modules/Constants.js";
 
 
 
-export default function AuxOutcomeKiviat(props){
+export default function OtherOutcomes(props){
 
     const d3Container = useRef(null);
     const [svg, height, width, tTip] = useSVGCanvas(d3Container);

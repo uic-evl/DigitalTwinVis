@@ -43,7 +43,8 @@ export default function ModelLegend(props){
                 if( model === 'neighbors'){
                     color = treated? constants.knnColor: constants.knnColorNo;
                 }
-                let text = 'Prediction for ' + (treated? '': 'No ') + decisionName + ' (' + model + ')';
+                let mText = model === 'predicted'? 'DL Model': 'Sim. Patients';
+                let text = (treated? '': 'No ') + decisionName + ' (' + mText + ')';
                 let strokeWidth = 2;//treated? 0: 1;
                 let entry = {
                     'fill': color,

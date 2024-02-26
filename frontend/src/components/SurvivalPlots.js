@@ -27,6 +27,8 @@ export default function SurvivalPlots(props){
     const d3Container = useRef(null);
     const [svg, height, width, tTip] = useSVGCanvas(d3Container);
 
+    const cWidth = d3Container.current? d3Container.current: 0;
+
     const curvesToPlot = constants.TEMPORAL_OUTCOMES;
     
     const xMargin = 20;
@@ -193,7 +195,6 @@ export default function SurvivalPlots(props){
 
                 currCurve += 1;
             }
-            console.log('here',CICurveData);
             var CIPath = g.selectAll('path').filter('.ciPath'+selector).data(CICurveData,(d,i) =>d.name+i+'ci');
             //use different lines, keep extents so people don't see 
             CIPath.enter()
@@ -416,7 +417,7 @@ export default function SurvivalPlots(props){
             makeChart(cName,currPos);
             currPos += chartHeight + yMargin;
         }
-    },[svg,props])
+    },[svg,props,cWidth])
 
     return (
         <div
