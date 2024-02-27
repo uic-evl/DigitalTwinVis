@@ -20,7 +20,7 @@ export default function OutcomeContainer(props){
     const [outcomesView, setOutcomesView] = useState(outcomeViewOptions[outcomeViewOptions.length-1]);
     const [view,setView] = useState('survival');
     const viewOptions = ['survival','other'];
-    const viewNames = ['Survival','Other']
+    const viewNames = ['Survival Curves','All Outcomes']
     const [outcomesToShow,setOutcomesToShow] = useState([
       'Treatment (predicted)',
       // 'No Treatment (predicted)',

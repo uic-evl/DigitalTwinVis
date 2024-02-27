@@ -4,6 +4,7 @@ import Utils from '../modules/Utils.js';
 import * as d3 from 'd3';
 import * as constants from "../modules/Constants.js";
 import '../App.css';
+import { createPath } from 'react-router-dom';
 
 
 function getConfidenceIntervals(survivalLists){
@@ -92,14 +93,16 @@ export default function SurvivalPlots(props){
             const knnTTE = Utils.mean(props.neighbors.map(d=>d[censorVar])) > .5? Infinity: Utils.median(props.neighbors.map(d=>d[name]));
             const altKnnTTE = Utils.mean(props.cfs.map(d=>d[censorVar])) > .5? Infinity: Utils.median(props.cfs.map(d=>d[name]));
             const ttes =  [timeToEvent,altTimeToEvent,knnTTE,altKnnTTE];
-            const curveNames = sim.currDecision >= .5? ['Treatment (predicted)', 'No Treatment (predicted)','Treatment (neighbors)','No Treatment (neighbors)']: ['No Treatment (predicted)', 'Treatment (predicted)','No Treated (neighbors)','Treatment (neighbors)'];
+            const curveNames = sim.currDecision >= .5? ['Treatment (predicted)', 'No Treatment (predicted)','Treatment (neighbors)','No Treatment (neighbors)']:  ['No Treatment (predicted)', 'Treatment (predicted)','No Treatment (neighbors)','Treatment (neighbors)'];
             
             let cPos = 0;
             for(let ii in [curves,alt]){
                 if(outcomesToShow.indexOf(curveNames[cPos]) < 0){
+                    console.log('here',curveNames[cPos])
                     cPos += 1;
                     continue
                 }
+                
                 let cVals = [curves,alt][ii];
                 let path = [];
                 for(let i in cVals){
@@ -352,6 +355,7 @@ export default function SurvivalPlots(props){
                 for(let fp of fPoints){
                     let lEntry = {
                         'color': fp.color,
+                        'textColor': fp.name.includes('No')? 'black':'white',
                         'name': fp.name,
                         'time': t,
                         'value': fp.value,
@@ -396,7 +400,9 @@ export default function SurvivalPlots(props){
                 .attr('dominant-baseline','middle')
                 .attr('font-size',lBarHeight/1.3)
                 .attr('font-weight','bold')
-                .attr('stroke','white').attr('stroke-width',.2)
+                .attr('stroke',d=>d.textColor === 'black'? 'white':'black')
+                .attr('stroke-width',.1)
+                .attr('fill',d=>d.textColor)
                 .text(d=>(100*d.value).toFixed(0)+'%');
 
             g.selectAll('.legendBarTitle'+selector).remove();
