@@ -4,15 +4,15 @@ import { Progress } from '@chakra-ui/react'
 
 export default function Tutorial(props){
 
-  const images = ['/workflows.png','topbar_tutorial.png','/input_tutorial.png','recomendation_histogram_tutorial.png','/outcome_tutorial.png','/neighbor_tutorial.png','/overview.png'];
+  const images = ['/workflows.png','topbar_tutorial.png','/input_tutorial.png','recomendation_histogram_tutorial.png','/outcome_tutorial.png','/neighbor_tutorial.png','/symptom_tutorial.png'];
   const titles = [
     'User Workflows',
-    'Top Bar',
-    'Inputting Patient Information',
-    'Model Recommendation',
+    'Input Panel (1)',
+    'Input Panel (2)',
+    'Model Recommendation + Explanation',
     'Predicted Outcomes',
     'Similar Patients',
-    'Overview of the Model',
+    'Symptom Prediction',
   ]
   const [stage,setStage] = useState(0);
   const { isOpen, onOpen, onClose } = useDisclosure()
@@ -47,7 +47,7 @@ export default function Tutorial(props){
           <ModalBody >
             <img style={{'objectFit':'contain'}} src={images[stage]}/>
           </ModalBody>
-          <Progress style={{'width':'90%','left':'5%'}} value={100*(stage+.01)/(images.length-.99)}/>
+          <Progress style={{'width':'90%','left':'5%'}} value={100*(stage+.01)/(images.length)}/>
           <ModalFooter display={'flex'} justifyContent={'space-between'}>
             <Button onClick={() => incrementStage(-1)} variant='outline'>Previous</Button>
             <Button onClick={() => incrementStage(1)} variant='outline'>Next</Button>
