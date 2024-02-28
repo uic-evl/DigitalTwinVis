@@ -4,7 +4,6 @@ import Utils from '../modules/Utils.js';
 import * as d3 from 'd3';
 import * as constants from "../modules/Constants.js";
 import '../App.css';
-import { createPath } from 'react-router-dom';
 
 
 function getConfidenceIntervals(survivalLists){
