@@ -52,52 +52,54 @@ export default function OutcomeContainer(props){
 
 
     const [rowOffsets,setRowOffsets] = useState([0,0]);
-    const rowHeights = ['80%','20%'];
+    const rowHeights = ['100%','0%'];
     function getRowHeight(index){
       const offset = rowOffsets[index];
       const sign = offset > 0? ' + ': ' - ';
-      const string = 'calc(' + rowHeights[index] + ' - 1.5em' + sign + Math.abs(offset) + 'px)';
+      if(rowHeights[index] === '0%' && offset < 10){ return 0 }
+      const string = 'calc(' + rowHeights[index] + ' - 10px' + sign + Math.abs(offset) + 'px)';
       return string
     }
 
     function getView(v){
       if(v === 'survival'){
         return (
-        <>
-        <div className={'shadow'} style={{'height':getRowHeight(0),'width':'100%'}}>
-        <div style={{'height': '4em','width': '100%'}}>
-            <ModelLegend state={props.currState}
-              outcomesToShow={outcomesToShow}
-              setOutcomesToShow={setOutcomesToShow}
-            />'
-        </div>
-        <div style={{'height': 'calc(100% - 4em)','width':'100%'}} className={'noGutter'}>
-          <div className={'fillSpace'} style={{'overflowX':'hidden'}}>
-              <div key={'survival'} style={{'height':'100%','width':'100%'}}>
-                <SurvivalPlots 
-                sim={data.sim}
-                altSim={data.altSim}
-                neighbors={data.neighbors}
-                cfs={data.cfs}
-                decision={data.decision}
-                dString={constants.DECISIONS[props.currState]}
+      <>
+      <div className={'shadow'} style={{'height':getRowHeight(0),'width':'100%'}}>
+          <div style={{'height': '4em','width': '100%'}}>
+              <ModelLegend state={props.currState}
                 outcomesToShow={outcomesToShow}
-                {...props}
-                />
-              </div>
+                setOutcomesToShow={setOutcomesToShow}
+              />'
           </div>
-        </div>
+          <div style={{'height': 'calc(100% - 4em)','width':'100%'}} className={'noGutter'}>
+            <div className={'fillSpace'} style={{'overflowX':'hidden'}}>
+                <div key={'survival'} style={{'height':'100%','width':'100%'}}>
+                  <SurvivalPlots 
+                  sim={data.sim}
+                  altSim={data.altSim}
+                  neighbors={data.neighbors}
+                  cfs={data.cfs}
+                  decision={data.decision}
+                  dString={constants.DECISIONS[props.currState]}
+                  outcomesToShow={outcomesToShow}
+                  {...props}
+                  />
+                </div>
+            </div>
+          </div>
       </div>
-      <div style={{'height':'1em','width':'100%'}}>
-      <DraggableComponentY 
-        setColAdjust={setRowOffsets} 
-        colAdjust={rowOffsets}
-        index={0}/>
+
+      {/* <div style={{'height':'1em','width':'100%'}}>
+        <DraggableComponentY 
+          setColAdjust={setRowOffsets} 
+          colAdjust={rowOffsets}
+          index={0}/>
       </div>
 
       <div className={'shadow'} style={{'height':getRowHeight(1),'width':'100%'}}>
-      <div style={{'height': '1em','width':'100%','margin':'0px'}}>
-        <HelpText text={HelpTexts.outcomeHelpText}/>
+        <div style={{'height': '10px','width':'100%','margin':'0px'}}>
+          <HelpText text={HelpTexts.outcomeHelpText}/>
             {makeOutcomeToggle()}
         </div>
           <div style={{'height':'calc(100% - 1.7em)','width':'98%','margin':'.5%','overflow':'hidden'}}>
@@ -112,7 +114,7 @@ export default function OutcomeContainer(props){
               outcomesView={outcomesView}
             />
           </div>
-      </div>
+      </div> */}
       </>
       )
       }
@@ -152,7 +154,9 @@ export default function OutcomeContainer(props){
           <div style={{'width':'100%','height':'2em'}}>
             {makeMainToggle()}
           </div>
-          {getView(view)}
+          <div style={{'width':'100%','height':'calc(100% - 2em)'}}>
+            {getView(view)}
+          </div>
         </div>
       )
     }
@@ -161,49 +165,49 @@ export default function OutcomeContainer(props){
       
 }
 
-const DraggableComponentY = (props) => {
-  const [pressed, setPressed] = useState(false)
-  const [position, setPosition] = useState(0);
-  const [startPosition, setStartPosition] = useState(0);
+// const DraggableComponentY = (props) => {
+//   const [pressed, setPressed] = useState(false)
+//   const [position, setPosition] = useState(0);
+//   const [startPosition, setStartPosition] = useState(0);
 
-  const [linePosition,setLinePosition] = useState(0);
-  const [lineHeight,setLineHeight] = useState(0);
-  const ref = useRef()
+//   const [linePosition,setLinePosition] = useState(0);
+//   const [lineHeight,setLineHeight] = useState(0);
+//   const ref = useRef()
 
-  // Update the current position if mouse is down
-  const upDatePosition = (event,target) => {
-    if (ref.current) {
-      var moveY = (event.clientY - startPosition);
-      if(Math.abs(moveY) > window.screen.height/2){
-        moveY = Math.sign(moveY) * (window.screen.height/2);
-      }
-      var newAdjusts = [...props.colAdjust];
-      newAdjusts[props.index] = newAdjusts[props.index] + moveY;
-      newAdjusts[props.index+1] = newAdjusts[props.index+1] - moveY;
-      props.setColAdjust(newAdjusts);
-    }
-    setPressed(false);
-    setStartPosition(event.clientY);
-  }
+//   // Update the current position if mouse is down
+//   const upDatePosition = (event,target) => {
+//     if (ref.current) {
+//       var moveY = (event.clientY - startPosition);
+//       if(Math.abs(moveY) > window.screen.height/2){
+//         moveY = Math.sign(moveY) * (window.screen.height/2);
+//       }
+//       var newAdjusts = [...props.colAdjust];
+//       newAdjusts[props.index] = newAdjusts[props.index] + moveY;
+//       newAdjusts[props.index+1] = newAdjusts[props.index+1] - moveY;
+//       props.setColAdjust(newAdjusts);
+//     }
+//     setPressed(false);
+//     setStartPosition(event.clientY);
+//   }
 
-  const startDrag  = (event) => {
-    setStartPosition(event.clientY);
-    setPressed(true)
-  }
+//   const startDrag  = (event) => {
+//     setStartPosition(event.clientY);
+//     setPressed(true)
+//   }
 
-  const style = Object.assign({'cursor':'pointer','width':'100%','height':'100%'},props.style)
+//   const style = Object.assign({'cursor':'pointer','width':'100%','height':'100%','background-color':'black'},props.style)
 
-  return (
-    <div
-      draggable={true}
-      ref={ ref }
-      style={ style }
-      onDragEnd={upDatePosition}
-      onMouseDown={ startDrag }
-    >
-      <svg style={{'width':'100%','height':'100%'}}>
-        <rect width={ref.current? ref.current.clientWidth: '50%'} height={'80%'} fill="black" y={'10%'} x={0}/>
-      </svg>
-    </div>
-  )
-}
+//   return (
+//     <div
+//       draggable={true}
+//       ref={ ref }
+//       style={ style }
+//       onDragEnd={upDatePosition}
+//       onMouseDown={ startDrag }
+//     >
+//       {/* <svg style={{'width':'100%','height':'100%'}}>
+//         <rect width={ref.current? ref.current.clientWidth: '50%'} height={'80%'} fill="black" y={'10%'} x={0}/>
+//       </svg> */}
+//     </div>
+//   )
+// }

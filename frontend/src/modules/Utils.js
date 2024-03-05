@@ -501,15 +501,16 @@ export default class Utils {
             p = Object.assign({},p);
             
             if(prediction === currDecision && nCount < minN){
-            neighbors.push(p);
-            } else if(cfCount < minN){
-            cfs.push(p)
+                neighbors.push(p);
+            } else if(Math.abs(prediction-currDecision) >= .5 && cfCount < minN){
+                cfs.push(p)
             }
         }
         nCount = neighbors.length;
         cfCount = cfs.length;
         cScale += cIncrement;
         }
+        console.log('cfs',cfs.map(d=>d[constants.DECISIONS[currState]]))
         return [neighbors, cfs,(cScale-cIncrement)*propensity]
     }
 

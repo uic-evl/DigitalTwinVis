@@ -4,14 +4,12 @@ import * as d3 from 'd3';
 import * as constants from "../modules/Constants.js";
 import AttributionPlotD3 from './AttributionPlotD3.js';
 import ScatterPlotD3 from './ScatterPlotD3.js';
-import {NeighborVisD3,NeighborVisLabels} from './NeighborVisD3';
-import LNVisD3 from './LNVisD3';
-import DLTVisD3 from './DLTVisD3';
-import SubsiteVisD3 from './SubsiteVisD3.js';
+import NeighborView from './NeighborView.js';
 import AttributionLegend from './AttributionLegend.js';
 import SurvivalPlots from './SurvivalPlots.js';
 import Symptoms from './Symptoms.js';
 import {Spinner} from '@chakra-ui/react';
+
 
 import * as HelpTexts from '../modules/Text';
 import HelpText from '../modules/HelpText';
@@ -28,294 +26,10 @@ export default function AuxillaryViews(props){
 
     const showToggle = props.showToggle === undefined? true:props.showToggle;
 
-    function encodeOrdinal(p,key,values,scale=false){
-      let val = values[0];
-      let isMissing=true;
-      for(let i of values){
-          if(p[key+'_'+i] > 0){
-              val = i;
-              isMissing = false;
-              break;
-          }
-      }
-      return val
-  }
-
-    function encodePatient(p){
-      if(p === undefined){
-          return undefined;
-      }
-      let values = Object.assign({},p)
-      // let values = {
-      //     'similarity': p['similarity'],
-      //     'decision': p['decision'],
-      // }
-      for(const [key,v] of Object.entries(constants.ordinalVars)){
-          values[key] = encodeOrdinal(p,key,v);
-      }
-      for(let key of constants.continuousVars){
-          let val = p[key] === undefined? 0:p[key];
-          values[key] = val;
-      }
-      for(let key of constants.booleanVars){
-          let val = p[key] === undefined? 0:p[key];
-          values[key] = val;
-      }
-      for(let key of constants.DECISIONS){
-          let val = p[key] === undefined? 0:p[key];
-          values[key] = val;
-      }
-      for(let key of constants.OUTCOMES){
-          let val = p[key] === undefined? 0:p[key];
-          values[key] = val;
-      }
-      return values;
-  }
-
-    function makeNeighborView(props){
-        if(!props.patientSimLoading & Utils.allValid([props.currEmbeddings,props.cohortData,props.simulation,props.cohortEmbeddings])){
-        const getSimulation = props.getSimulation;
-        const dltSvgPaths=props.dltSvgPaths;
-        const subsiteSvgPaths=props.subsiteSvgPaths;
-        const lnSvgPaths=props.lnSvgPaths;
-        const currState = props.currState;
-        const cohortData = props.cohortData;
-        const fixedDecisions = props.fixedDecisions;
-        const brushedId = props.brushedId;
-        let decision = Utils.getDecision(fixedDecisions,currState,getSimulation);
-        const dString = constants.DECISIONS[currState];
-        var neighborsToShow = 10;
-        const [sim,altSim] = props.getSimulation(true);
-
-        if(sim === undefined){
-          return (<Spinner/>)
-        }
-        const [neighborsUF,cfsUF,caliperVal] = Utils.getTreatmentGroups(sim,props.currEmbeddings,props.cohortData,props.currState,props.cohortEmbeddings);
-        const neighbors = neighborsUF.map(encodePatient);
-        const cfs = cfsUF.map(encodePatient);
-        // console.log('n',neighbors.map(encodePatient).map(d=>d.id));
-        // console.log('cf',cfs.map(encodePatient).map(d=>d.id));
-        // const [neighbors,cfs] = getNeighbors(decision,currEmbeddings,currState,cohortData,neighborsToShow);
 
     
-          const dname = constants.DECISIONS_SHORT[props.currState];
-          function getPatientMeans(plist){
-            const meanObj = {};
-            for(let obj of plist){
-              for(let [key,value] of Object.entries(obj)){
-                //skip unknown hpv
-                if(key === 'hpv' & value < 0){continue}
-                let currVal = meanObj[key] === undefined? 0: meanObj[key]+0;
-                currVal += value/plist.length;
-                // if(key === 'DC'){
-                //   console.log('means',key,value,currVal)
-                // }
-        
-                meanObj[key] = currVal+0;
-              }
-            }
-            meanObj.id = -2 - meanObj.decision;
-            return meanObj;
-          }
-          const meanTreated = decision > .5? getPatientMeans(neighbors): getPatientMeans(cfs);
-          const meanUntreated = decision > .5? getPatientMeans(cfs): getPatientMeans(neighbors);
-          var p = cfs.concat(neighbors);
-          p.sort((a,b)=> b.similarity - a.similarity);
-          const toScale = constants.continuousVars;
-          var ranges = {};
-          for(let key of toScale){
-            let extent = d3.extent(Object.values(cohortData).map(d=>d[key]));
-            ranges[key] = extent;
-          }
-          const width = container.current.clientWidth;
-          const nPerRow = width > 1000? 2:1;
-          const thingHeight = width/(nPerRow*5.3);
-          const dltWidth = thingHeight/2;
-          const lnWidth = thingHeight*.8;
-          const subsiteWidth = thingHeight*.7;
-          const nWidth = thingHeight;
-          const titleWidth = thingHeight/2;
-          const encodedRef = encodePatient(props.patientFeatures);
-          const fixWidth = v => props.currState == 0? v: v- (dltWidth/6);
-        //   const nWidth = 'calc(100% - ' + dltWidth + ' - ' + lnWidth + ' - ' + subsiteWidth + ')'
-          // var renderedIds = new Set();
-          function makeN(d,i,showTicks,bottomBorder=true,name=undefined){
-            // if(renderedIds.has(d.id)){return <></>}
-            // renderedIds.add(d.id);
-            const borderColor = d[dString] > .5? constants.knnColor: constants.knnColorNo;
-            const bBorder = bottomBorder? '.4em solid ' + borderColor:'';
-            const marginBottom = bottomBorder? '.4em': '.01em';
-            const showLabels = true;
-        
-            function brush(){
-              let pId = parseInt(d.id)
-              if(pId > 0 & pId !== brushedId){
-                props.setBrushedId(pId);
-              } else{
-                props.setBrushedId(undefined);
-              }
-            }
-            
-            if(name === undefined){
-              if(i === 'n' | i === 'cf'){
-                if(d[dString] > .5){
-                  name = dname + ' avg.'
-                } else{
-                  name = 'no ' + dname + ' avg.'
-                }
-              } else{
-                name = d.id + ': ';
-              
-                if(d[dString] > .5){
-                  name += dname;
-                } else{
-                  name += 'no ' + dname;
-                }
-              }
-              
-            }
-            const headerSize = '1em';
-            const viewSize = 'calc(100% - ' + headerSize + ' - 10px)';
-            const headerStyle = {'width':'100%','height':headerSize};
-            const viewStyle   = {'width':'100%','height':viewSize,'marginTop':'10px'}
-            const componentStyle = w => {return {'margin':0,'width': fixWidth(w),'height':'100%','display':'inline-block','verticalAlign':'top'}}
-            return (
-            <div key={d.id+props.currState+i+'nodsfiadf'} 
-               style={{'margin':'.2em','height': thingHeight,
-               'width': 'auto',
-               'diplay': 'inline-flex',
-               'justifyContent':'flex-start',
-              'marginBottom': marginBottom,
-              'borderBottom': bBorder,
-              }}
-              onClick={()=>brush()}
-              >
-              <div className={'toggleButtonLabel'} style={{'display':'inline-flex','width': fixWidth(titleWidth),'fontSize':14,'height':'100%','justifyContent':'center','alignItems':'center'}}>
-                {name}
-              </div>
-              {props.currState > 0? (<div style={componentStyle(dltWidth)}>
-                <div  className={'title'} style={headerStyle}>{"DLTs"}</div>
-                <div style={viewStyle}>
-                  <DLTVisD3
-                    dltSvgPaths={dltSvgPaths}
-                    data={d}
-                    currState={currState}
-                    isMainPatient={false}
-                  />
-                </div>
-                
-              </div>) : <></>}
-              <div style={componentStyle(lnWidth)}>
-                <div  className={'title'} style={headerStyle}>{"LN"}</div>
-                <div style={viewStyle}>
-                  <LNVisD3
-                    lnSvgPaths={lnSvgPaths}
-                    data={d}
-                    isMainPatient={false}
-                    useAttention={false}
-                  ></LNVisD3>
-                </div>
-              </div>
-              <div style={componentStyle(subsiteWidth)}>
-                <div  className={'title'} style={headerStyle}>{"Subsite"}</div>
-                <div style={viewStyle}>
-                  <SubsiteVisD3
-                    subsiteSvgPaths={props.subsiteSvgPaths}
-                    data={d}
-                    isSelectable={false}
-                    featureQue={{}}
-                  ></SubsiteVisD3>
-                </div>
-              </div>
-              <div style={componentStyle(nWidth)}>
-                <div  className={'title'} style={headerStyle}>{"Staging"}</div>
-                <div style={viewStyle}>
-                <NeighborVisD3
-                  data={d}
-                  referenceData={encodedRef}
-                  // key={d.id+i}
-                  lnSvgPaths={lnSvgPaths}
-                  valRanges={ranges}
-                  dltSvgPaths={dltSvgPaths}
-                  currState={currState}
-                  version={'staging'}
-                  name={name}
-                  showTicks={showTicks}
-                ></NeighborVisD3>
-                </div>
-              </div>
-              <div style={componentStyle(nWidth)}>
-                <div  className={'title'} style={headerStyle}>{"Baseline"}</div>
-                <div style={viewStyle}>
-                <NeighborVisD3
-                  data={d}
-                  referenceData={encodedRef}
-                  // key={d.id+i}
-                  lnSvgPaths={lnSvgPaths}
-                  valRanges={ranges}
-                  dltSvgPaths={dltSvgPaths}
-                  currState={currState}
-                  version={'useful'}
-                  name={name}
-                  showTicks={showTicks}
-                ></NeighborVisD3>
-                </div>
-              </div>
-              <div style={componentStyle(nWidth)}>
-                <div  className={'title'} style={headerStyle}>{"Outcomes"}</div>
-                <div style={viewStyle}>
-                <NeighborVisD3
-                  data={d}
-                  referenceData={undefined}
-                  // key={d.id+i+'outcomes'}
-                  lnSvgPaths={lnSvgPaths}
-                  valRanges={ranges}
-                  dltSvgPaths={dltSvgPaths}
-                  currState={currState}
-                  version={'outcomes'}
-                  name={name}
-                  showTicks={showTicks}
-                ></NeighborVisD3>
-                </div>
-              </div>
-            </div>
-            )
-          }
-          const nStuff = p.map((d,i) => makeN(d,i,false));
-    
-          if(nPerRow < 2){
-            return (
-              <div className={'centerText scroll'} 
-              key={props.currState+'neighbors'}
-              style={{'width':'100%!important','height':'100%',
-                      'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
-                  {makeN(meanTreated,'n',true)}
-                  {makeN(meanUntreated,'cf',true)}
-                  <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
-                  {nStuff}
-              </div>
-              );
-          } else{
-            return (<div className={'fillSpace'} key={props.currState+'neighbors'}>
-              <div className={'scroll'} style={{'width':'49%','height':'100%',
-                      'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
-                  {makeN(meanUntreated,'cf',true)}
-                  <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
-                  {nStuff}
-              </div>
-              <div className={'scroll'} style={{'width':'49%','height':'100%',
-                      'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
-                  {makeN(meanUntreated,'cf',true)}
-                  <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
-                  {nStuff}
-              </div>
-            </div>)
-          }
-          
-        } 
-        else{
-          return <Spinner/>
-        }
+    function makeNeighborView(p){
+      return <NeighborView {...p} container={container}></NeighborView>
     }
 
 
@@ -432,6 +146,8 @@ export default function AuxillaryViews(props){
           htext = HelpTexts.scatterplotHelpText
         } else if(auxView === 'neighbors'){
           htext = HelpTexts.simHelpText;
+        } else if(auxView === 'symptoms'){
+          htext = 'Plots of predicted patient symptoms after the start of radiation treatment (in weeks). Dark green lines represent treated patient mean values and light green indicate untreated mean values (for current IC/CC/ND decision). Faint lines represent patients used in the prediction'
         }
         if(!showToggle){
           return <span style={{'display':'inline-block'}}>
@@ -449,26 +165,26 @@ export default function AuxillaryViews(props){
 
       const [currView,setCurrView] = useState();
 
-      function makeView(){
-        switch(auxView){
+      function makeView(v,p){
+        switch(v){
             case 'neighbors':
-                return makeNeighborView(props);
+                return makeNeighborView(p);
                 break;
             case 'scatterplot':
-                return makeScatterplot(props);
+                return makeScatterplot(p);
                 break;
             case 'survival':
-              return makeSurvivalPlot(props);
+              return makeSurvivalPlot(p);
               break;
             case 'symptoms':
-              return makeSymptomPlot(props);
+              return makeSymptomPlot(p);
               break;
             default:
-                return makeAttributionPlot(props);
+                return makeAttributionPlot(p);
         }
     }
     useEffect(()=>{
-      setCurrView(makeView());
+      setCurrView(makeView(auxView,props));
     },[props,auxView])
 
     return ( 
