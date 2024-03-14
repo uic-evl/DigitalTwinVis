@@ -110,6 +110,7 @@ export default function MainApp({authToken,setAuthToken}) {
 
   const colWidths = ['25vw','45vw','25vw'];
   const [colAdjust, setColAdjust] = useState([0,0,0]);
+  const [hasRun,setHasRun] = useState(false);
 
   function getColWidth(i){
     return colAdjust[i] > 0? 'calc(' + colWidths[i] + ' + ' + colAdjust[i] + 'px)': 'calc(' + colWidths[i] + ' - ' + Math.abs(colAdjust[i]) + 'px)';
@@ -567,7 +568,11 @@ export default function MainApp({authToken,setAuthToken}) {
         </div>
         <div style={{'height':'1.5em','width':'100%'}}>
           <Button 
-            onClick={()=>updatePatient(featureQue)}
+            onClick={()=> {
+              updatePatient(featureQue);
+              setHasRun(true);
+            }
+            }
             variant={'outline'}
             colorScheme={'grey'}
             disabled={featureQue === undefined | Object.keys(featureQue).length < 1}
@@ -673,11 +678,11 @@ export default function MainApp({authToken,setAuthToken}) {
         </div>
         <DraggableComponentX colAdjust={colAdjust} setColAdjust={setColAdjust} index={0} style={{'width':'1em','height':'100%'}}/>
         <div style={{'height': '100%','width': getColWidth(1),'margin':'.2em','display':'inline-flex'}} className={'shadow scroll'}>
-          {makeOutcomeStuff()}
+          {hasRun? makeOutcomeStuff(): <div/>}
         </div>
         <DraggableComponentX colAdjust={colAdjust} setColAdjust={setColAdjust} index={1} style={{'width':'1em','height':'100%'}}/>
         <div style={{'height': '100%','width': getColWidth(2),'margin':'.2em','display':'inline-flex'}} className={'shadow'}>
-          {makeRecomendationColumn()}
+          {hasRun? makeRecomendationColumn(): <div/>}
         </div>
       </div>
     </ChakraProvider>
