@@ -95,7 +95,7 @@ export default function NeighborView(props){
 
         const meanTreated = decision > .5? getPatientMeans(neighbors): getPatientMeans(cfs);
         const meanUntreated = decision > .5? getPatientMeans(cfs): getPatientMeans(neighbors);
-        console.log('here',meanTreated[dnameLong],meanUntreated[dnameLong],neighbors.map(d=>d[dnameLong]),cfs.map(d=>d[dnameLong]))
+
         var p = cfs.concat(neighbors);
         p.sort((a,b)=> b.similarity - a.similarity);
         const toScale = constants.continuousVars;
@@ -104,7 +104,7 @@ export default function NeighborView(props){
             let extent = d3.extent(Object.values(cohortData).map(d=>d[key]));
             ranges[key] = extent;
         }
-        console.log('ids',p.map(d=>d.id))
+
         const width = props.container.current? props.container.current.clientWidth: 0;
         const nPerRow = width > 1000? 2:1;
         const thingHeight = width/(nPerRow*5.3);

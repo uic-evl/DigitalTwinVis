@@ -470,8 +470,6 @@ export default class Utils {
         //compiles all the data from the joint {'id': id, 'similarity': similarity_score} object in allNeighbors with cohortData and cohortEmbeddings items
         const getNeighbor = p => Object.assign(Object.assign(Object.assign({},cohortData[p.id+'']),cohortEmbeddings[p.id+'']),p);
     
-        var neighbors= [];
-        var cfs = [];
         
 
         //minimum number of similar people we need in the treated an untreated group
@@ -491,26 +489,30 @@ export default class Utils {
         var nCount = 0;
         var cfCount = 0;
         //add people until we have enough of each group or we are down to like 5 people in the neighbors
-        while((cfs.length < minN || neighbors.length < minN) && allNeighbors.length && cScale < 1){
-        const valid = allNeighbors.filter(nId=> Math.abs(propensity - getPropensity(nId.id)) <=  caliperDist*cScale);
-        allNeighbors = allNeighbors.filter(v => valid.indexOf(v.id) < 0);
-        const patients = valid.map(getNeighbor);
-        for(let p of patients){
-            const prediction = p[constants.DECISIONS[currState]];
-            //add patient if we didn't get enough on the last loop
-            p = Object.assign({},p);
+        while((cfCount < minN || nCount < minN) && allNeighbors.length && cScale < 1){
+            const valid = allNeighbors.filter(nId=> Math.abs(propensity - getPropensity(nId.id)) <=  caliperDist*cScale);
+            allNeighbors = allNeighbors.filter(v => valid.indexOf(v.id) < 0);
+            const patients = valid.map(getNeighbor);
             
-            if(prediction === currDecision && nCount < minN){
-                neighbors.push(p);
-            } else if(Math.abs(prediction-currDecision) >= .5 && cfCount < minN){
-                cfs.push(p)
+            var neighbors= [];
+            var cfs = [];
+            for(let p of patients){
+                const prediction = p[constants.DECISIONS[currState]];
+                //add patient if we didn't get enough on the last loop
+                p = Object.assign({},p);
+                
+                if(prediction === currDecision && neighbors.length < minN){
+                    neighbors.push(p);
+                } else if(Math.abs(prediction-currDecision) >= .5 && cfs.length < minN){
+                    cfs.push(p);
+                }
             }
+            nCount = neighbors.length;
+            cfCount = cfs.length;
+            cScale += cIncrement;
         }
-        nCount = neighbors.length;
-        cfCount = cfs.length;
-        cScale += cIncrement;
-        }
-        console.log('cfs',cfs.map(d=>d[constants.DECISIONS[currState]]))
+        console.log('ns',neighbors.map(d=>d.id))
+        console.log('cfs2',cfs.map(d => d.id));
         return [neighbors, cfs,(cScale-cIncrement)*propensity]
     }
 

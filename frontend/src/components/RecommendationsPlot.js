@@ -15,7 +15,7 @@ export default function RecommendationPlot(props){
     const yMargin = 10;
 
 
-    const maxNeighbors = 10;
+    const maxNeighbors = 5;
     const textWidth = Math.max(20,width/7);
 
     
@@ -34,7 +34,7 @@ export default function RecommendationPlot(props){
 
     function makeBarchart(){
         
-        const nDecisions = props.neighborDecisions.slice(0,Math.max(props.neighborDecisions.length,maxNeighbors));
+        const nDecisions = props.neighborDecisions.slice(0,Math.min(props.neighborDecisions.length,maxNeighbors));
         const nProb = Utils.mean(nDecisions);
 
         var currY = yMargin;
