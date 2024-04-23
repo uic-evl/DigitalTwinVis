@@ -1,6 +1,7 @@
 # data is for private data use resources for public #
 data/*
 
+*_.evl.uic.edu*
 # react #
 .DS_STORE
 node_modules
