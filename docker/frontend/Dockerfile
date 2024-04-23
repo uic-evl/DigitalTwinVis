@@ -12,5 +12,5 @@ RUN npm -g install npm@latest
 RUN npm install 
 RUN npm run build
 RUN npm install -g serve
-# RUN echo 'here cors and such'
+RUN echo 'here cors and such'
 # CMD ["serve","-s","build","-p","80","--cors"]
