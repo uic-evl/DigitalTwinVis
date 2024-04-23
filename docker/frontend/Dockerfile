@@ -12,6 +12,5 @@ RUN npm -g install npm@latest
 RUN npm install 
 RUN npm run build
 RUN npm install -g serve
-RUN setsebool -P httpd_can_network_connect 1
 RUN echo 'here cors and such'
 # CMD ["serve","-s","build","-p","80","--cors"]
