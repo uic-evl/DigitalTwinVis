@@ -20,28 +20,28 @@ services:
   digitaltwinfrontend:
     container_name: digitaltwinfrontend
     restart: unless-stopped
-    build:
-      context: ./docker/frontend
-      dockerfile: Dockerfile
+    image: k8smaster.evl.uic.edu:5000/digitaltwin
+  #   build:
+  #     context: ./docker/frontend
+  #     dockerfile: Dockerfile
     ports:
-      # - 8000:8000
       - 8000:8000
     networks: 
       - example
-    volumes:
-      - ./docker/frontend/init.sh:/usr/local/bin/init.sh
-    entrypoint: sh -c "sh /usr/local/bin/init.sh"
-  digitaltwinbackend:
-    container_name: digitaltwinbackend
-    restart: unless-stopped
-    build:
-      context: ./docker/backend
-      dockerfile: Dockerfile
-    ports:
-      - 5000:5000
+  #   volumes:
+  #     - ./docker/frontend/init.sh:/usr/local/bin/init.sh
+  #   entrypoint: sh -c "sh /usr/local/bin/init.sh"
+  # digitaltwinbackend:
+    # container_name: digitaltwinbackend
+    # restart: unless-stopped
+    # build:
+    #   context: ./docker/backend
+    #   dockerfile: Dockerfile
+    # ports:
+    #   - 5000:5000
     volumes:
       - ./:/workspace/DigitalTwinVis
       - ./docker/backend/init.sh:/usr/local/bin/init.sh
     entrypoint: sh -c "sh /usr/local/bin/init.sh"
-    networks: 
-      - example
+    # networks: 
+    #   - example
