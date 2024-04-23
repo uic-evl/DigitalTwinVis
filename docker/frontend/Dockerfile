@@ -1,7 +1,7 @@
 FROM node:20
 
 ENV DEBIAN_FRONTEND=noninteractive
-
+RUN echo 'here'
 WORKDIR /workspace
 RUN apt-get update -y && apt-get install -y tmux git 
 RUN git clone https://github.com/uic-evl/DigitalTwinVis.git
