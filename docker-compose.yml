@@ -28,9 +28,9 @@ services:
       - 80:80
     networks: 
       - example
-    # volumes:
-    #   - ./docker/frontend/init.sh:/usr/local/bin/init.sh
-    # entrypoint: sh -c "sh /usr/local/bin/init.sh"
+    volumes:
+      - ./docker/frontend/init.sh:/usr/local/bin/init.sh
+    entrypoint: sh -c "sh /usr/local/bin/init.sh"
   digitaltwinbackend:
     container_name: digitaltwinbackend
     restart: unless-stopped
