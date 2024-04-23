@@ -1,23 +1,29 @@
 import axios from 'axios';
-import * as constants from './Constants';
 import * as endpoint from './Endpoint.js';
 
 export default class DataService {
 
     constructor(token,setAuthToken){
+        //token is a jwt token used for password authentication 
+        //in this example that is given when the user logs in
         const headers = token? {
             Authorization: token ? `Bearer ${token}` : undefined,
             'Content-Type': 'application/json',
           } : {};
 
+        //endpoint url is the backend location e.g. http://localhost:<port you ran flask api on?
         this.api = axios.create({
             baseURL: endpoint.API_URL,
             headers: headers,
         });
+
+        //clear authentication
         this.resetToken = ()=>setAuthToken(false);
     }
 
     getParamList(pObj){
+        //returns an object and turns the entries into a url query
+        //e.g {key: value} => http://localhost:<port>/location?key=value
         let newParams = {}
         let empty= true;
         for(let k of Object.keys(pObj)){

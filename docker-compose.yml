@@ -1,0 +1,48 @@
+networks:
+  example:
+    driver: bridge
+
+services:
+  digitaltwinproxy:
+    container_name: digitaltwinproxy
+    image: nginx
+    # build:
+    #   context: ./docker/proxy
+    #   dockerfile: Dockerfile
+    restart: always
+    ports:
+      - 443:443
+      - 80:80
+    volumes:
+      - ./docker/proxy/service-example/nginx.conf:/etc/nginx/nginx.conf
+      - ./data/_.evl.uic.edu.key:/etc/ssl/evl.key
+      - ./data/_.evl.uic.edu.crt:/etc/ssl/evl.crt
+    networks: 
+      - example
+  digitaltwinfrontend:
+    container_name: digitaltwinfrontend
+    restart: unless-stopped
+    build:
+      context: ./docker/frontend
+      dockerfile: Dockerfile
+    ports:
+      - 8000:8000
+    networks: 
+      - example
+    # volumes:
+    #   - ./docker/frontend/init.sh:/usr/local/bin/init.sh
+    # entrypoint: sh -c "sh /usr/local/bin/init.sh"
+  digitaltwinbackend:
+    container_name: digitaltwinbackend
+    restart: unless-stopped
+    build:
+      context: ./docker/backend
+      dockerfile: Dockerfile
+    ports:
+      - 5000:5000
+    volumes:
+      - ./:/workspace/DigitalTwinVis
+      - ./docker/backend/init.sh:/usr/local/bin/init.sh
+    entrypoint: sh -c "sh /usr/local/bin/init.sh"
+    networks: 
+      - example

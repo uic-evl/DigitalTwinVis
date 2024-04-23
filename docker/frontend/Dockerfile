@@ -1,15 +1,15 @@
-FROM nginx
+FROM node:20
+
+ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /workspace
-RUN apt-get update -y && apt-get install -y tmux vim git 
+RUN apt-get update -y && apt-get install -y tmux git 
 RUN git clone https://github.com/uic-evl/DigitalTwinVis.git
-    
-# RUN scp /workspace/DigitalTwinVis/docker/frontend/https-forwarding.conf /etc/nginx/conf.d/https-forwarding.conf
+WORKDIR /workspace/DigitalTwinVis/frontend
 
-# RUN nginx -s reload
-
-# WORKDIR /workspace/DigitalTwinVis/frontend
-
-# RUN npm run build
-
-# CMD ["serve","-s","build","-p","8080","--cors"]
+RUN apt-get install -y npm
+RUN npm -g install npm@latest
+RUN npm install 
+RUN npm run build
+RUN npm install -g serve
+CMD ["serve","-s","build","-p","8000","--cors"]
