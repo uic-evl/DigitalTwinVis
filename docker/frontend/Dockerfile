@@ -4,7 +4,7 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 WORKDIR /workspace
 RUN apt-get update -y && apt-get install -y tmux git 
-RUN echo 'here cors and such n'
+RUN echo 'here cors and such'
 RUN git clone https://github.com/uic-evl/DigitalTwinVis.git
 WORKDIR /workspace/DigitalTwinVis/frontend
 
