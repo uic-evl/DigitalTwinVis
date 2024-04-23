@@ -1,14 +1,15 @@
 FROM nginx
 
-RUN apt-get update \
-    && git clone https://github.com/uic-evl/DigitalTwinVis.git
+WORKDIR /workspace
+RUN apt-get update -y && apt-get install -y tmux vim git 
+RUN git clone https://github.com/uic-evl/DigitalTwinVis.git
     
-COPY DigitalTwinVis/docker/fronted/https-forwarding.conf /etc/nginx/sites-enabled/https-forwarding.conf
+# RUN scp /workspace/DigitalTwinVis/docker/frontend/https-forwarding.conf /etc/nginx/conf.d/https-forwarding.conf
 
-RUN systemctl restart nginx
+# RUN nginx -s reload
 
-WORKDIR /workspace/DigitalTwinVis/frontend
+# WORKDIR /workspace/DigitalTwinVis/frontend
 
-RUN npm run build
+# RUN npm run build
 
-CMD ["serve","-s","build","-p","8080","--cors"]
+# CMD ["serve","-s","build","-p","8080","--cors"]
