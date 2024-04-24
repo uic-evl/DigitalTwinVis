@@ -1,14 +1,8 @@
-import React, {useState, useEffect, useRef,useMemo} from 'react';
-import useSVGCanvas from './useSVGCanvas.js';
+import React, {useState, useMemo} from 'react';
 import Utils from '../modules/Utils.js';
-import * as d3 from 'd3';
 import * as constants from "../modules/Constants.js";
-import OutcomePlots from './OutcomePlots.js';
 import SurvivalPlots from './SurvivalPlots.js';
-import * as HelpTexts from '../modules/Text';
-import HelpText from '../modules/HelpText';
 import ModelLegend from './ModelLegend.js';
-import AuxOutcomeBarchart from './AuxOutcomeBarchart.js';
 import OtherOutcomes from './OtherOutcomes.js';
 
 import {Spinner} from '@chakra-ui/react';

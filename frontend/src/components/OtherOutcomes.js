@@ -1,4 +1,4 @@
-import React, {useState, useEffect, useRef,useMemo} from 'react';
+import React, {useEffect, useRef,useMemo} from 'react';
 import useSVGCanvas from './useSVGCanvas.js';
 import Utils from '../modules/Utils.js';
 import * as d3 from 'd3';
