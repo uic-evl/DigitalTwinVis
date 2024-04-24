@@ -1,5 +1,5 @@
 #!/bin/bash
-cd /workspace/DigitalTwinVis/frontend
+cd /workspacecom/DigitalTwinVis/frontend
 npm run build
 npm install -g serve
 serve -s build -p 8000 --cors
