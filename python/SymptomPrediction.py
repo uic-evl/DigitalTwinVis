@@ -11,12 +11,14 @@ from Utils import *
 import re
 from scipy.spatial.distance import cdist
 
-def process_mdasi_input(mdasi):
+def process_mdasi_input(mdasi,imputed_version=True):
     to_keep = ['id','age','gender','packs_per_year','hpv','total_dose','dose_fraction',
                'White/Caucasion','Hispanic/Latino','African American/Black','Asian',
                'bilateral',
               ]
-    mdasi['id'] = mdasi['ID'].apply(lambda x: int(x.replace('STIEFEL_','')))
+#     if not imputed_version:
+    mdasi=mdasi.copy()
+#     mdasi['id'] = mdasi['ID'].apply(lambda x: int(x.replace('STIEFEL_','')))
     mdasi['gender'] = mdasi['gender'].apply(lambda x: x == 'M')
     mdasi['total_dose']=mdasi['rt_dose'].fillna(0)
     mdasi['dose_fraction'] = mdasi['rt_fraction'].fillna(0)
@@ -121,42 +123,29 @@ def sdf_symptom_array(s,symptoms):
 
 def load_mdasi_stuff():
     model = torch.load('../resources/symptomImputer.pt')
-    mdasi = pd.read_excel('../data/mdasi_updated.xlsx').drop('Unnamed: 0',axis=1)
-    return model, mdasi
+    mdasi_base = pd.read_excel('../data/mdasi_updated.xlsx').drop('Unnamed: 0',axis=1)
+    mdasi_imputed = pd.read_csv('../data/mdasi_imputed.csv').drop('Unnamed: 0',axis=1)
+    mdasi_base['id'] = mdasi_base['ID'].apply(lambda x: int(x.replace('STIEFEL_','')))
+    mdasi_imputed['id'] = mdasi_imputed['ID'].apply(lambda x: int(x.replace('STIEFEL_','')))
+    return model, mdasi_base, mdasi_imputed
 
-def get_knn_predictions(fdict,
-                        model,
-                        mdasi,
-                        k=8,
-                        ttype=torch.FloatTensor,
-                        dates=[0,7,12,27],
-                        symptom_subset = None,
-                       ):
-    
-
-    mdasi_df = process_mdasi_input(mdasi)
-    sdf,output_dates,output_symptoms = get_symptom_df(mdasi)
-    
-    xalt = df_to_torch(mdasi_df)
-    
-    order = mdasi_df.columns
-    xin = torch.tensor([fdict[k] for k in order]).type(ttype).view(1,-1) 
-
+# +
+def get_knn(model,xin,mdf,sdf,symptom_subset=None,k=10,dates=[0,7,12,27]):
+    xalt = df_to_torch(mdf)
     embeddings = model.get_embedding(xin).cpu().detach().numpy()
     base_embeddings = model.get_embedding(xalt).cpu().detach().numpy()
-    mdasi_ids= mdasi_df.index
     dists = cdist(embeddings,base_embeddings)[0]
-    
-    
     order = np.argsort(dists)[:k]
     dists = dists[order]
+    
+    mdasi_ids= mdf.index
     ids = mdasi_ids[order]
     symptoms = sdf.loc[ids]
-    res = {'ids': ids.tolist(),'dists': dists.tolist()}
-    sentries = {}
     
     if symptom_subset is None:
         symptom_subset = Const.prediction_symptoms
+    res = {'ids': ids.tolist(),'dists': dists.tolist()}
+    sentries = {}
     for sym in symptom_subset:
         if sym == 'core':
             continue
@@ -172,18 +161,88 @@ def get_knn_predictions(fdict,
         sentries[sym] = entry
     return {'ids': ids.tolist(),'dists':dists.tolist(),'symptoms':sentries}
 
-def get_predictions(data,model,input_cols=Const.mdasi_input_cols,output_symptoms=Const.prediction_symptoms,
-                    output_dates=[0, 7, 13, 27]):
-    xin = df_to_torch(data.processed_df[input_cols])
+def get_knn_predictions(fdict,
+                        model,
+                        mdasi,
+                        k=10,
+                        ttype=torch.FloatTensor,
+                        dates=[0,7,12,27],
+                        symptom_subset = None,
+                        decision_state=0,#0 is default, 1,2,3 are ic,cc,nd?
+                       ):
+    
+
+    mdasi_df = process_mdasi_input(mdasi)
+    sdf,output_dates,output_symptoms = get_symptom_df(mdasi)
+    
+    
+    order = mdasi_df.columns
+    xin = torch.tensor([fdict[k] for k in order]).type(ttype).view(1,-1) 
+
+    if decision_state == 0:
+        se = get_knn(model,xin,mdasi_df,sdf,k=k,symptom_subset=symptom_subset,dates=dates)
+        se['dates'] = dates
+        res = se
+    
+    else:
+        dcol = Const.decisions[decision_state-1]
+        print(dcol)
+        mdasi_df_treated = mdasi_df[mdasi_df[dcol].astype(float) > .5]
+        mdasi_df_untreated = mdasi_df[mdasi_df[dcol].astype(float) < .5]
+        se_treated = get_knn(model,xin,mdasi_df_treated,sdf,k=k,symptom_subset=symptom_subset,dates=dates)
+        se_untreated = get_knn(model,xin,mdasi_df_untreated,sdf,k=k,symptom_subset=symptom_subset,dates=dates)
+        res = {'treated': se_treated,'untreated': se_untreated,'dates': dates}
+    return res
+
+
+# -
+
+def get_symptom_predictions(fdict,
+                        model,
+                        order=None,
+                        k=10,
+                        ttype=torch.FloatTensor,
+                        dates=[0,7,12,27],
+                        symptom_subset = None,
+                        decision_state=0,#0 is default, 1,2,3 are ic,cc,nd?
+                       ):
+
+    
+    if order is None:
+        order = Const.mdasi_input_cols
+
+    xin = torch.tensor([fdict[k] for k in order]).type(ttype).view(1,-1) 
+
+    model.eval()
+    model.disable_dropout()
     ypred = model(xin).cpu().detach().numpy()
-    if output_symptoms is None or output_dates is None:
-        return ypred
-    results = {}
-    i = 0
-    width = len(output_dates)
-    for symptom in output_symptoms:
-        values = ypred[:,i:i+width]
-        i += width
-        s = values.tolist()
-        results[symptom] = s
-    return pd.DataFrame(results,index=data.processed_df.index)
+
+    symptoms = Const.prediction_symptoms
+    if symptom_subset is None:
+        symptom_subset = Const.prediction_symptoms
+    curpos = 0
+    results = {s: {'means':[],'ratings': []} for s in symptom_subset}
+    
+    for sym in symptoms:
+        if sym not in symptom_subset:
+            curpos += len(dates)
+            continue
+        values = ypred[:,curpos:curpos+len(dates)].tolist()[0]
+        curpos += len(dates)
+        results[sym]['means'] = values
+        
+    for i in range(k):
+        model.enable_dropout()
+        ypred = model(xin).cpu().detach().numpy()
+        curpos = 0
+        for sym in symptoms:
+            if sym not in symptom_subset:
+                curpos += len(dates)
+                continue
+            values = ypred[:,curpos:curpos+len(dates)].tolist()[0]
+            curpos += len(dates)
+            cur_res = results[sym]['ratings']
+            cur_res.append(values)
+            results[sym]['ratings'] = cur_res
+    model.disable_dropout()
+    return {'dates': dates,'symptoms': results}
