@@ -309,15 +309,6 @@ class DSM(torch.nn.Module):
         #So i'm sort of guessing for the lognormal (which is median time no mean) but it tests seem to get that is the equivalent time of suvival = .49
         
         #all the commented stuff is the things I tried to get weibull time to event to work
-        
-        #Ok so the equation they give more for weibull doesn't work, I just calculate median time via brute for assuming it's between 5 and 200 months
-#         if self.dist == "Weibull":
-#             times = list(range(5,52))
-#             probs =[torch.exp(c).T for c in self._cdf(shape,scale,logits,times)]
-#             probs = torch.stack(probs,axis=0)
-#             best = torch.argmin(torch.abs(.5 - probs),axis=0)
-#             return torch.Tensor([times[b] for b in best])
-
         k_ =  shape
         b_ = scale
         logits = self.squish(logits)
@@ -329,17 +320,7 @@ class DSM(torch.nn.Module):
                 b = b_[:,g]
                 one_over_k = torch.reciprocal(torch.exp(k))
                 lmean = -(one_over_k*b) + torch.lgamma(1+one_over_k)
-                
-#                 k = k_[:, g]
-#                 b = torch.exp(b_[:, g])
-#                 onek = torch.reciprocal(k)
-#                 lmean = torch.pow(b,-onek)*torch.pow(torch.log(torch.tensor([2])),onek)
-#                 lmean = torch.exp(lmean)
-                
-#                 onek = torch.reciprocal(torch.exp(k))
-#                 lmean  = -(b*onek)*torch.pow(torch.log(torch.tensor([2])),onek)
-#                 print('lmean',lmean.mean(),onek.mean(),torch.pow(b,onek).mean(), torch.pow(torch.log(torch.tensor([2])),onek).mean() )
-
+            
                 lmeans.append(lmean)
             elif self.dist == 'LogNormal':
                 sigma = b_[:,g]
@@ -351,10 +332,6 @@ class DSM(torch.nn.Module):
         lmeans = torch.stack(lmeans, dim=1)
         if self.dist == 'Weibull':
             print('lmeans',lmeans,'logits',torch.exp(logits))
-            
-#             lmeans = lmeans*torch.exp(logits)
-#             lmeans = torch.sum(lmeans,dim=1)
-
             lmeans = lmeans+logits
             lmeans = torch.logsumexp(lmeans,dim=1)
             lmeans = torch.exp(lmeans)
