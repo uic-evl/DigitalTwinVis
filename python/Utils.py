@@ -3,11 +3,22 @@ import numpy as np
 import pandas as pd
 import pickle
 from Preprocessing import *
+from sklearn.metrics import balanced_accuracy_score, roc_auc_score,accuracy_score,precision_recall_fscore_support
+from Misc import *
 
+# +
 def get_dt_ids(df=None):
     if df is None:
         df = load_digital_twin()
     return df.id.values
+
+def mc_loss(ytrue,ypred,weights=None):
+    #this is just the multiclass loss now
+    loss = torch.nn.CrossEntropyLoss(weight=weights)
+    return loss(ypred,ytrue.argmax(axis=1))
+
+
+# -
 
 def get_tt_split(ids=None,use_default_split=True,use_bagging_split=False,resample_training=False,df=None):
         if ids is None:
@@ -55,23 +66,29 @@ def transition_sample(state,dataset=None):
     return xtrain,xtest,ytrain,ytest
 
 
-
-def df_to_torch(df,ttype  = torch.FloatTensor):
-    values = df.values.astype(float)
-    values = torch.from_numpy(values)
-    return values.type(ttype)
-
+# +
 def load_models():
     files = [
         '../resources/decision_model.pt',
-        '../resources/transition1_model_pytorch.pt',
-        '../resources/transition2_model_pytorch.pt',
-        '../resources/outcome_model_pytorch.pt',
+        '../resources/transition1_model.pt',
+        '../resources/transition2_model.pt',
+        '../resources/outcome_model.pt',
+        '../resources/outcomeDSM.pt',
     ]
-    decision_model,transition_model1,transition_model2, outcome_model = [torch.load(file) for file in files]
-    return decision_model,transition_model1,transition_model2,outcome_model
+    return  [torch.load(file) for file in files]
 
 
+def load_transition_models():
+    files = [
+        '../resources/transition1_model.pt',
+        '../resources/transition2_model.pt',
+        '../resources/outcome_model.pt',
+         '../resources/outcomeDSM.pt'
+    ]
+    return  [torch.load(file) for file in files]
+
+
+# +
 def load_sklearn_transition_models():
     model_names = ['transition1_model.pickle','transition2_model.pickle','outcome_model.pickle']
     success = []
@@ -85,6 +102,16 @@ def load_sklearn_transition_models():
             success.append(False)
             print(e)
     return success
+
+def get_weights(df_list,scale  = None,to_torch=True):
+    getw = lambda df: df.shape[0]/(df.shape[1]*df.sum(axis=0)).values
+    w = [getw(df) for df in df_list]
+
+    if scale is not None:
+        w = [scale(ww) for ww in w]
+    if to_torch:
+        return [torch.FloatTensor(ww) for ww in w]
+    return w
 
 
 # +

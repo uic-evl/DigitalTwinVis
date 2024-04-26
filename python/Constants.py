@@ -68,7 +68,9 @@ class Const:
     decision3 = 'Decision 3 Neck Dissection (Y/N)'
     decisions = [decision1,decision2, decision3]
     outcomes = ['Overall Survival (4 Years)', 'FT', 'Aspiration rate Post-therapy','LRC']
-    timeseries_outcomes = ['OS (Calculated)','Locoregional control (Time)','FDM (months)'] + ['time_to_event']
+    timeseries_outcomes = ['OS (Calculated)','Locoregional control (Time)','FDM (months)','time_to_event']
+    timeseries_censoring = ['Overall Survival (1=alive, 0=dead)','LRC','DC']
+
     modification_types = {
         0: 'no_dose_adjustment',
         1: 'dose_modified',
@@ -129,7 +131,64 @@ class Const:
         
     }
     
- 
+    prediction_symptoms = ['choke','drymouth','fatigue','mucus','nausea','skin','swallow','taste','teeth','core','mood']
+    
+    mdasi_input_cols = ['age', 'gender', 'packs_per_year', 'hpv', 'total_dose', 'dose_fraction',
+       'White/Caucasion', 'Hispanic/Latino', 'African American/Black', 'Asian',
+       'bilateral', 'subsite_BOT', 'subsite_GPS', 'subsite_Tonsil',
+       'subsite_Soft palate', 'subsite_NOS', 'T-category_1', 'N-category_0',
+       'T-category_2', 'N-category_1', 'T-category_3', 'N-category_2',
+       'T-category_4', 'N-category_3', 'Decision 1 (Induction Chemo) Y/N',
+       'Decision 2 (CC / RT alone)', 'Decision 3 Neck Dissection (Y/N)']
+    dosemodel_file = '../resources/doseImputer.pt'
+    
+    organ_order = ['Esophagus',
+ 'Spinal_Cord',
+ 'Lt_Brachial_Plexus',
+ 'Rt_Brachial_Plexus',
+ 'Cricopharyngeal_Muscle',
+ 'Lt_thyroid_lobe',
+ 'Rt_thyroid_lobe',
+ 'Cricoid_cartilage',
+ 'IPC',
+ 'MPC',
+ 'Brainstem',
+ 'Larynx',
+ 'Thyroid_cartilage',
+ 'Rt_Sternocleidomastoid_M',
+ 'Rt_Mastoid',
+ 'Rt_Parotid_Gland',
+ 'Rt_Medial_Pterygoid_M',
+ 'Rt_Lateral_Pterygoid_M',
+ 'Rt_Masseter_M',
+ 'Lt_Sternocleidomastoid_M',
+ 'Lt_Mastoid',
+ 'Lt_Parotid_Gland',
+ 'Lt_Submandibular_Gland',
+ 'Lt_Medial_Pterygoid_M',
+ 'Lt_Lateral_Pterygoid_M',
+ 'Lt_Masseter_M',
+ 'Supraglottic_Larynx',
+ 'SPC',
+ 'Rt_Submandibular_Gland',
+ 'Hyoid_bone',
+ 'Soft_Palate',
+ 'Genioglossus_M',
+ 'Tongue',
+ 'Rt_Ant_Digastric_M',
+ 'Lt_Ant_Digastric_M',
+ 'Mylogeniohyoid_M',
+ 'Extended_Oral_Cavity',
+ 'Mandible',
+ 'Hard_Palate',
+ 'Lt_Posterior_Seg_Eyeball',
+ 'Rt_Posterior_Seg_Eyeball',
+ 'Lt_Anterior_Seg_Eyeball',
+ 'Rt_Anterior_Seg_Eyeball',
+ 'Lower_Lip',
+ 'Upper_Lip',
+ 'GTVp',
+ 'GTVn']
     stratified_train_ids = [
         5,6,8,11,13,14,15,16,17,18,21,23,24,26,27,28,32,33,37,38,39,40,
         41,42,48,49,50,51,53,55,56,57,60,64,65,67,69,71,74,75,78,79,80,
