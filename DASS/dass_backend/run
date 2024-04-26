@@ -1,0 +1,2 @@
+export FLASK_APP=App.py
+python -m flask run -h localhost -p 8000

@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   width="38.287655mm"
+   height="50.878437mm"
+   viewBox="0 0 38.287655 50.878437"
+   version="1.1"
+   id="svg5143">
+  <defs
+     id="defs5137" />
+  <metadata
+     id="metadata5140">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title></dc:title>
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -13.626452,9.371966 3.24297,-3.48027 0.645594,-3.025802 -1.320873,-1.499186 -1.918422,1.598398 -2.222069,2.878585 -0.750274,2.477608 0.424743,1.604337 z"
+     id="Rt_Ant_Digastric_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -11.411712,-6.289244 0.547979,-3.17165 5.179101,-0.77598 0.29106,2.40808 v 1.86035 l -3.15977,0.61337 -2.85837,-0.93417"
+     id="Rt_thyroid_lobe" />
+  <circle
+     id="path2568-4-1"
+     style="fill:#000000;stroke:#000000;stroke-width:0.2;stroke-miterlimit:4;stroke-dasharray:none"
+     cx="-3.8171453"
+     cy="-12.143066"
+     r="0.021290546"
+     transform="scale(-1)" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 4.734993,10.785356 -1.9593,-1.38245 -1.803485,-1.95639 1.794385,-1.27051 3.95508,2.42685 z"
+     id="Rt_Parotid_Gland" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 2.471148,15.155586 2.263845,-4.37023 -1.9593,-1.38245 -1.803485,-1.95639 -1.70585,-1.13615 -2.13561,-0.89325 -1.97743,1.97742 -0.43776,3.65892 3.45988,1.97828 z"
+     id="Rt_Masseter_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 2.471148,15.155586 -0.95063,3.045177 -2.97991,1.648603 -3.21431,-1.84864 1.97066,-2.23597 0.87848,-2.73302 z"
+     id="Rt_Lateral_Pterygoid_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -2.703042,15.764756 -1.97066,2.23597 -2.32409,-5.16421 1.71335,-1.78306 3.45988,1.97828 z"
+     id="Rt_Medial_Pterygoid_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 8.283403,7.236346 -8.700655,-14.15836 -3.60714,-10.96863 2.9446,-3.45991 6.478115,0.58892 0.29447,7.43512 1.9876,7.58234 3.6878,6.65276 z"
+     id="Rt_Sternocleidomastoid_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 10.766853,-18.983705 -5.36853,-1.777929 1.56184,-4.5666 7.41818,0.87848 z"
+     id="Rt_Brachial_Plexus" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -6.997792,12.836516 -10.846291,7.5541 -0.82824,-3.76957 -1.481,-1.1647 -0.20797,-2.85966 3.17548,-1.88008 1.66103,-0.79097 1.898331,-0.55367 5.93227,-0.23729 2.8475,-1.74014 -0.43776,3.65892 -1.71335,1.78306"
+     id="Mandible" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -16.465742,25.330346 -0.15199,-3.32278 -1.409771,0.29693 -0.0976,1.65934 1.65934,1.36651"
+     id="Upper_Lip" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -18.694521,21.16979 0.850438,-0.779174 1.226351,1.61695 -1.409771,0.29693 z"
+     id="Lower_Lip" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -16.465742,25.330346 8.97438,-0.98664 6.03197,-4.49434 -3.21431,-1.84864 -2.32409,-5.16421 -10.846291,7.5541 1.226351,1.61695 z"
+     id="Extended_Oral_Cavity" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -12.044512,-1.543424 -1.57628,1.16245 7.13874,-0.1939 -0.84074,-1.10966 -1.59699,-0.13846 -3.12473,0.27957"
+     id="Hyoid_bone" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -7.598497,-13.677897 3.026035,-2.138778 0.54807,-2.073969 -3.71754,-1.028261 -3.95485,0.949161 -0.0306,3.19877 4.128885,1.093077"
+     id="Esophagus" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 15.031563,8.142836 -2.68928,-2.452 2.45198,-3.63846 2.8475,0.94916 0.0791,3.16388 z"
+     id="Brainstem" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 13.402283,-4.440104 -3.51203,1.50937 -1.81921,-5.77408 -1.34465,-7.593311 0.31637,-3.16388 3.7241,0.4783 1.85456,12.103391 z"
+     id="Spinal_Cord" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -10.383483,5.891695 4.033951,-3.63846 2.76839,0.47458 0.71189,2.689302 -1.97743,1.977419 -2.8475,1.740141 v 0 L -9.241574,7.028755 Z"
+     id="Rt_Submandibular_Gland" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -3.581142,2.727815 2.8473,-0.790657 3.500435,4.238847 -1.794385,1.270511 -1.70585,-1.13615 -2.13561,-0.893249 -0.71189,-2.689302"
+     id="MPC" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -0.924159,-0.632134 0.190317,2.569292 3.500435,4.238847 1.447826,-5.475912 -4.631671,-7.62211 z"
+     id="IPC" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -7.694182,9.134677 -5.93227,0.237289 3.242969,-3.480271 1.141909,1.13706 1.547392,2.105922"
+     id="Mylogeniohyoid_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -0.417252,-6.922017 -2.600402,-7.698468 -4.580843,0.942588 1.155125,2.197657 0.75874,1.243366 0.29106,4.268431 z"
+     id="Larynx" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -12.044512,-1.543424 0.727959,-2.842643 3.429323,0.839011 v 0 l 0.564438,1.862522 -4.72172,0.14111"
+     id="Thyroid_cartilage" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -0.924159,-0.632134 v 0 l 0.506907,-6.289883 -4.976309,0.953572 -3.159781,0.613371 1.23055,3.67054 0.840741,1.10966 z"
+     id="Supraglottic_Larynx" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -11.411712,-6.289244 0.09516,1.903177 3.429322,0.839011 -0.666112,-1.808018 z"
+     id="Glottic_Area" />
+</svg>

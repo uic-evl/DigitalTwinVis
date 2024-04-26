@@ -1,0 +1,360 @@
+body{
+  --control-panel-height: 6.5em;
+  --right-panel-width: 49vw;
+  --left-panel-width: 49vw;
+  --section-height: calc((95vh - 4em - 130px)/2);
+  --ul-height: calc(30vh - 3.5em);
+  --ll-height: calc(70vh - 3.5em);
+  --ur-height: calc(55vh - 3.5em);
+  --lr-height: calc(45vh - 3.5em);
+  --cluster-width: calc(33% - 1.5em);
+  --cluster-height: 28vh;
+  --patient-dose-height: 12vh;
+  --patient-symptom-height: 10vh;
+  overflow-x: hidden!important;
+  overflow-y: visible;
+  position: relative;
+}
+
+.ul-view{
+  height: var(--ul-height);
+}
+
+.ll-view{
+  height: var(--ll-height);
+}
+
+.ur-view{
+  height: var(--ur-height);
+}
+
+.lr-view{
+  height: var(--lr-height)!important;
+  overflow-y: visible!important;
+}
+
+.App {
+  text-align: center;
+  height: 100vh!important;
+  width: 100vw!important;
+  margin: 0px;
+  overflow-x: hidden!important;
+}
+
+.container > * {
+  overflow-y: visible;
+}
+
+.row, .col{
+  margin: .25rem!important;
+  padding: .25rem!important;
+  margin-top: .5rem!important;
+  margin-bottom: .5rem!important
+  /* overflow-x: hidden!important; */
+  /* overflow-y: visible!important; */
+}
+
+.dropdown-toggle, .dropdown-toggle:active, 
+.dropdown-toggle:visited, .dropdown-toggle:hover, 
+.dropdown-toggle > *{
+  /* background-color: #af7fc7!important;
+  border-color: #af7fc7!important; */
+  background-color: #c57fbf!important;
+  border-color: #915f8c!important;
+}
+
+
+.screenHeight{
+  height: 100vh;
+}
+
+.screenWidth{
+  width: 100vw;
+}
+
+#clusterControlPanelContainer{
+  height: var(--control-panel-height);
+  width: calc(100vw - 1em)!important;
+  padding: 0px!important;
+  margin: .5em!important;
+  margin-bottom: 0px!important;
+  overflow-y: visible!important;
+}
+
+.borderRight{
+  border-right: 1.5px solid grey !important;
+}
+
+#mainVis{
+  height: calc(100vh - 1em - var(--control-panel-height));
+  top: var(--control-panel-height);
+  width: 100vw!important;
+}
+
+.d3-component{
+  height: 100%!important;
+  width: 100%!important;
+  margin: 0px!important;
+  margin-top: 2px;
+  padding: 0px;
+  background-color: white;
+  transform-origin: 0, 0;
+  overflow-y: visible!important;
+}
+
+.shadow{
+  box-shadow: 8px 8px 15px .25px rgba(0, 0, 0, 0.25);
+  border-radius: 1em!important;
+}
+
+/* .shadow, .shadow > *{
+  background-color: rgb(255, 252, 247);
+} */
+
+
+.clusterContainer{
+  /* height: var(--section-height)!important;
+  min-height: var(--section-height)!important; */
+  justify-content: middle;
+}
+
+
+.overviewContainer{
+  margin: 0px;
+  padding: 0px;
+  justify-content:space-between;
+  margin-top: 1em!important;
+}
+
+svg > path, svg > circle{
+  cursor: pointer;
+}
+
+.center-block {
+  /* display: table!important;  Instead of display:block */
+  margin-left: auto!important;
+  margin-right: auto!important;
+}
+
+.form-label{
+  margin: 0px!important;
+}
+
+.spinner{
+  height: min(50%,50px)!important;
+  width: min(50%,50px)!important;
+  margin-left: calc(50% - 25px)!important;
+}
+
+.clusterPlotCol{
+  height: var(--cluster-height)!important;
+  /* height: 20em!important; */
+  margin: 0em!important;
+  margin-bottom:1em!important;
+  margin-left: 1em!important;
+  /* margin-left: calc((100% - var(--cluster-width))/2)!important; */
+  padding: 0em!important;
+  padding-left: .1em!important;
+  padding-right: .1em!important;
+  width: var(--cluster-width)!important;
+  max-width: calc(var(--cluster-height) * 2)!important;
+  justify-content: center!important;
+}
+
+.clusterDoseContainer{
+  height: calc(var(--cluster-height) - 2em)!important;
+}
+
+.organPath{
+  position: absolute;
+}
+
+.visComponent{
+  height: 100%;
+  width: 100%;
+  /* display:inline-block; */
+  margin: 0px;
+}
+
+.fillSpace{
+  height: 100%!important;
+  width: 100%!important;
+}
+
+.fillHeight{
+  height: 100%!important;
+}
+
+.inline{
+  display: inline-block;
+  justify-content: start;
+}
+
+.inlineFlex{
+  display: inline-flex;
+  justify-content: start;
+}
+
+.scroll{
+  overflow-y: scroll;
+}
+
+.btn, .btn > *{
+  padding: .04em!important;
+  font-size: .9em!important;
+  font-family: Calibri;
+}
+
+.compactButton, .compactButton > *{
+  padding: 0px!important;
+  margin-left: 1px!important;
+  font-size: .85em!important;
+}
+
+.largeButton, .largeButton > *{
+  padding: .2em!important;
+  font-size: 1em!important;
+}
+
+.dropdown{
+  display: inline-block!important;
+}
+
+.dropdown-toggle{
+  position: relative!important;
+  z-index: 1000!important;
+}
+
+.dropdown-menu.show{
+  max-height: 40vh;
+  overflow-y: scroll!important;
+  z-index: 10000;
+  /* display: flex;
+  position: absolute!important; */
+}
+
+.dropdown-item{
+  z-index: 1000!important;
+  display: absolute;
+  overflow: visible!important;
+} 
+
+.controlPanelTitle{
+  font-size: .9em;
+  font-weight: bold;
+}
+
+.viewTitle{
+  font-size: 1em;
+  font-weight: bold;
+  font-style: italic;
+  font-family:Georgia;
+  overflow-y: visible!important;
+}
+
+.fillHeight{
+  height:100%;
+  width: auto;
+}
+
+.fillWidth{
+  width: 100%;
+  height: auto;
+}
+
+.centerText{
+  justify-content: center!important;
+  text-align: center!important;
+  width: 100% !important;
+
+}
+
+.noGutter, .noGutter > *{
+  margin: 0px!important;
+  padding: 0px!important;
+}
+
+#cell1{
+  background-color: rgba(250,0,0,.2);
+  height: 100%!important;
+}
+
+#cell2{
+  background-color: rgba(0,0,250,.2);
+  height: 100%!important;
+}
+
+.patientScene{
+  height: 20em;
+  width: 15em;
+  margin: .5em!important;
+	position: relative;
+	display: inline-block;
+	z-index: 1;
+	padding: 0em;
+	box-shadow: 0px 1px 1px 1px rgba(0, 0, 0, 0.25);
+}
+
+.sceneTitle{
+  width: 100%!important;
+  font-size: 1em;
+  width: 50%;
+  font-weight: bold;
+  padding: 0em;
+  margin: 0px;
+}
+
+.sceneTitleLeft{
+  display: inline-block;
+  width: 50%;
+  text-align: left;
+}
+
+.sceneTitleRight{
+  display: inline-block;
+  width: 50%;
+  text-align: right;
+}
+
+
+.tooltip {	
+  position: absolute!important;
+  z-index: 10;
+  opacity: 1!important;			
+  text-align: center;			
+  width: auto;		
+  max-width: 50vw;			
+  height: auto;					
+  padding: 10px;				
+  font: 12px sans-serif;		
+  background: rgb(172, 173, 173);	
+  border: 0px;		
+  border-radius: 8px;			
+  pointer-events: none;	
+  font-size: .7em!important;		
+  display:block;
+  
+}
+
+.tooltip > svg{
+  display:block!important;
+  margin-bottom: 10px;
+}
+
+
+
+
+*::-webkit-scrollbar {
+  width: 2px;
+  margin-left:-1em;
+}
+
+*::-webkit-scrollbar-track {
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.3); 
+  border-radius: 1px;
+}
+
+*::-webkit-scrollbar-thumb {
+  border-radius: 1px;
+  -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.5); 
+}

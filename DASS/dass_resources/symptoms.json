@@ -1,0 +1,202 @@
+// Symptom list
+ // ['nausea', 'vomit', 'mucus', 'breath', 'choking', 'swallow', 'dryMouth', 'teeth', 'speech', 'taste', 'appetite', 'constipation',
+ //      'sores', 'skin', 'pain', 'sleep', 'drowsiness', 'numbness', 'fatigue', 'distress', 'memory', 'sadness',
+ //      'mood', 'enjoyment', 'activities', 'work', 'relations', 'walking']
+
+[
+	{
+		"name": "pain",
+		"old_name": "pain",
+		"id": 1,
+		"PRO_question": "Your pain at its WORST?", 
+	},
+
+	{
+		"name": "fatigue",
+		"old_name": "fatigue",
+		"id": 2,
+		"PRO_question": "Your fatigue (tiredness) at its WORST?",
+	},
+
+	{
+		"name": "nausea",
+		"old_name": "nausea",
+		"id": 3,
+		"PRO_question": "Your nausea at its WORST?",
+	},
+
+	{
+		"name": "sleep",
+		"old_name": "sleep",
+		"id": 4,
+		"PRO_question": "Your disturbed sleep at its WORST?",
+	},
+
+	{
+		"name": "distress",
+		"old_name": "distress",
+		"id": 5,
+		"PRO_question": "Your feeling of being distressed (upset) at its WORST?",
+	},
+
+	{
+		"name": "breath",
+		"old_name": "sob",
+		"id": 6,
+		"PRO_question": "Your shortness of breath at its WORST?",
+	},
+
+	{
+		"name": "memory",
+		"old_name": "memory",
+		"id": 7,
+		"PRO_question": "Your problem with remembering things at its WORST",
+	},
+
+	{
+		"name": "appetite",
+		"old_name": "appetite",
+		"id": 8,
+		"PRO_question": "Your problem with lack of appetite at its WORST?",
+	},
+
+	{
+		"name": "drowsiness",
+		"old_name": "drowsy",
+		"id": 9,
+		"PRO_question": "Your feeling drowsy (sleepy) at its WORST?",
+	},
+
+	{
+		"name": "dryMouth",
+		"old_name": "drymouth",
+		"id": 10,
+		"PRO_question": "Your having a dry mouth at its WORST?",
+	},
+
+	{
+		"name": "sadness",
+		"old_name": "sad",
+		"id": 11,
+		"PRO_question": "Your feeling sad at its WORST?",
+	},
+
+	{
+		"name": "vomit",
+		"old_name": "vomit",
+		"id": 12,
+		"PRO_question": "Your vomiting at its WORST?",
+	},
+
+		{
+		"name": "numbness",
+		"old_name": "numb",
+		"id": 13,
+		"PRO_question": "Your numbness or tingling at its WORST?",
+	},
+
+	{
+		"name": "mucus",
+		"old_name": "mucus",
+		"id": 14,
+		"PRO_question": "Your problem with mucus in your mouth and throat at its WORST?",
+	},
+
+		{
+		"name": "swallow",
+		"old_name": "swallow",
+		"id": 15,
+		"PRO_question": "Your di􀃛culty chewing/swallowing at its WORST?", 
+	},
+
+	{
+		"name": "choking",
+		"old_name": "choke",
+		"id": 16,
+		"PRO_question": "Your choking/coughing (food/liquids going down the wrong pipe) at its WORST?",
+	},
+
+	{
+		"name": "speech",
+		"old_name": "voice",
+		"id": 17,
+		"PRO_question": "Your di􀃛culty with voice/speech at its WORST?",
+	},
+
+	{
+		"name": "skin",
+		"old_name": "skin",
+		"id": 18,
+		"PRO_question": "Your skin pain/burning/rash at its WORST?",
+	},
+
+	{
+		"name": "constipation",
+		"old_name": "constipation",
+		"id": 19,
+		"PRO_question": "Your constipation at its WORST?",
+	},
+
+	{
+		"name": "taste",
+		"old_name": "taste",
+		"id": 20,
+		"PRO_question": "Your problem with tasting food at its WORST?",
+	},
+
+	{
+		"name": "sores",
+		"old_name": "mucositis",
+		"id": 21,
+		"PRO_question": "Your mouth/throat sores at its WORST?",
+	},
+
+	{
+		"name": "teeth",
+		"old_name": "teeth",
+		"id": 22,
+		"PRO_question": "Your problem with your teeth or gums at its WORST?",
+	},
+
+	{
+		"name": "activity",
+		"old_name": "general_activity",
+		"id": 23,
+		"PRO_question": "How much have your symptoms interfered with your general activity IN THE LAST 24 HOURS?",
+	},
+
+	{
+		"name": "mood",
+		"old_name": "mood",
+		"id": 24,
+		"PRO_question": "How much have your symptoms interfered with your mood IN THE LAST 24 HOURS?",
+	},
+
+	{
+		"name": "work",
+		"old_name": "work",
+		"id": 25,
+		"PRO_question": "How much have your symptoms interfered with your work (including work around the house) IN THE LAST 24 HOURS?",
+	},
+
+	{
+		"name": "relations",
+		"old_name": "relations",
+		"id": 26,
+		"PRO_question": "How much have your symptoms interfered with your relations with other people IN THE LAST 24 HOURS?",
+	},
+
+		{
+		"name": "walking",
+		"old_name": "walking",
+		"id": 27,
+		"PRO_question": "How much have your symptoms interfered with your walking IN THE LAST 24 HOURS?",
+	},
+
+	{
+		"name": "enjoyment",
+		"old_name": "enjoy",
+		"id": 28,
+		"PRO_question": "How much have your symptoms interfered with your enjoyment of life IN THE LAST 24 HOURS?",
+	}
+]

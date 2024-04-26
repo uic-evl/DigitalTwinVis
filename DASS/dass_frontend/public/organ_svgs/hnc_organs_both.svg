@@ -1,0 +1,943 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg
+   xmlns:dc="http://purl.org/dc/elements/1.1/"
+   xmlns:cc="http://creativecommons.org/ns#"
+   xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+   xmlns:svg="http://www.w3.org/2000/svg"
+   xmlns="http://www.w3.org/2000/svg"
+   xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
+   xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
+   width="210mm"
+   height="297mm"
+   viewBox="0 0 210 297"
+   version="1.1"
+   id="svg859"
+   sodipodi:docname="hnc_organs_both.svg"
+   inkscape:version="1.0.1 (3bc2e813f5, 2020-09-07)">
+  <sodipodi:namedview
+     pagecolor="#ffffff"
+     bordercolor="#666666"
+     borderopacity="1"
+     objecttolerance="10"
+     gridtolerance="10"
+     guidetolerance="10"
+     inkscape:pageopacity="0"
+     inkscape:pageshadow="2"
+     inkscape:window-width="1920"
+     inkscape:window-height="1017"
+     id="namedview54"
+     showgrid="false"
+     inkscape:zoom="2.1646365"
+     inkscape:cx="103.46379"
+     inkscape:cy="-44.218344"
+     inkscape:window-x="-8"
+     inkscape:window-y="-8"
+     inkscape:window-maximized="1"
+     inkscape:current-layer="svg859"
+     inkscape:document-rotation="0" />
+  <defs
+     id="defs853">
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect1091"
+       is_visible="true"
+       lpeversion="1"
+       linejoin_type="miter"
+       unit="mm"
+       offset="-0.3375"
+       miter_limit="2.5"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect1071"
+       is_visible="true"
+       lpeversion="1"
+       linejoin_type="miter"
+       unit="mm"
+       offset="-0.405"
+       miter_limit="2.5"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect1051"
+       is_visible="true"
+       lpeversion="1"
+       linejoin_type="miter"
+       unit="mm"
+       offset="-0.8"
+       miter_limit="2.5"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect1404"
+       is_visible="true"
+       lpeversion="1"
+       linejoin_type="miter"
+       unit="mm"
+       offset="-0.8"
+       miter_limit="2.5"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect1402"
+       is_visible="true"
+       lpeversion="1"
+       linejoin_type="miter"
+       unit="mm"
+       offset="-0.4"
+       miter_limit="2.5"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect1379"
+       is_visible="true"
+       lpeversion="1"
+       linejoin_type="miter"
+       unit="mm"
+       offset="-0.8"
+       miter_limit="2.5"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect1377"
+       is_visible="true"
+       lpeversion="1"
+       linejoin_type="miter"
+       unit="mm"
+       offset="-0.4"
+       miter_limit="2.5"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect109"
+       is_visible="true"
+       lpeversion="1"
+       linejoin_type="miter"
+       unit="mm"
+       offset="-0.3"
+       miter_limit="2.5"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect105"
+       is_visible="true"
+       lpeversion="1"
+       linejoin_type="miter"
+       unit="mm"
+       offset="-0.3"
+       miter_limit="2.5"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+    <inkscape:path-effect
+       effect="clone_original"
+       id="path-effect88"
+       is_visible="true"
+       lpeversion="1"
+       linkeditem=""
+       method="d"
+       attributes=""
+       css_properties=""
+       allow_transforms="true" />
+    <inkscape:path-effect
+       effect="offset"
+       id="path-effect86"
+       is_visible="true"
+       lpeversion="1"
+       linejoin_type="miter"
+       unit="mm"
+       offset="0"
+       miter_limit="2.5"
+       attempt_force_join="false"
+       update_on_knot_move="true" />
+  </defs>
+  <metadata
+     id="metadata856">
+    <rdf:RDF>
+      <cc:Work
+         rdf:about="">
+        <dc:format>image/svg+xml</dc:format>
+        <dc:type
+           rdf:resource="http://purl.org/dc/dcmitype/StillImage" />
+        <dc:title />
+      </cc:Work>
+    </rdf:RDF>
+  </metadata>
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 38.380607,6.0148601 -0.235141,-2.090139 -2.71939,-3.55167777 -5.99857,0.530599 -3.538961,-0.25895 0.345271,2.50316977 0.0104,2.66237 2.589501,-0.431581 9.5469,0.636212"
+     id="Genioglossus_M" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 44.889267,12.498052 -4.042262,-0.36748 1.347412,-1.5924 2.714368,-1.0105 0.960422,0.888011 -0.97994,2.082369"
+     id="Lower_Lip" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 44.889267,12.498052 1.347417,2.082371 -0.980387,1.747978 -3.772705,-2.630938 -0.636587,-1.566891 z"
+     id="Upper_Lip" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 19.720394,12.190963 -2.90042,-3.2918 -4.77242,0.12415 -0.052,3.6956 1.61781,6.607529 2.27335,1.096471 1.73091,0.270049 0.67763,-1.818889 2.66854,-3.488711 z"
+     id="SPC" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 14.667374,-16.74614 5.61056,-1.985279 -2.954091,-0.659636 -3.528844,0.222507 -2.062384,1.818191 -0.172641,0.863168 3.1074,-0.258951"
+     id="Cricoid_cartilage" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 9.2202191,-17.96012 4.5747799,-1.208429 v 0 l -1.521848,-5.380021 -10.0633579,2.023608 1.140923,5.428003 z"
+     id="Esophagus" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 39.066893,12.402913 -7.691919,0.13022 -5.40965,-2.17428 0.27904,-4.5484195 2.589509,-0.431581 9.546892,0.636212 3.813839,4.5232585 -1.347423,1.5924 z"
+     id="Tongue" />
+  <path
+     id="Extended_Oral_Cavity"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 38.21039,17.009084 -13.966354,-0.415211 -3.280422,-1.20872 -1.24335,-3.194121 3.9737,-1.165963 2.271411,-0.666478 5.409491,2.174542 7.692027,-0.13022 1.780263,-0.272341 0.636651,1.566831 3.772386,2.63085 z" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 44.372083,19.734731 -2.992856,1.364012 -6.537198,0.181883 -7.72483,-1.222116 -2.873333,-3.464719 13.966524,0.415293 7.045904,-0.680683 -0.884211,3.40633"
+     id="Hard_Palate" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 27.117199,20.05851 -4.054035,1.459021 -5.445539,-0.824569 0.67769,-1.818891 2.668541,-3.488709 3.28001,1.208429 z"
+     id="Soft_Palate" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 7.4074251,23.077369 1.05028,-4.043141 -1.05028,-2.916351 -3.447851,-0.787699 -5.61203,0.656418 -0.52306,3.842891 1.57333003,3.904353 4.59946997,0.827119 z"
+     id="Brainstem" />
+  <path
+     style="opacity:0.996087;mix-blend-mode:normal;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;image-rendering:auto"
+     d="m 2.8190031,-8.6724247 -0.362205,-7.2320743 -5.536623,-0.696653 c -0.08385,-0.565129 0.194865,5.353398 0.880179,11.0927343 0.396263,3.318614 2.04575003,5.55418303 2.30257603,7.2849638 L 5.6910931,0.62389633 Z"
+     id="Spinal_Cord" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 10.380204,2.6601031 1.66735,6.3632099 4.77242,-0.12415 2.144751,-7.4149239 -1.686779,-0.75851977 -4.147402,0.43441277 z"
+     id="MPC" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 27.042605,-7.1784777 -3.522567,2.209743 -0.997864,-1.505735 -1.467379,-4.6610983 5.2001,-2.344539 0.78771,6.3016293"
+     id="Thyroid_cartilage" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 26.254895,-13.480107 -1.40218,-4.301831 -5.351621,2.157911 1.553701,4.488459 5.2001,-2.344539"
+     id="Glottic_Area" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 20.277934,-18.731419 -0.77684,3.107392 v 0 l 1.553701,4.488459 -5.932041,4.3317113 -3.56278,-9.6833323 3.1074,-0.258951 5.61056,-1.985279"
+     id="Larynx" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 15.122754,-6.8038567 0.39657,1.387999 1.4786,4.55193903 3.10738,-0.0863 4.574781,-1.81263903 -1.030232,-1.818317 -1.127679,-1.893295 -1.467379,-4.6610803 -5.932041,4.3317103"
+     id="Supraglottic_Larynx" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 17.277945,0.72571933 1.68678,0.75851977 3.125859,-1.05340677 -1.985282,-1.381071 -3.107379,0.0863 0.280021,1.589658"
+     id="Hyoid_bone" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 11.559974,-16.487189 0.97562,2.978581 -4.0829999,5.0488513 -1.48019,-2.8036213 0.18543,-4.878551 4.5747799,-1.208429 z"
+     id="Cricopharyngeal_Muscle" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 29.427506,0.90364233 -7.336921,-0.47281 -1.985281,-1.381071 4.574781,-1.81264003 4.57355,-0.466304 5.278073,1.557488 0.894365,2.04473803 -5.998567,0.530599"
+     id="Mylogeniohyoid_M" />
+  <path
+     id="Mandible"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 42.194594,10.537815 38.380863,6.0145721 38.145754,3.9247791 35.426073,0.37304333 34.531708,-1.6716947 l 6.952347,-0.780913 2.625672,2.36316203 0.918792,3.93877877 -1.181311,2.3631629 1.061429,3.315044 z" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 12.535594,-13.508609 -4.0829999,5.0488523 1.9276099,11.1198598 2.75034,-1.499972 4.147402,-0.43441177 -0.280022,-1.589657 -1.4786,-4.55192003 -0.39657,-1.387999 -2.58716,-6.7047523"
+     id="IPC" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 19.720395,12.190963 6.244771,-1.832311 0.27904,-4.5484199 -0.0104,-2.66237 -0.345281,-2.50316877 -3.797948,-0.21386 -3.125851,1.05340677 -2.144763,7.4149229 2.90042,3.2918"
+     id="Masseter_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -15.50196,4.4045017 -4.033951,-3.63845997 -2.76839,0.47457997 -0.71189,2.689299 1.97743,1.9774219 2.8475,1.740138 v 0 l 1.547394,-2.105919 z"
+     id="Lt_Submandibular_Gland" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -12.258991,7.8847726 -3.242969,-3.4802709 -0.645597,-3.025802 1.320874,-1.49918391 1.918423,1.59839491 2.222068,2.878587 0.7502737,2.4776059 -0.4247427,1.604338 z"
+     id="Lt_Ant_Digastric_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -13.840932,-3.0306178 -0.727959,-2.842642 -3.429322,0.839011 v 0 l -0.564438,1.862522 4.721719,0.141109"
+     id="Thyroid_cartilage_side" />
+  <circle
+     id="path2568-4-1"
+     style="fill:#000000;stroke:#000000;stroke-width:0.2;stroke-miterlimit:4;stroke-dasharray:none"
+     cx="-29.702587"
+     cy="-10.655875"
+     r="0.021290544"
+     transform="scale(1,-1)" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -30.620436,9.29816 1.9593,-1.3824474 1.803485,-1.95639 -1.794385,-1.2705109 -3.95508,2.4268509 z"
+     id="Lt_Parotid_Gland" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -28.356591,13.668391 -2.263845,-4.370231 1.9593,-1.3824474 1.803485,-1.95639 1.70585,-1.1361499 2.13561,-0.893252 1.97743,1.9774219 0.43776,3.6589191 -3.45988,1.9782793 z"
+     id="Lt_Masseter_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -28.356591,13.668391 0.95063,3.045177 2.97991,1.648603 3.21431,-1.848641 -1.97066,-2.23597 -0.87848,-2.733019 z"
+     id="Lt_Lateral_Pterygoid_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -23.182401,14.27756 1.97066,2.23597 2.32409,-5.164209 -1.71335,-1.7830593 -3.45988,1.9782793 z"
+     id="Lt_Medial_Pterygoid_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -34.168845,5.7491506 4.068983,-6.53625133 4.631671,-7.62210607 2.600402,-7.6984712 1.006738,-3.270159 -2.9446,-3.45991 -6.478115,0.58892 -0.29447,7.43512 -1.9876,7.5823402 -3.687799,6.65275907 z"
+     id="Lt_Sternocleidomastoid_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -18.887651,11.349321 10.8462888,7.5541 0.8282405,-3.769571 1.481,-1.164699 0.20797,-2.859659 -3.1754802,-1.880081 -1.6610291,-0.7909694 -1.89833,-0.553669 -5.93227,-0.237292 -2.8475,-1.740138 0.43776,3.6589191 1.71335,1.7830593"
+     id="Mandible_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -9.4197036,23.84315 0.15199,-3.322781 1.4097711,0.296932 0.0976,1.659339 -1.6593381,1.36651"
+     id="Upper_Lip_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -7.1909257,19.682595 -0.8504365,-0.779174 -1.2263514,1.616948 1.4097711,0.296932 z"
+     id="Lower_Lip_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -9.4197036,23.84315 -8.9743774,-0.986639 -6.03197,-4.49434 3.21431,-1.848641 2.32409,-5.164209 10.8462888,7.5541 -1.2263514,1.616948 z"
+     id="Extended_Oral_Cavity_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -13.840932,-3.0306178 1.576281,1.1624511 -7.13874,-0.1939011 0.84074,-1.109659 1.596989,-0.13846 3.12473,0.279569"
+     id="Hyoid_bone_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -18.286946,-15.16509 -3.026035,-2.138778 -0.54807,-2.073969 3.71754,-1.028261 3.95485,0.949161 0.0306,3.19877 -4.128884,1.093077"
+     id="Esophagus_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -40.917005,6.6556426 2.68928,-2.4519999 -2.45198,-3.63845997 -2.8475,0.94915897 -0.0791,3.163879 z"
+     id="Brainstem_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -39.287725,-5.9272968 3.51203,1.50937 1.81921,-5.7740802 1.344649,-7.593311 -0.31637,-3.16388 -3.724099,0.4783 -1.85456,12.1033912 z"
+     id="Spinal_Cord_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -24.961284,-2.1193268 v 0 l -0.506907,-6.289883 4.97631,0.953572 3.15978,0.613371 -1.23055,3.67054 -0.84074,1.109659 z"
+     id="Supraglottic_Larynx_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -25.468191,-8.4092098 2.600402,-7.6984682 4.580843,0.942588 -1.155125,2.197657 -0.75874,1.243366 -0.29106,4.2684312 z"
+     id="Larynx_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -22.304301,1.2406217 -2.8473,-0.79065994 -3.500435,4.23884994 1.794385,1.2705109 1.70585,-1.1361499 2.13561,-0.893252 0.71189,-2.689299"
+     id="MPC_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -18.191261,7.6474806 5.93227,0.237292 -3.242969,-3.4802709 -1.141907,1.1370599 -1.547394,2.105919"
+     id="Mylogeniohyoid_M_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -14.473731,-7.7764368 -0.547979,-3.1716492 -1.565595,-0.306488 -3.613506,-0.469493 -0.29106,2.4080804 v 1.8603498 l 3.15977,0.61337 2.85837,-0.93417"
+     id="Lt_thyroid_lobe" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -24.961284,-2.1193268 -0.190317,2.56928856 -3.500435,4.23884994 -1.447826,-5.47591143 4.631671,-7.62210907 z"
+     id="IPC_side" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m -14.473731,-7.7764368 -0.09516,1.903177 -3.429322,0.839011 0.666112,-1.808018 z"
+     id="Glottic_Area_side" />
+  <path
+     id="Esophagus2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 3.4648438,-21.697266 c 0.2389322,1.134766 0.4778645,2.269532 0.7167968,3.404297 2.6212242,-0.368831 5.2616092,-0.689528 7.7949604,-1.491401 0.912082,0.02988 0.180707,-0.877534 0.151626,-1.384417 -0.202899,-0.716524 -0.405797,-1.433048 -0.608696,-2.149572 -2.6848956,0.540364 -5.3697914,1.080729 -8.0546872,1.621093 z" />
+  <path
+     id="Esophagus3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 10.71875,-22.347656 c -2.1242558,0.428843 -4.2492774,0.853926 -6.3730469,1.285156 0.4269022,0.544887 -0.016389,1.664312 0.8417969,1.828125 2.1186091,-0.299071 4.2538211,-0.614376 6.308594,-1.242187 -0.186476,-0.637617 -0.363297,-1.277711 -0.533203,-1.919922 -0.08138,0.01628 -0.162761,0.03255 -0.244141,0.04883 z" />
+  <path
+     id="Cricoid_cartilage4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 15.233482,-18.216797 c -0.520574,0.01263 -1.100928,0.07002 -1.457031,0.5 0.677797,-0.0714 1.330946,-0.283692 1.970703,-0.509765 -0.171224,0.0033 -0.342448,0.0065 -0.513672,0.0098 z" />
+  <path
+     id="Cricoid_cartilage3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.1539;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 16.065139,-18.650594 c -0.650141,0.116461 -1.359523,0.02958 -1.979455,0.192739 -0.428104,0.40169 -0.915165,0.741609 -1.302942,1.185448 0.793222,-0.160208 1.623627,-0.04582 2.386546,-0.378454 0.779997,-0.278439 1.550559,-0.585361 2.340167,-0.832908 -0.471774,-0.113342 -0.9569,-0.201729 -1.444316,-0.166825 z" />
+  <path
+     id="Larynx2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 14.931641,-15.996094 c -0.750977,0.09182 -1.508657,0.150577 -2.263672,0.212891 0.945312,2.572917 1.890625,5.145833 2.835937,7.7187499 1.53711,-1.1217448 3.074219,-2.2434899 4.611328,-3.3652349 -0.452588,-1.46184 -1.132926,-2.880865 -1.380859,-4.388671 0.06086,-0.493825 0.463428,-1.363298 0.323687,-1.63659 -1.375473,0.486285 -2.750947,0.97257 -4.126421,1.458855 z" />
+  <path
+     id="Larynx3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 17.933594,-16.226562 c -1.33572,0.462128 -2.69909,1.132549 -4.164063,1.144531 0.705078,1.919271 1.410156,3.838541 2.115235,5.7578122 1.098958,-0.8014322 2.197916,-1.6028642 3.296875,-2.4042972 -0.446917,-1.48 -1.302938,-2.947345 -1.154297,-4.53125 z" />
+  <path
+     id="Glottic_Area3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 21.494141,-14.710938 c 0.289417,0.352873 0.192597,1.602145 0.76569,1.29665 0.681619,-0.307216 1.363238,-0.614433 2.044857,-0.92165 -0.280884,-0.368822 -0.143011,-1.637102 -0.806452,-1.184219 -0.668032,0.26974 -1.336064,0.53948 -2.004095,0.809219 z" />
+  <path
+     id="Glottic_Area2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 20.498047,-15.166016 c 0.339193,0.981771 0.678385,1.963542 1.017578,2.945313 1.253255,-0.564453 2.50651,-1.128906 3.759766,-1.693359 -0.305339,-0.937501 -0.610677,-1.875 -0.916016,-2.8125 -1.287109,0.520182 -2.574219,1.040364 -3.861328,1.560546 z" />
+  <path
+     id="Thyroid_cartilage3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 23,-10.273438 c 0.333865,1.0393682 0.572328,2.1177351 1.052734,3.1035161 0.365285,-0.3969875 1.356574,-0.498118 1.254258,-1.1160989 -0.117956,-0.955441 -0.235911,-1.9108822 -0.353867,-2.8663232 -0.651042,0.292969 -1.302083,0.585938 -1.953125,0.878906 z" />
+  <path
+     id="Thyroid_cartilage2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 22.033203,-10.707031 c 0.533436,1.5670728 0.817597,3.2537396 1.728516,4.6660154 0.795394,-0.5376208 1.621425,-1.0281076 2.43164,-1.5429688 -0.195963,-1.578125 -0.391927,-3.1562496 -0.58789,-4.7343746 -1.190755,0.537109 -2.381511,1.074218 -3.572266,1.611328 z" />
+  <path
+     id="Supraglottic_Larynx3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 16.964844,-6.1875 c 0.381646,1.2471319 0.773819,2.4903271 1.183594,3.7285156 1.382344,0.070746 2.708651,-0.4272036 3.939429,-0.9903811 0.721401,0.00587 -0.103446,-0.5437099 -0.165992,-0.8885251 -0.745611,-1.3232222 -1.367923,-2.7270414 -1.732422,-4.2050782 -1.07487,0.7851563 -2.149739,1.5703125 -3.224609,2.3554688 z" />
+  <path
+     id="Supraglottic_Larynx2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 20.619141,-9.8378906 c -1.525087,1.1136921 -3.050832,2.2264939 -4.576172,3.3398437 0.473918,1.620593 1.007991,3.2223223 1.529297,4.828125 1.446281,0.036099 2.945326,-0.084413 4.228151,-0.8077045 0.579548,-0.229463 1.159097,-0.4589261 1.738645,-0.6883892 -1.124377,-1.8109561 -2.133205,-3.7221775 -2.662109,-5.7949219 -0.108058,-0.2656474 -0.106434,-0.7289619 -0.257812,-0.8769531 z" />
+  <path
+     id="Cricopharyngeal_Muscle2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 10.705078,-16.257812 c -0.9158527,0.274516 -1.8523853,0.472361 -2.7734374,0.730468 0.00693,1.436358 -0.2740983,2.902308 -0.031444,4.318905 0.3175382,0.308835 0.5277368,1.7174499 0.9451538,1.002946 0.9343623,-1.15481 1.8687244,-2.309619 2.8030874,-3.464429 -0.266908,-0.878604 -0.620328,-1.731739 -0.816407,-2.630859 l -0.09472,0.03206 z" />
+  <path
+     id="Cricopharyngeal_Muscle3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 10.160156,-15.556641 c -0.5684861,0.147247 -1.1381081,0.292839 -1.707031,0.439453 0.015505,1.421978 -0.4236562,2.945214 0.2246094,4.279297 0.7923177,-0.979166 1.5846356,-1.958333 2.3769536,-2.9375 -0.201509,-0.620926 -0.42415,-1.235188 -0.595704,-1.865234 -0.09961,0.028 -0.199218,0.05599 -0.298828,0.08398 z" />
+  <path
+     id="IPC2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 9.2910156,-8.2421875 C 9.8515625,-5.014974 10.412109,-1.7877604 10.972656,1.4394531 12.02535,0.79383521 13.170127,0.16768341 14.442889,0.22450926 15.074556,0.15813638 15.706223,0.0917635 16.337891,0.02539063 15.784612,-2.4296946 14.845693,-4.7761419 14.115205,-7.179088 c -0.572134,-1.6021091 -1.225045,-3.173231 -1.826143,-4.764271 -0.999348,1.233724 -1.998697,2.4674475 -2.9980464,3.7011715 z" />
+  <path
+     id="IPC3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 10.130859,-8.0253906 c 0.47461,2.7324219 0.949219,5.4648437 1.423829,8.1972656 1.17476,-0.62342507 2.524501,-0.77931313 3.833984,-0.84375 -0.497175,-1.2306271 -0.760031,-2.5649168 -1.222981,-3.8028606 -0.652199,-1.9890181 -1.351805,-3.9630516 -2.120769,-5.9100304 -0.638021,0.7864587 -1.276042,1.572917 -1.914063,2.3593754 z" />
+  <path
+     id="Mylogeniohyoid_M3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 24.929688,-1.7246094 c -0.843948,0.3452807 -1.783854,0.6887855 -2.56836,1.03515628 1.058148,0.28517841 2.183688,0.11634448 3.264531,0.29370484 2.482798,0.22891328 4.990779,0.25808552 7.462354,-0.0923127 0.305482,2.0036e-4 1.155071,0.0277251 0.548086,-0.34977323 -1.705091,-0.37469215 -3.337694,-1.24213355 -5.116651,-1.24976215 -1.196654,0.1209957 -2.393307,0.2419914 -3.58996,0.362987 z" />
+  <path
+     id="Mylogeniohyoid_M2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 24.804688,-2.2441406 c -1.194011,0.4733073 -2.388021,0.9466146 -3.582032,1.41992185 0.561481,0.45673371 1.207377,0.9185819 1.971106,0.79550853 2.897273,0.12602557 5.804661,0.59606801 8.698846,0.18345898 0.914053,-0.08087979 1.828105,-0.16175959 2.742158,-0.24263938 -0.238407,-0.55046894 -0.365178,-1.33759298 -1.122823,-1.33028978 -1.532619,-0.4011417 -3.039394,-1.0245071 -4.599591,-1.2432468 -1.369221,0.1390955 -2.738443,0.2781911 -4.107664,0.4172866 z" />
+  <path
+     id="Mandible2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 36.060547,-0.77734375 C 36.86723,0.89075759 38.37832,2.1202497 39.195312,3.7792969 39.335737,4.6303684 39.178641,5.69674 39.978491,6.2659316 40.83673,7.2450944 41.663521,8.3445613 42.541016,9.25 42.876148,9.0964357 43.300639,9.1102579 43.585938,8.8789062 43.356471,7.9049186 42.822527,6.9657119 42.791016,5.9667969 43.109042,4.9751098 44.183665,4.0855812 43.719564,2.9646597 43.443982,1.8203515 43.42795,0.41381423 42.312792,-0.27711 c -0.55815,-0.34767464 -0.93881,-1.249122 -1.684694,-1.0110667 -1.522517,0.1702777 -3.045034,0.3405553 -4.567551,0.51083295 z" />
+  <path
+     id="Mandible3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 40.220703,-0.1953125 c -0.783619,0.13485008 -1.57978,0.18633974 -2.369141,0.28320312 1.049155,1.37305798 2.486958,2.72348258 2.480469,4.58398438 0.134875,0.9336526 1.029582,1.4345284 1.513672,2.1757812 -0.21104,-0.9354823 0.05604,-1.9296098 0.695313,-2.640625 0.442777,-0.8903217 -0.06299,-1.868413 -0.25106,-2.7572741 -0.196686,-0.78102179 -0.958905,-1.10601358 -1.454018,-1.64897585 -0.186271,-0.14342382 -0.412512,-0.0168522 -0.615235,0.003906 z" />
+  <path
+     id="Spinal_Cord3"
+     style="opacity:0.996087;mix-blend-mode:normal;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;image-rendering:auto"
+     d="m -1.296875,-13.025391 c 0.36235436,4.0403698 0.35267968,8.2293793 2.1076383,11.9562268 0.2351535,0.47583782 0.2488083,1.29306632 0.9662778,0.87548845 C 2.4066992,-0.32377863 3.0363574,-0.4538815 3.6660156,-0.58398438 2.8253965,-3.545719 1.6218835,-6.428139 1.188468,-9.4871417 1.1067651,-11.157443 1.0250623,-12.827745 0.94335938,-14.498047 c -0.78450521,-0.09896 -1.56901042,-0.197917 -2.35351558,-0.296875 0.03776,0.589844 0.075521,1.179688 0.1132812,1.769531 z" />
+  <path
+     id="Spinal_Cord2"
+     style="opacity:0.996087;mix-blend-mode:normal;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;image-rendering:auto"
+     d="m -2.0878906,-12.964844 c 0.239262,3.1542723 0.4075254,6.3108433 1.09944937,9.3950531 0.45213009,1.5099457 1.18848148,2.90107688 1.66226935,4.41549402 C 2.0084635,0.5703125 3.343099,0.29492188 4.6777344,0.01953125 3.7976419,-2.9663033 2.7381959,-5.9065486 2.0106954,-8.9299565 1.9075209,-11.020362 1.8043464,-13.110767 1.7011719,-15.201172 c -1.32226565,-0.166667 -2.64453128,-0.333333 -3.9667969,-0.5 0.059245,0.91211 0.1184896,1.824219 0.1777344,2.736328 z" />
+  <path
+     id="MPC3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 16.705078,2.3496094 c -1.498214,0.2656211 -3.157511,0.1248948 -4.457156,1.044226 -0.111473,0.2588791 0.236288,0.6826212 0.232298,1.0126526 0.261802,0.9999206 0.523603,1.9998413 0.785405,2.999762 0.782552,-0.019531 1.565104,-0.039063 2.347656,-0.058594 0.466392,-1.6582881 0.987653,-3.3012337 1.414063,-4.9707031 -0.103544,-0.034741 -0.214566,-0.037448 -0.322266,-0.027344 z" />
+  <path
+     id="MPC2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 16.359375,1.6210938 c -1.389576,0.2184581 -2.923745,0.032021 -4.114463,0.926503 -0.632681,0.26081 -1.1866,0.5556699 -0.735701,1.2849255 0.382346,1.4607738 0.764693,2.9215476 1.147039,4.3823215 C 13.843099,8.1848958 15.029948,8.1549479 16.216797,8.125 16.815104,6.0572917 17.413411,3.9895833 18.011719,1.921875 17.495074,1.6595095 16.946311,1.4151295 16.359375,1.6210938 Z" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.1984375;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 17.701393,0.5933786 1.265085,0.56889 2.344394,-0.7900552 -1.488962,-1.03580326 -2.330534,0.064725 0.210016,1.1922435"
+     id="Hyoid_bone2" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.198437;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 18.285135,0.41384504 0.711611,0.3200006 1.318721,-0.444406 -0.837541,-0.5826394 -1.310925,0.036408 0.118134,0.670637"
+     id="Hyoid_bone3" />
+  <path
+     id="Masseter_M2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 22.011719,1.5839844 C 21.266654,1.7745762 20.560634,2.0859638 19.828125,2.3164062 19.21875,4.421875 18.609375,6.5273437 18,8.6328125 c 0.690755,0.7851562 1.38151,1.5703125 2.072266,2.3554685 1.628255,-0.477864 3.25651,-0.955729 4.884765,-1.4335935 0.141324,-2.61852 0.447391,-5.3213005 -0.002,-7.8945313 -0.977131,-0.028587 -1.973473,-0.206162 -2.943359,-0.076172 z" />
+  <path
+     id="Masseter_M3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 22.476562,2.6035156 c -0.645218,0.078471 -1.175135,0.3322897 -1.78125,0.5332032 -0.505208,1.7434895 -1.010416,3.4869791 -1.515624,5.2304687 0.414713,0.4726563 0.829427,0.9453125 1.24414,1.4179687 C 21.598958,9.4401042 22.774089,9.0950521 23.949219,8.75 24.0603,6.723671 24.251085,4.6847463 24.011719,2.6601562 23.500743,2.6237847 22.989213,2.5864323 22.476562,2.6035156 Z" />
+  <path
+     id="Genioglossus_M2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 29.498047,1.6953125 C 28.60365,1.6384282 27.708961,1.5679128 26.814453,1.5058594 c 0.17153,1.1116202 0.245989,2.2385403 0.222656,3.3632812 2.315701,-0.5527595 4.682539,0.00772 7.019097,0.064236 1.144676,0.076244 2.289352,0.1524885 3.434028,0.2287328 C 37.555941,4.3510378 37.053842,3.7246252 36.555153,3.1544734 36.057602,2.504675 35.560051,1.8548765 35.0625,1.2050781 33.207682,1.3684896 31.352865,1.531901 29.498047,1.6953125 Z" />
+  <path
+     id="Genioglossus_M3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 34.242188,2.0527344 c -2.16859,0.1780159 -4.346079,0.5708822 -6.523438,0.3105468 0.06016,0.5224822 0.09359,1.0482623 0.09961,1.5742188 2.79552,-0.2986693 5.587063,0.2981045 8.376226,0.3391338 C 36.73927,4.3540283 35.772326,3.5373592 35.645117,3.2738807 35.300769,2.9065769 35.036584,2.4454062 34.732422,2.0625 34.57325,2.0050494 34.405151,2.032739 34.242188,2.0527344 Z" />
+  <path
+     id="Tongue2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 26.994141,6.4902344 c -0.06771,1.1139323 -0.135417,2.2278646 -0.203125,3.3417968 1.673765,0.6272548 3.295753,1.4524748 5.023788,1.8995098 2.85536,-0.123366 5.75179,0.104047 8.575821,-0.360447 0.285137,-0.226757 0.817434,-0.651565 0.686103,-0.981508 C 39.984735,9.2614931 39.038525,7.9647674 37.988281,6.7832031 34.825371,6.609601 31.659298,6.2663795 28.496081,6.239911 c -0.500647,0.083441 -1.001294,0.1668823 -1.50194,0.2503234 z" />
+  <path
+     id="Tongue3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 28.103516,7.1113281 c -0.693477,-0.00732 -0.273628,0.9899638 -0.442714,1.4561111 -0.263639,0.6938069 0.218655,0.8878772 0.784261,1.0598763 1.602711,0.7175925 3.289951,1.5113555 5.098293,1.2703235 2.213614,-0.04198 4.464753,0.09805 6.642191,-0.35467 C 39.24164,9.625769 38.479785,8.5352939 37.601562,7.5546875 34.43544,7.4097197 31.278501,6.9534091 28.103516,7.1113281 Z" />
+  <path
+     id="SPC2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 12.832031,9.796875 c -0.08309,1.613302 -0.09622,3.258816 0.443236,4.802035 0.341187,1.39216 0.682374,2.78432 1.023561,4.176481 0.899157,0.415793 1.777636,0.992977 2.796875,1.035156 0.245425,-0.835862 0.630679,-1.607604 1.212825,-2.260234 0.567422,-0.774705 1.177556,-1.517473 1.750066,-2.288594 -0.524871,-1.373732 -0.94105,-2.880099 -2.104775,-3.871402 -0.542463,-0.534229 -0.991756,-1.282446 -1.590894,-1.6865102 -1.176964,0.031023 -2.353929,0.062045 -3.530894,0.093068 z" />
+  <path
+     id="SPC3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 15.699219,10.480469 c -0.694784,0.09464 -1.407954,0.04652 -2.109375,0.08984 -0.169088,2.632579 0.86568,5.119633 1.394531,7.654297 0.521022,0.243852 1.025242,0.541106 1.583984,0.691407 0.575302,-1.442178 1.708276,-2.543227 2.59961,-3.785157 C 18.72538,13.699916 17.981735,12.34528 16.85261,11.348902 16.542445,10.997349 16.249661,10.415825 15.699219,10.480469 Z" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 44.726562,10.449219 -2.054687,0.765625 -0.21875,0.257812 1.949219,0.177735 0.492187,-1.044922 z"
+     id="Lower_Lip3"
+     inkscape:path-effect="#path-effect1379"
+     inkscape:original-d="m 44.889267,12.498052 -4.042262,-0.36748 1.347412,-1.5924 2.714368,-1.0104999 0.960422,0.8880109 -0.97994,2.082369" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="M 44.818359,9.9882812 42.431641,10.875 l -0.783203,0.927734 2.998046,0.271485 0.736328,-1.564453 z"
+     id="Lower_Lip2"
+     inkscape:path-effect="#path-effect1377"
+     inkscape:original-d="m 44.889444,12.497695 -4.042262,-0.36748 1.347412,-1.5924 2.714368,-1.0105 0.960422,0.888011 -0.97994,2.082369" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.200025;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 41.466797,12.587891 0.34375,0.849609 3.3125,2.310547 0.646484,-1.154297 -1.111328,-1.714844 z"
+     id="Upper_Lip2"
+     inkscape:path-effect="#path-effect1402"
+     inkscape:original-d="m 44.889267,12.498052 1.347417,2.082371 -0.980387,1.747978 -3.772705,-2.630938 -0.636587,-1.566891 z" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 42.082031,13.046875 0.05273,0.128906 2.855468,1.992188 0.3125,-0.556641 -0.875,-1.351562 z"
+     id="Upper_Lip3"
+     inkscape:path-effect="#path-effect1404"
+     inkscape:original-d="m 44.889267,12.498052 1.347417,2.082371 -0.980387,1.747978 -3.772705,-2.630938 -0.636587,-1.566891 z" />
+  <path
+     id="Extended_Oral_Cavity3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 25.761719,12.058594 c -1.305434,0.392227 -2.616898,0.794958 -3.931641,1.169922 0.141755,0.505622 0.345046,1.117269 0.961885,1.152631 1.432248,0.659486 3.021364,0.777666 4.573499,0.716802 4.485935,0.08464 8.984473,0.492173 13.464616,0.06416 -0.430259,-0.358007 -0.811818,-0.797226 -1.019531,-1.322265 -2.795314,0.32494 -5.622956,0.196328 -8.426395,0.227571 -1.982427,-0.340172 -3.691769,-1.518596 -5.622433,-2.008821 z" />
+  <path
+     id="Extended_Oral_Cavity2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 23.916016,11.787109 c -1.047526,0.307292 -2.095052,0.614584 -3.142578,0.921875 0.265624,0.684245 0.531249,1.36849 0.796874,2.052735 1.46641,0.525421 2.868261,1.250455 4.473703,1.096582 4.300309,0.09015 8.602866,0.352841 12.903009,0.282533 1.364013,-0.132882 2.728026,-0.265764 4.092038,-0.398646 -0.834923,-0.631127 -1.910282,-1.100125 -2.439947,-2.036789 -0.109488,-0.335504 -0.117621,-0.909109 -0.626459,-0.646805 -2.740956,0.322977 -5.510292,0.128531 -8.259765,0.263672 -1.557433,-0.192641 -2.912426,-1.073437 -4.385128,-1.557004 -0.69021,-0.258646 -1.419946,-0.769585 -2.15354,-0.348738 -0.419402,0.123528 -0.838805,0.247057 -1.258207,0.370585 z" />
+  <path
+     id="Soft_Palate3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 19.269531,19.34375 c -0.400307,0.603031 0.162674,0.553242 0.687925,0.625995 1.37735,0.174637 2.865371,0.719939 4.184438,0.03873 0.28001,-0.248207 1.564201,-0.213185 0.961551,-0.707453 -0.722909,-0.956618 -1.482878,-2.031103 -2.743373,-2.272561 -0.615669,-0.293584 -1.218917,-0.544451 -1.516091,0.257308 -0.524816,0.685993 -1.049633,1.371985 -1.57445,2.057978 z" />
+  <path
+     id="Soft_Palate2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 18.773438,19.121094 c -0.05511,0.408326 -0.39109,0.773373 -0.4375,1.146484 1.619511,0.18612 3.25572,0.610972 4.857774,0.641947 1.011601,-0.363722 2.023202,-0.727444 3.034804,-1.091166 -0.832159,-0.936293 -1.535924,-2.027904 -2.476673,-2.843095 -0.868453,-0.319228 -1.736906,-0.638457 -2.605359,-0.957686 -0.791015,1.034505 -1.582031,2.069011 -2.373046,3.103516 z" />
+  <path
+     id="Hard_Palate3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 38.3125,18.064453 c -3.917538,-0.113261 -7.836009,-0.230799 -11.753906,-0.345703 0.533267,0.545153 0.886383,1.514929 1.783374,1.452381 3.129488,0.472222 6.25959,1.227077 9.447035,0.9735 1.286876,-0.06486 2.638776,0.05799 3.872533,-0.331811 0.591122,-0.326538 1.356712,-0.506719 1.838183,-0.925241 -0.04003,-0.41835 0.766878,-1.559486 -0.04632,-1.318001 -1.713634,0.164958 -3.427269,0.329917 -5.140903,0.494875 z" />
+  <path
+     id="Hard_Palate2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 38.261719,17.537109 c -4.287981,-0.124967 -8.576895,-0.254238 -12.865235,-0.380859 0.666016,0.803385 1.332032,1.606771 1.998047,2.410156 2.663678,0.373002 5.309812,0.946311 7.987354,1.17227 2.015435,-0.09488 4.056677,-0.02666 6.054803,-0.245014 0.829047,-0.378096 1.658093,-0.756191 2.48714,-1.134287 0.209636,-0.809896 0.419271,-1.619792 0.628906,-2.429687 -2.097005,0.202473 -4.19401,0.404947 -6.291015,0.607421 z" />
+  <path
+     id="Brainstem3"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 3.2578125,17.511719 c -1.0281425,0.140222 -2.057193,0.27253 -3.08789062,0.392578 -0.25489754,1.081933 -0.17299975,2.270771 0.43698592,3.216862 0.0829973,0.395676 0.25730464,0.889302 0.7522199,0.80966 1.1899764,0.312439 2.5742385,0.623238 3.6645759,-0.136767 0.4149776,-0.07269 0.671181,-0.362325 0.6952174,-0.777581 0.3155923,-0.96522 0.7078178,-2.221523 0.00178,-3.100455 C 4.9169123,17.739158 4.0938227,17.483032 3.2578125,17.511719 Z" />
+  <path
+     id="Brainstem2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 3.1933594,16.457031 c -1.2932538,0.20446 -2.5967063,0.331508 -3.8964844,0.488281 -0.14470865,1.293325 -0.6600443,2.643963 0.0704302,3.873968 0.26428368,0.656594 0.52856736,1.313188 0.79285104,1.969782 C 1.5134978,22.95606 2.8179315,23.489105 4.1873581,23.327195 4.9595408,22.990266 5.7317235,22.653336 6.5039062,22.316406 6.7220542,21.105297 7.403888,19.911438 7.2072994,18.66937 6.9525096,18.140752 6.8755242,17.408189 6.5135389,17.002527 5.4163739,16.777016 4.3302526,16.375349 3.1933594,16.457031 Z" />
+  <path
+     id="Lt_Lateral_Pterygoid_M2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -24.582031,12.626953 c -0.878308,0.568205 -1.877864,0.95116 -2.804688,1.445313 0.347351,0.844634 0.276851,2.09609 1.286807,2.454377 0.557392,0.308176 1.114785,0.616353 1.672178,0.924529 0.659505,-0.378906 1.31901,-0.757813 1.978515,-1.136719 -0.851462,-0.895827 -1.745687,-1.880654 -1.915545,-3.161747 -0.06103,-0.169888 -0.08254,-0.408709 -0.217267,-0.525753 z" />
+  <path
+     id="Lt_Lateral_Pterygoid_M3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -25.214844,13.595703 c -0.508107,0.258126 -1.028999,0.492356 -1.537109,0.751953 0.159381,0.754018 0.394705,1.740686 1.302734,1.902344 0.408182,0.171766 0.873419,0.835913 1.304688,0.394531 0.181936,-0.201679 0.965955,-0.247474 0.80562,-0.519161 -0.720561,-0.761094 -1.296071,-1.686911 -1.534136,-2.715214 -0.113932,0.06185 -0.227864,0.123698 -0.341797,0.185547 z" />
+  <path
+     id="Lt_Masseter_M3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -23.498696,5.8046875 c -1.643631,0.6581126 -2.917034,1.9286595 -4.075831,3.2240281 -0.311606,0.2853051 -0.661598,0.52359 -1.002294,0.7720656 0.303385,0.5852868 0.606771,1.1705728 0.910156,1.7558598 1.807987,-0.896094 3.603229,-1.8205581 5.347656,-2.8359379 -0.135603,-0.9530631 0.01793,-2.1640216 -0.911784,-2.7647719 -0.07342,-0.064028 -0.154155,-0.1819665 -0.267903,-0.1512437 z" />
+  <path
+     id="Lt_Masseter_M2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -23.377603,4.9316406 c -1.467277,0.5368444 -2.829251,1.3811144 -3.854076,2.5792725 -0.617496,0.8583691 -1.511041,1.444859 -2.366627,2.0398681 0.529297,1.0208338 1.058594,2.0416668 1.587891,3.0624998 2.223807,-1.088572 4.409091,-2.190547 6.535156,-3.4628904 -0.06651,-0.9329872 -0.194234,-1.8777838 -0.33789,-2.7929687 -0.325896,-0.6010777 -0.952424,-0.9896525 -1.40625,-1.4589844 l -0.09787,0.02054 z" />
+  <path
+     id="Lt_Ant_Digastric_M3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -14.819009,1.4296875 c -0.340385,0.4562442 0.07053,1.0455013 0.07655,1.5652133 0.08467,0.8643619 0.68807,1.4863948 1.284111,2.0470191 0.759345,0.7731218 1.345229,1.7034984 2.365902,2.1045645 0.0046,-1.6401886 -1.007084,-3.0497992 -2.050781,-4.2324219 -0.473633,-0.5772968 -0.979516,-1.1304421 -1.564454,-1.5976563 l -0.07009,0.071323 z" />
+  <path
+     id="Lt_Ant_Digastric_M2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -14.742837,0.6171875 c -0.316958,0.27502079 -0.676557,0.6559408 -0.810508,1.013672 0.260206,0.8975096 0.242672,1.9281466 0.730784,2.725718 0.988384,1.0127516 1.886578,2.1416183 2.946912,3.0672506 0.396406,0.059022 0.735406,0.3237271 1.132812,0.3671875 0.305907,-0.6268022 0.248837,-1.3175809 -0.03854,-1.930735 -0.184534,-0.8789747 -0.587821,-1.6826207 -1.209296,-2.3311339 -0.733391,-1.0160085 -1.555102,-1.9841205 -2.535572,-2.75595098 -0.05226,-0.0546509 -0.12143,-0.19330454 -0.216594,-0.15600822 z" />
+  <path
+     id="Lt_Submandibular_Gland3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -21.21875,2.4003906 c -0.08281,0.4896988 -0.591099,1.1105192 -0.01048,1.469026 0.780321,0.8185979 1.750051,1.5269028 2.725329,2.0290209 0.256074,-0.5555725 0.708405,-0.9643544 1.082031,-1.4375 -0.841146,-0.7597656 -1.682292,-1.5195313 -2.523437,-2.2792969 -0.42448,0.072917 -0.848959,0.1458334 -1.273438,0.21875 z" />
+  <path
+     id="Lt_Submandibular_Gland2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -21.664062,1.9375 c -0.155599,0.5859375 -0.311198,1.171875 -0.466797,1.7578125 0.950787,1.0248197 1.996302,1.9949596 3.271484,2.5957031 0.36425,0.4708124 0.629808,0.2227604 0.862423,-0.2515734 0.411397,-0.5621782 0.835949,-1.121889 1.328983,-1.6156141 -1.03776,-0.9361979 -2.075521,-1.8723958 -3.113281,-2.8085937 -0.627604,0.1074219 -1.255208,0.2148437 -1.882812,0.3222656 z" />
+  <path
+     id="Lt_Parotid_Gland3"
+     style="fill:none;stroke:#000000;stroke-width:0.231525;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -29.119817,6.1542715 c -0.676449,0.4141241 -1.351017,0.8313077 -2.025844,1.2480644 0.258192,0.3213377 0.534336,0.9804489 0.927622,0.396502 0.727442,-0.5230879 1.381563,-1.1410204 1.998094,-1.7892695 -0.312077,-0.4183808 -0.543478,-0.011801 -0.899872,0.1447031 z" />
+  <path
+     id="Lt_Parotid_Gland2"
+     style="fill:none;stroke:#000000;stroke-width:0.21;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -28.694152,5.2962714 c -1.082676,0.6101127 -2.120649,1.3157905 -3.195117,1.9482423 0.435449,0.477832 0.870898,0.955664 1.306348,1.433496 1.07383,-0.6620056 2.012816,-1.5134075 2.858446,-2.4333664 0.533112,-0.3550597 -0.434443,-0.5507076 -0.565672,-0.825325 -0.09839,-0.1206619 -0.252762,-0.1847588 -0.404005,-0.1230469 z" />
+  <path
+     id="Lt_thyroid_lobe3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -19.430337,-9.3203125 c 0.1797,0.3552237 -0.346775,1.0579999 0.271484,1.0332031 0.918869,0.2394405 1.954282,0.516555 2.81836,-0.033203 0.686647,0.053247 0.770344,-0.3498571 0.541319,-0.9328148 0.06986,-0.713603 -0.339664,-0.9599948 -0.999592,-0.9472238 -0.825263,-0.131061 -1.654935,-0.230312 -2.483133,-0.340665 -0.04948,0.406901 -0.09896,0.8138026 -0.148438,1.2207035 z" />
+  <path
+     id="Lt_thyroid_lobe2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -19.96354,-9.3007812 c 0.106079,0.4660598 -0.14525,0.97449 0.03711,1.4160156 1.130618,0.1145548 2.302972,0.7581617 3.402857,0.2197975 0.405937,-0.2938948 1.537469,-0.1514178 1.401427,-0.7712581 -0.119006,-0.6872736 -0.238012,-1.3745471 -0.357018,-2.0618208 -1.38018,-0.299092 -2.84027,-0.440439 -4.261719,-0.634765 -0.07422,0.610677 -0.148437,1.2213537 -0.222657,1.8320308 z" />
+  <path
+     id="Lt_Sternocleidomastoid_M3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -29.507812,-20.552734 c -0.09535,3.153788 -0.09369,6.372958 -1.11208,9.396489 -0.631926,2.7220361 -1.42767,5.4593411 -2.981347,7.8145572 -0.52029,0.9413699 -1.04058,1.8827398 -1.56087,2.82410968 0.395182,0.81315104 0.790364,1.62630212 1.185547,2.43945312 2.390516,-3.944079 4.988929,-7.795947 7.081254,-11.8888111 1.003421,-2.9894369 2.020065,-5.9746699 2.961714,-8.9842359 -0.554687,-0.652995 -1.109375,-1.305989 -1.664062,-1.958984 -1.303386,0.11914 -2.606771,0.238281 -3.910156,0.357422 z" />
+  <path
+     id="Lt_Sternocleidomastoid_M2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -30.269531,-21.279297 c -0.174502,2.533096 -0.0013,5.112951 -0.520181,7.608323 -0.729622,2.521211 -1.149493,5.1548707 -2.193505,7.5701434 -1.025125,1.8513185 -2.050251,3.7026371 -3.075377,5.5539556 0.666667,1.36979167 1.333334,2.7395833 2,4.109375 2.613914,-4.25296531 5.326593,-8.4551954 7.760469,-12.8115543 1.106208,-3.2876167 2.236693,-6.5675997 3.255156,-9.8837577 -0.738281,-0.867839 -1.476562,-1.735678 -2.214843,-2.603516 -1.670573,0.152344 -3.341146,0.304687 -5.011719,0.457031 z" />
+  <path
+     id="Lt_Medial_Pterygoid_M3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -22.791665,12.039062 c 0.260634,0.928345 0.549962,1.918356 1.300781,2.578126 0.358674,-1.045661 0.966944,-2.015426 1.298828,-3.060547 -0.26462,-0.275077 -0.532743,-0.936773 -0.958436,-0.457464 -0.547058,0.313295 -1.094115,0.62659 -1.641173,0.939885 z" />
+  <path
+     id="Lt_Medial_Pterygoid_M2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -23.418618,11.787109 c 0.358886,1.087025 0.536114,2.310429 1.473294,3.087908 0.47048,0.831549 0.775509,0.565024 0.999063,-0.242245 0.47536,-1.057929 0.95072,-2.115858 1.42608,-3.173788 -0.428781,-0.342599 -0.805875,-1.04315 -1.264531,-1.178854 -0.877969,0.502326 -1.755938,1.004653 -2.633906,1.506979 z" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 58.449506,4.4045008 4.033952,-3.638459 2.76839,0.47458 0.71189,2.689299 -1.97743,1.977421 -2.8475,1.740138 v 0 l -1.547395,-2.105919 z"
+     id="Rt_Submandibular_Gland" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 55.206537,7.8847718 3.242969,-3.480271 0.645597,-3.025801 -1.320874,-1.499184 -1.918423,1.598395 -2.222069,2.878587 -0.750274,2.477606 0.424744,1.604338 z"
+     id="Rt_Ant_Digastric_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 56.788478,-3.0306172 0.727959,-2.842642 3.429323,0.839011 v 0 l 0.564438,1.862522 -4.72172,0.141109"
+     id="Thyroid_cartilage_side2" />
+  <circle
+     id="path2568-4-1-4"
+     style="fill:#000000;stroke:#000000;stroke-width:0.2;stroke-miterlimit:4;stroke-dasharray:none"
+     cx="-72.650139"
+     cy="-10.655875"
+     r="0.021290544"
+     transform="scale(-1)" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 73.567982,9.2981598 -1.959299,-1.382448 -1.803486,-1.95639 1.794385,-1.27051 3.955081,2.426851 z"
+     id="Rt_Parotid_Gland" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 71.304137,13.668392 2.263845,-4.3702322 -1.959299,-1.382448 -1.803486,-1.95639 -1.70585,-1.13615 -2.135609,-0.893251 -1.97743,1.977421 -0.43776,3.658921 3.459879,1.9782792 z"
+     id="Rt_Masseter_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 71.304137,13.668392 -0.95063,3.045177 -2.97991,1.648603 -3.21431,-1.848642 1.970661,-2.23597 0.878479,-2.733018 z"
+     id="Rt_Lateral_Pterygoid_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 66.129948,14.27756 -1.970661,2.23597 -2.32409,-5.164209 1.713351,-1.7830582 3.459879,1.9782792 z"
+     id="Rt_Medial_Pterygoid_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 77.116391,5.7491508 -4.068983,-6.536251 -4.631671,-7.622106 -2.600402,-7.6984718 -1.006738,-3.270159 2.9446,-3.45991 6.478115,0.58892 0.29447,7.43512 1.9876,7.5823408 3.687799,6.652759 z"
+     id="Rt_Sternocleidomastoid_M" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 61.835197,11.349321 -10.846289,7.554101 -0.828242,-3.769572 -1.481,-1.164698 -0.207971,-2.859659 3.175484,-1.8800822 1.661028,-0.790969 1.89833,-0.55367 5.932271,-0.237292 2.8475,-1.740138 -0.43776,3.658921 -1.713351,1.7830582"
+     id="Mandible_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 52.36725,23.84315 -0.15199,-3.32278 -1.409772,0.296931 -0.0976,1.65934 1.659338,1.366509"
+     id="Upper_Lip_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 50.138471,19.682596 0.850437,-0.779174 1.226352,1.616948 -1.409772,0.296931 z"
+     id="Lower_Lip_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 52.36725,23.84315 8.974378,-0.986639 6.031969,-4.494339 -3.21431,-1.848642 -2.32409,-5.164209 -10.846289,7.554101 1.226352,1.616948 z"
+     id="Extended_Oral_Cavity_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 56.788478,-3.0306172 -1.576281,1.162451 7.138741,-0.193901 -0.84074,-1.109659 -1.59699,-0.13846 -3.12473,0.279569"
+     id="Hyoid_bone_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 61.234493,-15.16509 3.026035,-2.138778 0.548069,-2.073969 -3.717539,-1.028261 -3.954851,0.949161 -0.0306,3.19877 4.128883,1.093077"
+     id="Esophagus_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 83.864551,6.6556418 -2.68928,-2.451999 2.45198,-3.63846 2.847501,0.949159 0.0791,3.163878 z"
+     id="Brainstem_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 82.235271,-5.9272962 -3.51203,1.50937 -1.81921,-5.7740798 -1.344649,-7.593312 0.31637,-3.16388 3.724099,0.4783 1.85456,12.1033918 z"
+     id="Spinal_Cord_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 67.90883,-2.1193262 v 0 l 0.506907,-6.289883 -4.976309,0.953572 -3.15978,0.613371 1.23055,3.67054 0.84074,1.109659 z"
+     id="Supraglottic_Larynx_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 68.415737,-8.4092092 -2.600402,-7.6984688 -4.580842,0.942588 1.155125,2.197657 0.75874,1.243367 0.29106,4.2684308 z"
+     id="Larynx_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 65.251848,1.2406218 2.8473,-0.79066 3.500434,4.23885 -1.794385,1.27051 -1.70585,-1.13615 -2.135609,-0.893251 -0.71189,-2.689299"
+     id="MPC_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 61.138808,7.6474798 -5.932271,0.237292 3.242969,-3.480271 1.141907,1.13706 1.547395,2.105919"
+     id="Mylogeniohyoid_M_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 57.421277,-7.7764362 0.547979,-3.1716498 1.565595,-0.306488 3.613507,-0.469492 0.29106,2.4080798 v 1.86035 l -3.15977,0.61337 -2.858371,-0.93417"
+     id="Rt_thyroid_lobe" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 67.90883,-2.1193262 0.190318,2.569288 3.500434,4.23885 1.447826,-5.475911 -4.631671,-7.622109 z"
+     id="IPC_side2" />
+  <path
+     style="fill:none;stroke:#000000;stroke-width:0.264583px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+     d="m 57.421277,-7.7764362 0.09516,1.903177 3.429323,0.839011 -0.666112,-1.808018 z"
+     id="Glottic_Area_side2" />
+  <path
+     id="Rt_Lateral_Pterygoid_M2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 67.503906,12.636719 c -0.333505,0.860781 -0.430172,1.843589 -1.107422,2.544922 -0.318756,0.394556 -0.665736,0.754182 -1,1.132812 0.659506,0.378906 1.319011,0.757813 1.978516,1.136719 0.737007,-0.447016 1.571371,-0.791317 2.250266,-1.299644 0.387285,-0.632425 0.468673,-1.38875 0.708718,-2.079262 -0.934479,-0.478539 -1.946801,-0.923324 -2.830078,-1.435547 z" />
+  <path
+     id="Rt_Lateral_Pterygoid_M3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 67.806641,13.478516 c -0.250257,1.043324 -0.878455,1.97084 -1.591797,2.736328 0.418518,0.173828 0.825186,0.458968 1.232422,0.59375 0.528627,-0.261581 1.011834,-0.614694 1.558593,-0.841797 0.461468,-0.414176 0.536985,-1.066794 0.69336,-1.619141 -0.622569,-0.320696 -1.268657,-0.593915 -1.878907,-0.9375 z" />
+  <path
+     id="Rt_Masseter_M3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 66.446243,5.8046868 c 1.64363,0.658114 2.917034,1.928661 4.07583,3.22403 0.311606,0.285305 0.661598,0.523589 1.002295,0.772064 -0.303386,0.5852882 -0.606772,1.1705732 -0.910157,1.7558602 -1.807986,-0.896093 -3.603229,-1.8205582 -5.347656,-2.8359362 0.135604,-0.953064 -0.01793,-2.164022 0.911785,-2.764775 0.07342,-0.06403 0.154155,-0.181964 0.267903,-0.151243 z" />
+  <path
+     id="Rt_Masseter_M2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 66.325149,4.9316408 c 1.467277,0.536845 2.829251,1.381114 3.854077,2.579272 0.617496,0.858369 1.511041,1.444861 2.366626,2.039869 -0.529297,1.0208342 -1.058594,2.0416652 -1.58789,3.0624992 -2.223808,-1.088573 -4.409091,-2.190546 -6.535156,-3.4628902 0.06651,-0.932987 0.194234,-1.877783 0.337889,-2.792969 0.325896,-0.601077 0.952424,-0.989652 1.406251,-1.458984 l 0.09787,0.02053 z" />
+  <path
+     id="Rt_Ant_Digastric_M3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 57.766556,1.4296878 c 0.340383,0.456244 -0.07053,1.045501 -0.07655,1.565213 -0.08467,0.864363 -0.68807,1.486395 -1.284112,2.047018 -0.759345,0.773123 -1.345229,1.703499 -2.365903,2.104565 -0.0046,-1.640189 1.007085,-3.049799 2.050784,-4.232421 0.47363,-0.577297 0.979514,-1.130442 1.564452,-1.597656 l 0.07009,0.07132 z" />
+  <path
+     id="Rt_Ant_Digastric_M2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 57.690385,0.6171878 c 0.316957,0.275021 0.676555,0.655941 0.810506,1.013672 -0.260205,0.897509 -0.242671,1.928147 -0.730785,2.725717 -0.988382,1.012754 -1.886577,2.14162 -2.94691,3.067251 -0.396407,0.05902 -0.735407,0.323728 -1.132811,0.367189 -0.305909,-0.626803 -0.248838,-1.317583 0.03854,-1.930736 0.184534,-0.878975 0.587819,-1.68262 1.209297,-2.331133 0.73339,-1.01601 1.555101,-1.984122 2.535571,-2.755952 0.05226,-0.05465 0.12143,-0.193304 0.216592,-0.156008 z" />
+  <path
+     id="Rt_Submandibular_Gland3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 60.369141,4.4609375 c 0.387381,0.4741267 0.825292,0.9050476 1.101562,1.4570313 C 62.565222,5.2575413 63.706895,4.5300251 64.46875,3.4980469 64.397302,3.141528 64.315284,2.5964551 64.067459,2.3834607 63.447984,2.2839849 62.771103,1.9865474 62.373113,2.6508481 61.705122,3.2542113 61.037131,3.8575744 60.369141,4.4609375 Z" />
+  <path
+     id="Rt_Submandibular_Gland2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 59.615234,4.4238281 c 0.652935,0.6687195 1.217732,1.4272033 1.736328,2.2011719 0.890554,-0.6572631 1.953306,-1.079403 2.71875,-1.9160156 0.276884,-0.4330711 1.132836,-0.733589 0.930815,-1.3036224 -0.269355,-0.4614481 -0.0631,-1.443387 -0.685499,-1.5184745 -0.562803,0.00837 -1.253992,-0.4260098 -1.735614,-0.1376853 -0.98826,0.891542 -1.97652,1.783084 -2.96478,2.6746259 z" />
+  <path
+     id="Rt_Parotid_Gland3"
+     style="fill:none;stroke:#000000;stroke-width:0.231525;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 72.067364,6.1542705 c 0.676448,0.4141265 1.351016,0.831309 2.025843,1.2480668 -0.258192,0.321336 -0.534336,0.980447 -0.927621,0.3965016 C 72.438144,7.275751 71.784023,6.6578177 71.167492,6.0095674 71.479569,5.5911868 71.71097,5.9977706 72.067364,6.1542705 Z" />
+  <path
+     id="Rt_Parotid_Gland2"
+     style="fill:none;stroke:#000000;stroke-width:0.209475;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 71.644357,5.3005069 c 1.07997,0.6085877 2.115347,1.3125002 3.187129,1.9433729 -0.434361,0.4766373 -0.868721,0.9532746 -1.303083,1.429912 -1.071145,-0.6603522 -2.007783,-1.5096245 -2.851299,-2.4272842 -0.53178,-0.354171 0.433356,-0.5493305 0.56426,-0.823262 0.09813,-0.1203579 0.252128,-0.184295 0.402993,-0.1227387 z" />
+  <path
+     id="Rt_thyroid_lobe3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 62.377884,-9.3203122 c -0.1797,0.355224 0.346775,1.058 -0.271484,1.033203 -0.918869,0.23944 -1.954282,0.516555 -2.818361,-0.0332 -0.686646,0.05325 -0.770345,-0.349857 -0.541319,-0.932815 -0.06986,-0.713603 0.339665,-0.9599938 0.999594,-0.9472238 0.825262,-0.13106 1.654933,-0.230311 2.483131,-0.340664 0.04948,0.406901 0.09896,0.8138018 0.148439,1.2207028 z" />
+  <path
+     id="Rt_thyroid_lobe2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 62.911086,-9.3007812 c -0.106078,0.46606 0.145251,0.97449 -0.03711,1.416016 -1.130618,0.114555 -2.302972,0.758162 -3.402856,0.219797 -0.405937,-0.293894 -1.53747,-0.151417 -1.40143,-0.771258 0.119007,-0.687273 0.238014,-1.374547 0.357019,-2.0618198 1.38018,-0.299092 2.840271,-0.440439 4.26172,-0.634766 0.07422,0.610678 0.148437,1.2213538 0.222657,1.8320308 z" />
+  <path
+     id="Rt_Sternocleidomastoid_M3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 68.457031,-20.806641 c -0.525287,0.618578 -1.051426,1.236433 -1.576172,1.855469 1.105563,3.276799 2.021424,6.627077 3.37462,9.8095154 2.077009,3.7840278 4.424557,7.4058912 6.680068,11.085016 0.30881,-0.8876173 0.934264,-1.64408612 1.111328,-2.57812502 -1.519256,-2.80403568 -3.312362,-5.45698108 -3.983615,-8.61613898 -0.786292,-2.7415064 -1.511853,-5.5353764 -1.503949,-8.4087294 -0.0488,-0.963779 -0.07188,-1.928622 -0.10228,-2.8931 -1.304055,-0.118923 -2.607932,-0.239866 -3.912109,-0.357422 l -0.06472,0.07623 z" />
+  <path
+     id="Rt_Sternocleidomastoid_M2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 68.117188,-21.632812 c -0.708856,0.834093 -1.418708,1.667342 -2.126954,2.501953 1.126573,3.462605 2.168929,6.958912 3.50149,10.3461834 2.406983,4.1740095 4.987914,8.24455751 7.514135,12.3471756 0.667269,-1.3691787 1.33384,-2.73871422 1.998047,-4.109375 -1.183256,-2.3200081 -2.705339,-4.4635503 -3.58612,-6.9213963 -0.755786,-2.5184813 -1.464435,-5.0475427 -1.906252,-7.6285297 -0.198932,-2.054599 -0.190876,-4.122 -0.292784,-6.182496 -1.671196,-0.152638 -3.342323,-0.306102 -5.013672,-0.457031 l -0.06472,0.07623 z" />
+  <path
+     id="Rt_Medial_Pterygoid_M3"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 65.739212,12.039061 c -0.260635,0.928346 -0.549962,1.918356 -1.300781,2.578127 -0.358674,-1.04566 -0.966944,-2.015427 -1.298828,-3.060547 0.264619,-0.275077 0.532743,-0.936773 0.958436,-0.457465 0.547058,0.313296 1.094115,0.626592 1.641173,0.939885 z" />
+  <path
+     id="Rt_Medial_Pterygoid_M2"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 66.366165,11.787109 c -0.358887,1.087025 -0.536114,2.310429 -1.473295,3.087907 -0.47048,0.831551 -0.775508,0.565026 -0.999063,-0.242244 -0.47536,-1.057929 -0.950719,-2.115858 -1.426079,-3.173789 0.42878,-0.342598 0.805875,-1.043149 1.264531,-1.178853 0.877969,0.502327 1.755937,1.004654 2.633906,1.506979 z" />
+  <path
+     id="Tongue4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 28.503906,7.8945312 c 0.07534,0.3876227 -0.312524,0.9986688 0.305283,1.0439944 1.634601,0.7322358 3.399427,1.4428264 5.226744,1.1656114 1.518833,-0.02205 3.042699,0.02635 4.555864,-0.1334339 C 38.082256,9.4469627 37.679378,8.7274555 37.113064,8.3202885 34.244061,8.1727306 31.381292,7.7953657 28.503906,7.8945312 Z" />
+  <path
+     id="Mandible4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 40.322266,0.8515625 c -0.62321,0.0199449 -0.235135,0.3276147 0.01367,0.7050781 0.470073,0.7652057 0.849818,1.5952543 1.03125,2.4785156 C 41.90836,3.3098408 41.490553,2.4153266 41.203125,1.6816406 41.010452,1.3623342 40.681498,0.90139486 40.322266,0.8515625 Z" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.10125;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 43.089844,13.464844 0.02734,0.06836 1.443359,1.005859 0.158203,-0.283203 -0.443359,-0.68164 z"
+     id="Upper_Lip4"
+     inkscape:original-d="m 44.510393,13.188802 0.68213,1.054199 -0.496321,0.884915 -1.909932,-1.331913 -0.322272,-0.793238 z"
+     inkscape:path-effect="#path-effect1071" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.084375;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 44.300781,10.873047 -0.867187,0.322265 -0.0918,0.109376 0.822265,0.07617 0.208985,-0.441406 z"
+     id="Lower_Lip4"
+     inkscape:path-effect="#path-effect1091"
+     inkscape:original-d="m 44.369461,11.737333 -1.70533,-0.155031 0.56844,-0.671793 1.145124,-0.426305 0.405178,0.37463 -0.413412,0.878499" />
+  <path
+     id="Hard_Palate4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 42.802734,18.152344 c -2.42384,0.287781 -4.860967,0.538413 -7.304176,0.356449 -2.610197,-0.0765 -5.220393,-0.152997 -7.830589,-0.229496 0.539118,0.594016 1.435338,0.364011 2.138699,0.597977 2.958497,0.517276 5.961692,0.9796 8.972179,0.719372 1.455699,0.03641 2.975444,-0.185259 4.201622,-1.008755 0.170146,-0.256149 0.276989,-0.606611 -0.177735,-0.435547 z" />
+  <path
+     id="Extended_Oral_Cavity4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.1458;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 25.513592,13.413521 c -0.415872,0.121179 -0.831497,0.244077 -1.247273,0.365924 0.08859,0.556662 0.706263,0.568329 1.122542,0.755318 1.523239,0.476279 3.138935,0.208191 4.704953,0.347069 2.444402,0.08366 4.896154,0.219398 7.338643,0.02102 -0.217073,-0.140338 -0.281153,-0.530102 -0.494007,-0.59519 -2.012443,0.201384 -4.043342,0.146149 -6.060151,0.129467 -1.402448,-0.260308 -2.618222,-1.073409 -3.987864,-1.439361 -0.458947,0.138588 -0.917896,0.277173 -1.376843,0.415759 z" />
+  <path
+     id="Soft_Palate4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 21.292969,18.007812 c -0.304923,0.410826 -0.619866,0.814443 -0.933594,1.21875 1.196657,0.192886 2.532905,0.612923 3.664063,-0.04297 -0.569185,-0.821794 -1.487359,-1.391833 -2.423829,-1.59961 -0.102213,0.141276 -0.204427,0.282552 -0.30664,0.423828 z" />
+  <path
+     id="SPC4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 15.453125,11.564453 c -0.421911,0.09196 -1.017195,-0.160046 -0.761618,0.512285 0.224048,1.890364 0.725103,3.73046 1.331931,5.511153 0.361538,-0.501209 0.78169,-1.201723 1.237527,-1.725085 0.217874,-0.430232 0.971667,-0.792141 0.563254,-1.315931 -0.517362,-1.160965 -1.304243,-2.201026 -2.285157,-3.009766 z" />
+  <path
+     id="Genioglossus_M4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 34.292969,2.5800781 c -1.989543,0.1657565 -3.980888,0.4969996 -5.982422,0.3554688 -0.226082,0.6814437 0.508089,0.3489416 0.906978,0.3971762 2.034677,-0.030042 4.055769,0.2762408 6.085209,0.3782144 -0.344893,-0.330591 -0.563503,-0.995678 -1.009765,-1.1308594 z" />
+  <path
+     id="Masseter_M4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 22.5625,3.671875 c -0.448672,0.093691 -1.176169,0.1201597 -1.134667,0.7446543 -0.326899,1.2399928 -0.785652,2.4850906 -1.029395,3.7123769 0.176114,0.3848952 0.468726,0.583951 0.856128,0.3116954 0.529076,-0.2246683 1.309272,-0.2501451 1.686669,-0.5951272 0.07404,-1.3917969 0.178538,-2.7879543 0.08806,-4.1814119 -0.155497,-0.015265 -0.311225,0.00537 -0.466797,0.00781 z" />
+  <path
+     id="Mylogeniohyoid_M4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 28.089844,-1.5429688 c -1.171387,0.2430658 -2.427734,0.1029395 -3.546875,0.5410157 2.371614,0.15228442 4.755198,0.39894146 7.128906,0.13671872 C 30.529007,-1.2295048 29.330349,-1.6228985 28.089844,-1.5429688 Z" />
+  <path
+     id="MPC4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 15.376953,3.3144531 c -0.760566,0.08747 -1.550436,0.1431935 -2.244141,0.4980469 0.29663,0.9022473 0.460521,1.8734182 0.75,2.7558594 0.434888,-0.05061 1.23448,0.3070562 1.24793,-0.3935074 0.286957,-0.9725703 0.563851,-1.9475302 0.834102,-2.924852 -0.195964,0.021484 -0.391927,0.042969 -0.587891,0.064453 z" />
+  <path
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.0949122;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 18.678061,0.28815266 0.340361,0.15305531 0.630741,-0.21255802 -0.400594,-0.27867461 -0.627012,0.01741381 0.0565,0.32076359"
+     id="Hyoid_bone4" />
+  <path
+     id="Supraglottic_Larynx4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 17.890625,-5.8828125 c 0.277344,0.8717448 0.554687,1.7434896 0.832031,2.6152344 0.8752,-0.050969 1.719422,-0.3341348 2.517578,-0.6835938 -0.616472,-1.0377475 -1.11136,-2.1453119 -1.488281,-3.2910156 -0.620443,0.453125 -1.240885,0.90625 -1.861328,1.359375 z" />
+  <path
+     id="Thyroid_cartilage4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 23.642578,-9.9824219 c 0.208709,0.6805327 0.390044,1.3712825 0.654297,2.0332031 0.481685,-0.1041649 0.574583,-0.4670112 0.410404,-0.8778049 -0.194851,-0.4043123 0.109223,-1.6953343 -0.465265,-1.4249433 -0.199812,0.08985 -0.399624,0.179697 -0.599436,0.2695451 z" />
+  <path
+     id="Glottic_Area4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 23.363281,-14.892578 c -0.355589,0.198309 -0.928119,0.276556 -1.164062,0.535156 -0.01707,0.777629 0.912904,-0.176688 1.334338,-0.20942 0.244952,0.0051 0.01898,-0.642498 -0.170276,-0.325736 z" />
+  <path
+     id="Larynx4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 17.201172,-15.109375 c -0.764299,0.278699 -1.533,0.563285 -2.335938,0.710937 0.466797,1.271485 0.933594,2.542969 1.400391,3.814454 0.658203,-0.479818 1.316406,-0.959636 1.974609,-1.439454 -0.349372,-1.027399 -0.817172,-2.030369 -0.958984,-3.115234 z" />
+  <path
+     id="IPC4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 10.974609,-7.8046875 c 0.417866,2.2660866 0.758861,4.6683446 1.22461,6.84960938 0.68298,-0.23297648 1.397939,-0.35902118 2.115234,-0.42382808 -0.782448,-2.4982338 -1.595572,-4.9881515 -2.521484,-7.4375 -0.272787,0.3372395 -0.545573,0.6744791 -0.81836,1.0117187 z" />
+  <path
+     id="Cricopharyngeal_Muscle4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 9.9042969,-14.933594 c -0.3282778,0.13378 -1.0771337,0.01985 -0.9472657,0.574219 -0.04106,0.80094 -0.1789503,1.60815 -0.056641,2.408203 0.5195313,-0.642578 1.0390625,-1.285156 1.5585934,-1.927734 -0.188827,-0.326674 -0.1646,-1.002296 -0.4604106,-1.077776 z" />
+  <path
+     id="Cricoid_cartilage2"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.18;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 13.988776,-18.813503 c -0.567613,0.549668 -1.270082,1.021616 -1.754369,1.619307 -0.192718,0.616164 0.903176,0.0832 1.28565,0.186435 1.382267,0.01713 2.607942,-0.694396 3.902983,-1.083143 0.334322,-0.177813 1.495389,-0.405409 1.264489,-0.549185 -0.89736,-0.209516 -1.790495,-0.472766 -2.718008,-0.298634 -0.660248,0.04174 -1.320497,0.08348 -1.980745,0.12522 z" />
+  <path
+     id="Esophagus4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 10.208984,-21.488281 c -1.5807001,0.448241 -3.2352143,0.667416 -4.8437496,1.029297 -0.1842125,0.700592 0.5951721,0.222421 0.9585525,0.254219 1.4186083,-0.214386 2.8281801,-0.443338 4.1996511,-0.824532 -0.05521,-0.14766 -0.06729,-0.543113 -0.314454,-0.458984 z" />
+  <path
+     id="Spinal_Cord4"
+     style="opacity:0.996087;mix-blend-mode:normal;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1;image-rendering:auto"
+     d="M -0.58007812,-13.896484 C -0.16111416,-9.5809606 -0.2252998,-5.0189726 1.6855469,-0.99023438 1.9702021,-1.2119945 2.5265668,-0.96322312 2.6914062,-1.2382812 1.9345175,-3.3206428 1.2579109,-5.4529555 0.74023438,-7.6113281 0.22617996,-9.6287594 0.3344416,-11.751194 0.16601562,-13.787109 c -0.24770706,-0.03816 -0.49460357,-0.106532 -0.74609374,-0.109375 z" />
+  <path
+     id="Brainstem4"
+     style="opacity:0.996087;fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 3.0546875,18.595703 c -0.6384144,0.09104 -1.2769474,0.181229 -1.9160156,0.267578 -0.024759,0.71732 0.182377,1.572043 0.6440686,2.084072 0.9212573,0.207862 2.222868,0.547704 2.9492993,-0.260563 0.1878575,-0.58415 0.485808,-1.272229 0.2621008,-1.858665 C 4.3884033,18.619093 3.694775,18.587847 3.0546875,18.595703 Z" />
+  <path
+     id="Lt_Lateral_Pterygoid_M4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -25.341797,14.265625 c -0.323396,0.140497 -1.052373,0.263905 -0.685483,0.768709 0.19443,0.702306 0.983913,0.720795 1.449155,1.157072 0.488902,0.06828 0.540497,-0.289723 0.134969,-0.593682 -0.303277,-0.434046 -0.562349,-0.90419 -0.738485,-1.404365 l -0.09115,0.04113 z" />
+  <path
+     id="Lt_Medial_Pterygoid_M4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -21.103516,11.685547 c -0.299384,0.259524 -0.921794,0.366087 -1.032263,0.699432 0.126054,0.414932 0.26814,0.831128 0.491248,1.204865 0.279447,-0.647627 0.618418,-1.270273 0.851562,-1.9375 -0.07364,-0.240535 -0.18652,-0.02122 -0.310547,0.0332 z" />
+  <path
+     id="Lt_Ant_Digastric_M4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -14.306641,2.4472656 c 0.06544,0.8603776 0.492473,1.6276495 1.165993,2.1577132 0.447547,0.4754575 0.850162,0.9952857 1.33596,1.4340837 -0.438786,-1.4139958 -1.529697,-2.5953426 -2.501953,-3.5917969 z" />
+  <path
+     id="Lt_Submandibular_Gland4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -20.810547,2.8691406 c -0.234389,0.3650384 -0.150692,0.707232 0.239566,0.8993701 0.563981,0.5463035 1.195516,1.023827 1.877622,1.4131299 0.218068,-0.3710254 0.831446,-0.7181928 0.16423,-1.0052035 -0.526749,-0.4761301 -1.053497,-0.9522601 -1.580246,-1.4283902 -0.233724,0.040365 -0.467448,0.080729 -0.701172,0.1210937 z" />
+  <path
+     id="Lt_Masseter_M4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -23.755859,6.7910156 c -1.432528,0.7263759 -2.530354,2.117036 -3.746094,3.1894532 -0.225471,0.3765622 0.415549,0.6813932 0.70065,0.2471932 1.220207,-0.5999973 2.444342,-1.2735104 3.645053,-1.946412 -0.05529,-0.5381663 -0.03656,-1.1447114 -0.40625,-1.5820312 -0.06445,0.030599 -0.128906,0.061198 -0.193359,0.091797 z" />
+  <path
+     id="Lt_Parotid_Gland4"
+     style="fill:none;stroke:#000000;stroke-width:0.231525;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -28.980469,6.3789062 c -0.55401,0.3879669 -1.343022,0.7308531 -1.751953,1.1484376 0.230937,0.5224407 0.553888,-0.2591814 0.873047,-0.3359376 0.270505,-0.2311692 0.782928,-0.6677649 0.878906,-0.8125 z" />
+  <path
+     id="Lt_thyroid_lobe4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -18.816406,-9.9453125 c -0.108184,0.3892137 -0.0043,0.8130069 -0.08594,1.1855469 0.844345,0.2688495 1.793204,0.3151096 2.589844,-0.087891 0.03612,-0.1010015 0.08194,-0.7811498 -0.261719,-0.8144532 -0.763056,5.247e-4 -1.491533,-0.2283604 -2.242187,-0.2832031 z" />
+  <path
+     id="Lt_Sternocleidomastoid_M4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m -28.478516,-19.583984 c -0.0212,3.504557 -0.453547,7.019452 -1.531669,10.3609671 -0.762371,3.0712487 -2.234528,5.9116014 -3.898018,8.57848565 -0.112231,0.51571807 0.199994,0.29031405 0.292969,-0.0703125 2.1446,-3.51567675 4.553838,-6.91641725 6.092915,-10.70843325 0.814178,-2.423058 1.610938,-4.851539 2.397319,-7.283754 -0.450045,-0.408252 -0.719108,-1.322767 -1.478358,-1.049807 -0.625052,0.05762 -1.250105,0.115236 -1.875158,0.172854 z" />
+  <path
+     id="Rt_Sternocleidomastoid_M3-0"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 68.070312,-18.71875 c 1.371802,3.96196 2.283455,8.101776 4.587313,11.6551109 1.35286,2.2970855 2.772327,4.5537556 4.1705,6.82340472 0.194283,-0.58693855 -0.47831,-1.00984372 -0.641393,-1.53775152 -1.491801,-2.5591753 -2.820543,-5.2558303 -3.422215,-8.1758546 -0.926609,-3.1221385 -1.367117,-6.3880685 -1.325064,-9.6360035 -0.802891,-0.05983 -1.62996,-0.147796 -2.441406,-0.21875 -0.309245,0.363282 -0.61849,0.726563 -0.927735,1.089844 z" />
+  <path
+     id="Rt_Lateral_Pterygoid_M4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 68.085938,14.330078 c -0.215923,0.628645 -0.716041,1.240893 -1,1.742188 0.498559,0.334982 0.938117,-0.275544 1.398278,-0.447106 0.383089,-0.177818 0.546336,-0.628085 0.595862,-0.990394 -0.291187,-0.190487 -0.639987,-0.276879 -0.941406,-0.447266 l -0.03469,0.09379 z" />
+  <path
+     id="Rt_Medial_Pterygoid_M4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 63.791016,11.5625 c -0.0184,0.587738 0.470832,1.097231 0.635953,1.662667 0.120509,0.540241 0.288898,0.231236 0.412875,-0.13337 0.204165,-0.445741 0.428825,-0.949582 -0.218207,-1.079641 C 64.342373,11.8832 64.032619,11.625483 63.791016,11.5625 Z" />
+  <path
+     id="Rt_Submandibular_Gland4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 63.060547,2.7675781 c -0.685437,0.5309438 -1.290368,1.1728927 -1.939872,1.7377434 -0.01273,0.2419326 0.405121,0.3747369 0.453544,0.6450691 0.61191,-0.1538972 1.11622,-0.7115298 1.635522,-1.0878523 0.37319,-0.2962244 0.984062,-0.8199984 0.462134,-1.2500383 -0.206461,0.019997 -0.405141,-0.068656 -0.611328,-0.044922 z" />
+  <path
+     id="Rt_Masseter_M4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 66.453125,6.7714844 c -0.330195,0.4291634 -0.283202,1.003273 -0.347656,1.5117187 1.365046,0.7473032 2.790436,1.5840714 4.171875,2.1718749 C 70.827503,10.05235 70.189685,9.7971631 69.912453,9.4935526 68.850452,8.4894189 67.8815,7.3143642 66.523438,6.6953125 l -0.06783,0.07348 z" />
+  <path
+     id="Rt_Ant_Digastric_M4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 56.607422,3.1230469 c -0.76393,0.8581162 -1.508796,1.7874777 -1.851563,2.9023437 0.777586,-0.7828846 1.568672,-1.5823082 2.211708,-2.4722108 0.100662,-0.2228183 0.495658,-1.4462598 0.08368,-0.9060469 -0.147944,0.158638 -0.295887,0.317276 -0.44383,0.475914 z" />
+  <path
+     id="Rt_thyroid_lobe4"
+     style="fill:none;stroke:#000000;stroke-width:0.2;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 61.074219,-9.8574219 c -0.571986,0.1421197 -1.201709,0.074648 -1.744141,0.2910157 -0.189835,0.424215 -0.20932,0.8603557 0.34794,0.8601205 0.684156,0.3156921 1.543343,0.1415667 2.169638,-0.094495 -0.131256,-0.3382023 0.177285,-1.1534738 -0.264741,-1.1226868 -0.169566,0.022015 -0.339131,0.044031 -0.508696,0.066046 z" />
+  <path
+     id="Rt_Parotid_Gland4"
+     style="fill:none;stroke:#000000;stroke-width:0.231525;stroke-linecap:butt;stroke-linejoin:miter;stroke-miterlimit:4;stroke-dasharray:none;stroke-opacity:1"
+     d="m 72.007812,6.46875 c 0.489229,0.4239054 0.946446,0.9368577 1.513672,1.2402344 C 74.081705,7.3544084 73.214468,7.3160219 73.038378,7.0678558 72.677127,6.8455882 72.330736,6.5972326 71.957031,6.3945312 Z" />
+</svg>
