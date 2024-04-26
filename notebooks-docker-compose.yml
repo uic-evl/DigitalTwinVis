@@ -1,0 +1,14 @@
+version: "3"
+services:
+  digitaltwinnotebook:
+    container_name: digitaltwinnotebook
+    restart: "no"
+    build:
+      context: ./docker/python
+      dockerfile: Dockerfile
+    ports:
+      - 8888:8888
+    volumes:
+      - ./:/workspace/DigitalTwinVis
+      - ./docker/python/init.sh:/usr/local/bin/init.sh
+    entrypoint: sh -c "sh /usr/local/bin/init.sh"
