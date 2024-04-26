@@ -43,19 +43,24 @@ class Const:
          'Hematological (Neutropenia)': 'DLT_Hematological',
          'Hyponatremia': 'DLT_Other',
          'Immunological': 'DLT_Other',
-         'Infection': 'DLT_Infection (Pneumonia)',
+#          'Infection': 'DLT_Infection (Pneumonia)',
+        'Infection': 'DLT_Other',
          'NOS': 'DLT_Other',
-         'Nephrological': 'DLT_Nephrological',
-         'Nephrological (ARF)': 'DLT_Nephrological',
+#          'Nephrological': 'DLT_Nephrological',
+#          'Nephrological (ARF)': 'DLT_Nephrological',
+        'Nephrological': 'DLT_Other',
+         'Nephrological (ARF)': 'DLT_Other',
          'Neurological': 'DLT_Neurological',
          'Neutropenia': 'DLT_Hematological',
          'Nutritional': 'DLT_Other',
          'Pancreatitis': 'DLT_Other',
          'Pulmonary': 'DLT_Other',
-         'Respiratory (Pneumonia)': 'DLT_Infection (Pneumonia)',
-         'Sepsis': 'DLT_Infection (Pneumonia)',
+#          'Respiratory (Pneumonia)': 'DLT_Infection (Pneumonia)',
+#          'Sepsis': 'DLT_Infection (Pneumonia)',
+        'Respiratory (Pneumonia)': 'DLT_Other',
+         'Sepsis': 'DLT_Other',
          'Suboptimal response to treatment' : 'DLT_Other',
-         'Vascular': 'DLT_Vascular'
+         'Vascular': 'DLT_Other'
     }
     
     decision1 = 'Decision 1 (Induction Chemo) Y/N'
@@ -63,7 +68,7 @@ class Const:
     decision3 = 'Decision 3 Neck Dissection (Y/N)'
     decisions = [decision1,decision2, decision3]
     outcomes = ['Overall Survival (4 Years)', 'FT', 'Aspiration rate Post-therapy','LRC']
-    
+    timeseries_outcomes = ['OS (Calculated)','Locoregional control (Time)','FDM (months)'] + ['time_to_event']
     modification_types = {
         0: 'no_dose_adjustment',
         1: 'dose_modified',
@@ -71,7 +76,7 @@ class Const:
         3: 'dose_cancelled',
         4: 'dose_delayed_&_modified',
         5: 'regiment_modification',
-        9: 'unknown'
+#         9: 'unknown', #only one person
     }
     
     cc_types = {
@@ -90,7 +95,11 @@ class Const:
     
     primary_disease_states2 = [t + ' 2' for t in primary_disease_states]
     nodal_disease_states2 = [t + ' 2' for t in nodal_disease_states]
+    
+    #unremoved stuff because I groups all dlts less common than .05% of the data
     dlt2 = [d + ' 2' for d in dlt1]
+    #Removing some wihtout enough data to evaluate
+#     dlt2 = ['DLT_Gastrointestinal 2','DLT_Dermatological 2','DLT_Other 2','DLT_Neurological 2','DLT_Hematological 2']
     
 
     tuned_transition_models = [
@@ -141,7 +150,7 @@ class Const:
         5096,5097,5100,5102,5104,5106,5108,5110,5111,5112,5113,5114,
         5119,10001,10002,10003,10004,10006,10008,10009,10011,10015,
         10018,10019,10020,10021,10022,10024,10025,10027,10028,10029,
-        10031,10033,10034,10035,10036,10037,10038,10039,10041,10042,
+        10031,10033,10034,10035,10036,10037,10039,10041,10042,
         10043,10044,10045,10047,10048,10051,10052,10053,10054,10055,
         10056,10057,10059,10060,10061,10062,10064,10065,10067,10069,
         10070,10071,10072,10073,10074,10075,10077,10078,10079,10080,
@@ -167,4 +176,4 @@ class Const:
         10066,5078,117,10010,10170,10190,10058,5049,5086,5052,268,2029,
         5084,10105,10013,245,5048,2020,215,10046,5117,5033,267,5003,168,
         31,10049,10180,190,287,284,5054,10101,208,5077,10091,10172,288,5109,
-        10126,10153,10123,5107,194,10131]
+        10126,10153,10123,5107,194,10131,10038]
