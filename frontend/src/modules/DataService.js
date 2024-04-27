@@ -18,7 +18,10 @@ export default class DataService {
         });
 
         //clear authentication
-        this.resetToken = ()=>setAuthToken(false);
+        this.resetToken = ()=> {
+            localStorage.setItem('token',false)
+            setAuthToken(false);
+        }
     }
 
     getParamList(pObj){

@@ -29,7 +29,7 @@ async function loginUser(username,password) {
 
 function App(){
 
-  const [authToken,setAuthToken] = useState(false);
+  const [authToken,setAuthToken] = useState(localStorage.getItem('token')? localStorage.getItem('token') : false);
   const [authenticated, setAuthenticated] = useState(false);
   const [authMessage, setAuthMessage] = useState('');
 

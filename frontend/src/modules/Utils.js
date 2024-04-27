@@ -511,8 +511,7 @@ export default class Utils {
             cfCount = cfs.length;
             cScale += cIncrement;
         }
-        console.log('ns',neighbors.map(d=>d.id))
-        console.log('cfs2',cfs.map(d => d.id));
+
         return [neighbors, cfs,(cScale-cIncrement)*propensity]
     }
 

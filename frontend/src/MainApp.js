@@ -101,16 +101,28 @@ export default function MainApp({authToken,setAuthToken}) {
   const [dltSvgPaths,setDltSvgPaths]= useState();
   const [subsiteSvgPaths,setSubsiteSvgPaths] = useState();
 
-  //will be ['all','endpoints','response','dlts','no dlts]
-  const [outcomesView, setOutcomesView] = useState('no dlts');
 
   const [cursor, setCursor] = useState('default');
 
-  const [userPanelHidden,setUserPanelHidden] = useState(false);
+  const mobileWidth = 900;
+  const [isMobile,setIsMobile] = useState( ((window.innerWidth < window.innerHeight) || window.innerWidth < mobileWidth));
 
+  function handleWindowSizeChange() {
+    const isMobileTemp = ((window.innerWidth < window.innerHeight) || window.innerWidth < mobileWidth);
+    if(isMobileTemp != isMobile){
+      setIsMobile(isMobileTemp)
+    }
+  }
+
+  useEffect(()=>{
+    window.addEventListener('resize', handleWindowSizeChange);
+    return () => {
+        window.removeEventListener('resize', handleWindowSizeChange);
+    }
+  },[]);
   const colWidths = ['25vw','45vw','25vw'];
   const [colAdjust, setColAdjust] = useState([0,0,0]);
-  const [hasRun,setHasRun] = useState(false);
+  const [hasRun,setHasRun] = useState(localStorage.getItem('hasRun')? localStorage.getItem('hasRun'): false);
 
   function getColWidth(i){
     return colAdjust[i] > 0? 'calc(' + colWidths[i] + ' + ' + colAdjust[i] + 'px)': 'calc(' + colWidths[i] + ' - ' + Math.abs(colAdjust[i]) + 'px)';
@@ -147,9 +159,6 @@ export default function MainApp({authToken,setAuthToken}) {
     return p;
   }
 
-  // const [fixedDecisionsCue, setFixedDecisionsCue] = useState([null,null,null]);
-  // const [modelOutputCue,setModelOutputCue] = useState();
-  // const [currStateCue, setCurrStateCue] = useState();
 
   function updatePatient(fQue){
     let newStack = [...previousPatientStack];
@@ -415,9 +424,9 @@ export default function MainApp({authToken,setAuthToken}) {
       }
       let getColor = (val) => {
         if(fixedDecisionsCue[i] == val){
-          return 'teal'
+          return 'blue'
         } 
-        return 'blue'
+        return 'gray'
       }
       let names = ['N',tNames[i],'Y'];
       let btns = [0,-1,1].map((bval,ii) => {
@@ -466,15 +475,7 @@ export default function MainApp({authToken,setAuthToken}) {
 
   function makeThing(){
     return (
-      // <Fragment>
-      //   <Grid
-      //   templateRows='1.6em 10em 1.4em 1fr 10em 2em'
-      //   templateColumns='1fr 1fr'
-      //   className={'fillSpace'}
-      //   style={{'cursor':cursor,'height':'10em'}}
-
-      // >
-      <div className={'fillSpace'} style={{'overflowY':'hidden','width':'100%','height':'100%'}}>
+      <div className={'fillSpace'} style={{'overflowY':'hidden','width':'100%','marginLeft': isMobile? '5%':'0','marginRight':isMobile? '5%':'0','height':'100%'}}>
         <div className={'title'} style={{'height':'1.6em','width':'100%'}}>
           {'Model Parameters'}
         </div>
@@ -566,11 +567,12 @@ export default function MainApp({authToken,setAuthToken}) {
           />
           </div>
         </div>
-        <div style={{'height':'1.5em','width':'100%'}}>
+        <div style={{'height':'2em','width':'100%','paddingBottom':'.5em'}}>
           <Button 
             onClick={()=> {
               updatePatient(featureQue);
               setHasRun(true);
+              localStorage.setItem('hasRun',true);
             }
             }
             variant={'outline'}
@@ -594,12 +596,8 @@ export default function MainApp({authToken,setAuthToken}) {
   }
 
   function makeRecomendationColumn(){
-    return (
-      <div className={'fillSpace'}>
-      <div className={'shadow'} style={{'width':'100%','height':'6em'}}>
-        {Recommendation}
-      </div>
-      <div className={'shadow'} style={{'overflowY':'hidden','width':'100%','height':'calc(100% - 6em)'}}>
+    if(isMobile){
+      return (
         <AuxillaryViews
           cohortData={cohortData}
           symptoms={symptoms}
@@ -623,7 +621,41 @@ export default function MainApp({authToken,setAuthToken}) {
           setBrushedId={setBrushedId}
 
           defaultPredictions={defaultPredictions}
+          dltSvgPaths={dltSvgPaths}
+          lnSvgPaths={lnSvgPaths}
+          subsiteSvgPaths={subsiteSvgPaths}
+        ></AuxillaryViews>
+      )
+    }
+    return (
+      <div className={'fillSpace'}>
+      <div className={'shadow'} style={{'width':'100%','height':'6em'}}>
+        {Recommendation}
+      </div>
+      <div className={'shadow'} style={{'overflowY':'hidden','width':'100%','height': 'calc(100% - 6em)'}}>
+        <AuxillaryViews
+          cohortData={cohortData}
+          symptoms={symptoms}
+          cohortEmbeddings={cohortEmbeddings}
+          currState={currState}
+          setCurrState={setCurrState}
+          patientFeatures={patientFeatures}
+          currEmbeddings={currEmbeddings}
+          modelOutput={modelOutput}
+          simulation={simulation}
+          getSimulation={getSimulation}
+          patientEmbeddingLoading={patientEmbeddingLoading}
+          patientSimLoading={patientSimLoading}
+          cohortLoading={cohortLoading}
+          cohortEmbeddingsLoading={cohortEmbeddingsLoading}
+          fixedDecisions={fixedDecisions}
+          
+          updatePatient={updatePatient}
+
+          brushedId={brushedId}
           setBrushedId={setBrushedId}
+
+          defaultPredictions={defaultPredictions}
           dltSvgPaths={dltSvgPaths}
           lnSvgPaths={lnSvgPaths}
           subsiteSvgPaths={subsiteSvgPaths}
@@ -657,36 +689,70 @@ export default function MainApp({authToken,setAuthToken}) {
   }
 
 
-
-  return (
-    <ChakraProvider style={{'height':'100%'}}>
-      <div style={{'position':'absolute','width': '100vw','height':'100vh','opacity': .5, 'display': cursor == 'default'? 'none':'','backgroundColor':'white','zIndex':100000000000000}}>
-        <Spinner size={'xl'}></Spinner>
-      </div>
-      <div className={'shadow title'} style={{'fontSize': '1.5em','width': '95%','height': '2em','margin':'0px'}}>
-        {"OPC Digital Twin Outcome Predictions"}
-        <div  style={{'display': 'inline','width':'auto'}}>{" |  "}</div>
-        <Tutorial style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Tutorial>
-        {'  '}
-        <Feedback style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Feedback>
-        {'  '}
-        <About style={{'display':'inline','height': '1em','fontSize':'.75em'}}></About>
-      </div>
-      <div style={{'display':'flex','justifyContent':'center', 'height': 'calc(95vh - 2em)','overflow':'hidden'}}>
-        <div style={{'height': '100%','width': getColWidth(0),'margin':'.2em','display':'inline-flex'}} className={'shadow'}>
-          {makeThing()}
+  if(isMobile){
+    return (
+      <ChakraProvider style={{'height':'auto','width':'auto','overflowY':'scroll','overflowX':'scroll'}}>
+        <div style={{'position':'absolute','width': '100vw','height':'100vh','opacity': .5, 'display': cursor == 'default'? 'none':'','backgroundColor':'white','zIndex':100000000000000}}>
+          <Spinner size={'xl'}></Spinner>
         </div>
-        <DraggableComponentX colAdjust={colAdjust} setColAdjust={setColAdjust} index={0} style={{'width':'1em','height':'100%'}}/>
-        <div style={{'height': '100%','width': getColWidth(1),'margin':'.2em','display':'inline-flex'}} className={'shadow scroll'}>
-          {hasRun? makeOutcomeStuff(): <div/>}
+        <div className={'shadow title'} style={{'fontSize': '1.5em','width': '95%','height': '2em','margin':'0px'}}>
+          {"OPC Digital Twin"}
+          <div  style={{'display': 'inline','width':'auto'}}>{" |  "}</div>
+          <Tutorial style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Tutorial>
+          {'  '}
+          <Feedback style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Feedback>
+          {'  '}
+          <About style={{'display':'inline','height': '1em','fontSize':'.75em'}}></About>
         </div>
-        <DraggableComponentX colAdjust={colAdjust} setColAdjust={setColAdjust} index={1} style={{'width':'1em','height':'100%'}}/>
-        <div style={{'height': '100%','width': getColWidth(2),'margin':'.2em','display':'inline-flex'}} className={'shadow'}>
+        <div style={{'display':'flex','justifyContent':'center', 'flexDirection':'column','height': 'auto'}}>
+          <div style={{'height': 'auto','width': '100%','margin':'.2em','display':'flex'}} className={'shadow'}>
+            {makeThing()}
+          </div>
+          <div className={'shadow'} style={{'width':'99vw','marginTop':'1em','display':'flex','height':'6em'}}>
+            {hasRun? Recommendation: <div/>}
+          </div>
+          <div style={{'height': '80vh','width': '99vw','margin':'0em','marginTop':'1em','display':'flex'}} className={'shadow scroll'}>
+            {hasRun? makeOutcomeStuff(): <div/>}
+          </div>
+          <div style={{'height': '80vh','width': '99vw','margin':'0em','marginTop':'1em','display':'flex'}} className={'shadow'}>
           {hasRun? makeRecomendationColumn(): <div/>}
+          </div>
         </div>
-      </div>
-    </ChakraProvider>
-  )
+      </ChakraProvider>
+    )
+  }
+
+  else{
+    return (
+      <ChakraProvider style={{'height':'100%'}}>
+        <div style={{'position':'absolute','width': '100vw','height':'100vh','opacity': .5, 'display': cursor == 'default'? 'none':'','backgroundColor':'white','zIndex':100000000000000}}>
+          <Spinner size={'xl'}></Spinner>
+        </div>
+        <div className={'shadow title'} style={{'fontSize': '1.5em','width': '95%','height': '2em','margin':'0px'}}>
+          {"OPC Digital Twin Outcome Predictions"}
+          <div  style={{'display': 'inline','width':'auto'}}>{" |  "}</div>
+          <Tutorial style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Tutorial>
+          {'  '}
+          <Feedback style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Feedback>
+          {'  '}
+          <About style={{'display':'inline','height': '1em','fontSize':'.75em'}}></About>
+        </div>
+        <div style={{'display':'flex','justifyContent':'center', 'height': 'calc(95vh - 2em)','overflow':'hidden'}}>
+          <div style={{'height': '100%','width': getColWidth(0),'margin':'.2em','display':'inline-flex'}} className={'shadow'}>
+            {makeThing()}
+          </div>
+          <DraggableComponentX colAdjust={colAdjust} setColAdjust={setColAdjust} index={0} style={{'width':'1em','height':'100%'}}/>
+          <div style={{'height': '100%','width': getColWidth(1),'margin':'.2em','display':'inline-flex'}} className={'shadow scroll'}>
+            {hasRun? makeOutcomeStuff(): <div/>}
+          </div>
+          <DraggableComponentX colAdjust={colAdjust} setColAdjust={setColAdjust} index={1} style={{'width':'1em','height':'100%'}}/>
+          <div style={{'height': '100%','width': getColWidth(2),'margin':'.2em','display':'inline-flex'}} className={'shadow'}>
+            {hasRun? makeRecomendationColumn(): <div/>}
+          </div>
+        </div>
+      </ChakraProvider>
+    )
+  }
 
 
 }
