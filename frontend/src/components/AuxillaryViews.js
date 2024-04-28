@@ -159,7 +159,7 @@ export default function AuxillaryViews(props){
 
         return (<>
           {Utils.makeStateToggles(auxViewOptions,auxView,setAuxView,auxViewLabels)}
-          <HelpText key={auxView} text={htext}/>
+          {window.innerWidth > 500? <HelpText key={auxView} text={htext}/>: <></>}
         </>);
       }
 

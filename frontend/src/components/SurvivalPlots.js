@@ -28,15 +28,15 @@ export default function SurvivalPlots(props){
     const [svg, height, width, tTip] = useSVGCanvas(d3Container);
 
     const cWidth = d3Container.current? d3Container.current: 0;
-
+    console.log('width',width)
     const curvesToPlot = constants.TEMPORAL_OUTCOMES;
     
     const xMargin = 20;
     const yMargin = 20;
-    const xTickSpacing = 20;
-    const yTickSpacing = 40;
+    const xTickSpacing = Math.min(20,height/30);
+    const yTickSpacing = width > 350? Math.min(40,width/30): 0;
     const titleSpacing = 20;
-    const legendSpacing = Math.min(width/2,Math.max(150,width/5));
+    const legendSpacing = Math.min(width/2,Math.max(20,width/5));
     const maxTime = 60;
     const fixedTimes = [24,60];
     useEffect(()=>{
@@ -164,7 +164,6 @@ export default function SurvivalPlots(props){
                 cPos += 1;
             }
 
-
             var currCurve = 0;
             var curveStuff = [[curvesTop,curvesBottom],[altTop,altBottom]];
             const ciCurveNames = [curveNames[0], curveNames[1]];
@@ -209,6 +208,7 @@ export default function SurvivalPlots(props){
                 .attr('fill-opacity',.25)
                 .attr('fill',d=>d.color);
             CIPath.exit().remove();
+            
 
             var path = g.selectAll('path').filter('.path'+selector).data(curveData,(d,i) =>d.name+d.x);
             //use different lines, keep extents so people don't see 
@@ -217,7 +217,7 @@ export default function SurvivalPlots(props){
                 .merge(path)
                 // .transition(100)
                 .attr('d',d=>d.path)
-                .attr('stroke-width',2)
+                .attr('stroke-width',3)
                 .attr('stroke',d=>d.color)
                 .attr('opacity',1)
                 .attr('fill','none');
@@ -231,7 +231,7 @@ export default function SurvivalPlots(props){
                 // .transition(300)
                 .attr('cy',d=>d.y)
                 .attr('fill',d=>d.color)
-                .attr('r',4)
+                .attr('r',Math.min(4,width/200))
             points.exit().remove();
 
             g.selectAll('.'+'points'+selector).on('mouseover',function(e,d){
@@ -264,21 +264,22 @@ export default function SurvivalPlots(props){
                 'x':(width-legendSpacing)/2,
                 'y': yScale(1) - titleSpacing/2, 
                 'size': titleSpacing*.9,
-                'text': Utils.getFeatureDisplayName(name),
+                'text': width > 350? Utils.getFeatureDisplayName(name): Utils.getNameShort(name),
                 'anchor': 'middle',
                 'weight':'bold'
             }];
             const tickY =  yScale(0) + xTickSpacing/2;
             textStuff.push({
-                'x': xMargin/2,
+                'x': xMargin/3,
                 'y': tickY,
                 'size': xTickSpacing*.8,
-                'text': 'Months:',
+                'text': width > 500? 'Months:':'M:',
                 'anchor':'start',
                 'weight': 'bold',
                 'textWidth': xScale(0) - xMargin/2 -2,
             })
             for(let time of times){
+                if(width < 350 && (parseFloat(time)%12 != 0) && time !== 60){continue}
                 let entry = {
                     'x': xScale(time),
                     'y': tickY,
@@ -298,9 +299,9 @@ export default function SurvivalPlots(props){
                 let y = yScale(pct)
                 let isBound = pct == 0 || pct == 1;
                 textStuff.push({
-                    'x': xMargin,
+                    'x': 3,
                     'y': y,
-                    'size': xTickSpacing*.8,
+                    'size': yTickSpacing*.8,
                     'text': (pct*100).toFixed(0) + '%',
                     'anchor':'start',
                     'weight': '',
@@ -325,14 +326,18 @@ export default function SurvivalPlots(props){
                 .html(d=>d.text);
 
             g.selectAll('.axisTick'+selector).remove();
-            g.selectAll('.axisTick'+selector).data(textStuff)
+            if(width > 400){
+                g.selectAll('.axisTick'+selector).data(textStuff)
                 .enter().append('path').attr('class','axisTick'+selector)
                 .attr('d',d=>d.line)
-                .attr('stroke',d=>d.isBound? 'black':'azure')
+                .attr('stroke',d=> (width > 500 && d.isBound)? 'black':'grey')
                 .attr('stroke-width',d=>d.isBound? 3:2)
-                .attr('stroke-dasharray', d=>d.isBound? '5,5':'')
+                .attr('stroke-dasharray', d=> (width > 500 && d.isBound)? '5,5':'')
                 .attr('pointer-events','none')
-                .attr('stroke-opacity',d=>d.isBound? .5:1);
+                .attr('stroke-opacity',d=> (width > 500 && d.isBound)? .5:.25);
+            }
+            
+            
 
             const lXScale = d3.scaleLinear()
                 .domain([0,1])
@@ -346,7 +351,7 @@ export default function SurvivalPlots(props){
             for(let t of fixedTimes){
                 lTitles.push({
                     'y': lYPos,
-                    'text': Utils.getNameShort(name) + ' @ ' + (t/12).toFixed(0) + ' Yrs',
+                    'text': width > 500? Utils.getNameShort(name) + ' @ ' + (t/12).toFixed(0) + ' Yrs': (t/12).toFixed(0) + ' Yrs',
                 })
                 lYPos += lBarHeight;
                 let fPoints = pointData.filter(d=>d.time === t);
@@ -393,7 +398,7 @@ export default function SurvivalPlots(props){
             g.selectAll('.legendBarText'+selector).data(lData)
                 .enter().append('text')
                 .attr('class','legendBarOutline'+selector)
-                .attr('x',legendStart+lXScale(.5))
+                .attr('x',d=> d.x + lXScale(.5))
                 .attr('y',d=>d.y + (lBarHeight/2) + (lStroke/2))
                 .attr('text-anchor','middle')
                 .attr('dominant-baseline','middle')

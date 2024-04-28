@@ -10,14 +10,13 @@ export default function OutcomePlots(props){
 
     const d3Container = useRef(null);
     const [svg, height, width, tTip] = useSVGCanvas(d3Container);
-    
+    console.log('width',width);
     const margin = 10;
     const labelSpacing = 60;
     const titleSpacing = Math.max(height*.04,30);
     const modelSpacing = 5;
     const outcomeSpacing = 10;
 
-    const mainPatientOutcomes=['OS (Calculated)(4yr)','FT','Aspiration rate Post-therapy','Locoregional control (Time)(4yr)']
     const xScale = useMemo(()=>{
         return d3.scaleLinear()
             .domain([0,1])

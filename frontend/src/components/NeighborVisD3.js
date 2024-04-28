@@ -19,7 +19,7 @@ export function NeighborVisD3(props){
 
     const colorVar = 'similarity';
 
-    const margin = Math.max(20,height/10);
+    const margin = Math.max(10,height/4);
 
     //actually rectangle vars
     const baselineVars = Object.keys(ordinalVars)

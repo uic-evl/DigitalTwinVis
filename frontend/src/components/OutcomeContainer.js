@@ -120,7 +120,7 @@ export default function OutcomeContainer(props){
                 setOutcomesToShow={setOutcomesToShow}
               />'
           </div>
-          <div style={{'height':'calc(100% - 4em)','width':'100%','overflowY':'scroll'}}>
+          <div style={{'height':'calc(100% - 4em)','width':'100%','overflowY':'visible'}}>
             <OtherOutcomes
               className={'shadow'}
               sim={data.sim}

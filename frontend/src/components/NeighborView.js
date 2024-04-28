@@ -133,28 +133,34 @@ export default function NeighborView(props){
             }
             
             if(name === undefined){
-            if(i === 'n' | i === 'cf'){
-                if(d[dString] > .5){
-                name = dname + ' avg.'
+                if(i === 'n' | i === 'cf'){
+                    if(d[dString] > .5){
+                    name = dname + ' avg.'
+                    } else{
+                    name = 'no ' + dname + ' avg.'
+                    }
                 } else{
-                name = 'no ' + dname + ' avg.'
-                }
-            } else{
-                name = d.id + ': ';
-            
-                if(d[dString] > .5){
-                name += dname;
-                } else{
-                name += 'no ' + dname;
+                    // name = d.id + ': ';
+                    name = ''
+                    if(d[dString] > .5){
+                    name += dname;
+                    } else{
+                    name += 'no ' + dname;
+                    }
                 }
             }
-            
-            }
-            const headerSize = '1em';
+            const noTicks = !showTicks || width < 500;
+            const headerSize = noTicks? '0px': '1.1em';
             const viewSize = 'calc(100% - ' + headerSize + ' - 10px)';
-            const headerStyle = {'width':'100%','height':headerSize};
-            const viewStyle   = {'width':'100%','height':viewSize,'marginTop':'10px'}
+            const headerStyle = {'width':'100%','height':headerSize,'fontSize': width > 600? '':'2vw'};
+            const viewStyle   = {'width':'100%','height':viewSize,'marginTop':'15px'}
             const componentStyle = w => {return {'margin':0,'width': fixWidth(w),'height':'100%','display':'inline-block','verticalAlign':'top'}}
+            function makeHeader(text){
+                if(width > 500 || showTicks){
+                    return (<div  className={'title'} style={headerStyle}>{text}</div>)
+                } 
+                return <></>
+            }
             return (
             <div key={d.id+' '+props.currState+ ' ' +i} 
             style={{'margin':'.2em','height': thingHeight,
@@ -170,7 +176,7 @@ export default function NeighborView(props){
                 {name}
             </div>
             {props.currState > 0? (<div style={componentStyle(dltWidth)}>
-                <div  className={'title'} style={headerStyle}>{"DLTs"}</div>
+                {makeHeader('DLTs')}
                 <div style={viewStyle}>
                 <DLTVisD3
                     dltSvgPaths={dltSvgPaths}
@@ -182,7 +188,7 @@ export default function NeighborView(props){
                 
             </div>) : <></>}
             <div style={componentStyle(lnWidth)}>
-                <div  className={'title'} style={headerStyle}>{"LN"}</div>
+                {makeHeader('LNs')}
                 <div style={viewStyle}>
                 <LNVisD3
                     lnSvgPaths={lnSvgPaths}
@@ -193,7 +199,7 @@ export default function NeighborView(props){
                 </div>
             </div>
             <div style={componentStyle(subsiteWidth)}>
-                <div  className={'title'} style={headerStyle}>{"Subsite"}</div>
+                {makeHeader('Subsite')}
                 <div style={viewStyle}>
                 <SubsiteVisD3
                     subsiteSvgPaths={props.subsiteSvgPaths}
@@ -204,24 +210,24 @@ export default function NeighborView(props){
                 </div>
             </div>
             <div style={componentStyle(nWidth)}>
-                <div  className={'title'} style={headerStyle}>{"Staging"}</div>
+                {makeHeader('Staging')}
                 <div style={viewStyle}>
-                <NeighborVisD3
-                data={d}
-                referenceData={encodedRef}
-                // key={d.id+i}
-                lnSvgPaths={lnSvgPaths}
-                valRanges={ranges}
-                dltSvgPaths={dltSvgPaths}
-                currState={currState}
-                version={'staging'}
-                name={name}
-                showTicks={showTicks}
-                ></NeighborVisD3>
+                    <NeighborVisD3
+                    data={d}
+                    referenceData={encodedRef}
+                    // key={d.id+i}
+                    lnSvgPaths={lnSvgPaths}
+                    valRanges={ranges}
+                    dltSvgPaths={dltSvgPaths}
+                    currState={currState}
+                    version={'staging'}
+                    name={name}
+                    showTicks={!noTicks}
+                    ></NeighborVisD3>
                 </div>
             </div>
             <div style={componentStyle(nWidth)}>
-                <div  className={'title'} style={headerStyle}>{"Baseline"}</div>
+                {makeHeader('Baseline')}
                 <div style={viewStyle}>
                 <NeighborVisD3
                 data={d}
@@ -233,12 +239,12 @@ export default function NeighborView(props){
                 currState={currState}
                 version={'useful'}
                 name={name}
-                showTicks={showTicks}
+                showTicks={!noTicks}
                 ></NeighborVisD3>
                 </div>
             </div>
             <div style={componentStyle(nWidth)}>
-                <div  className={'title'} style={headerStyle}>{"Outcomes"}</div>
+                {makeHeader('Outcomes')}
                 <div style={viewStyle}>
                 <NeighborVisD3
                 data={d}
@@ -250,7 +256,7 @@ export default function NeighborView(props){
                 currState={currState}
                 version={'outcomes'}
                 name={name}
-                showTicks={showTicks}
+                showTicks={!noTicks}
                 ></NeighborVisD3>
                 </div>
             </div>

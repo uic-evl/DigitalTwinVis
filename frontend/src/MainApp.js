@@ -104,14 +104,19 @@ export default function MainApp({authToken,setAuthToken}) {
 
   const [cursor, setCursor] = useState('default');
 
-  const mobileWidth = 900;
-  const [isMobile,setIsMobile] = useState( ((window.innerWidth < window.innerHeight) || window.innerWidth < mobileWidth));
+  function getDeviceLevel(width,height){
+    const isLarge = window.innerWidth > 900;
+    const isSmall = window.innerWidth < 400;
+    if(isSmall){ return 0 }
+    if(isLarge){ return 2}
+    return 1;
+  }
+  const [deviceLevel,setDeviceLevel] = useState(getDeviceLevel(window.innerWidth,window.innerHeight));
+  const [isLandscape, setIsLandscape] = useState(window.innerWidth < window.innerHeight);
 
   function handleWindowSizeChange() {
-    const isMobileTemp = ((window.innerWidth < window.innerHeight) || window.innerWidth < mobileWidth);
-    if(isMobileTemp != isMobile){
-      setIsMobile(isMobileTemp)
-    }
+    setDeviceLevel(getDeviceLevel(window.innerWidth,window.innerHeight));
+    setIsLandscape(window.innerWidth < window.innerHeight);
   }
 
   useEffect(()=>{
@@ -120,6 +125,7 @@ export default function MainApp({authToken,setAuthToken}) {
         window.removeEventListener('resize', handleWindowSizeChange);
     }
   },[]);
+  
   const colWidths = ['25vw','45vw','25vw'];
   const [colAdjust, setColAdjust] = useState([0,0,0]);
   const [hasRun,setHasRun] = useState(localStorage.getItem('hasRun')? localStorage.getItem('hasRun'): false);
@@ -474,6 +480,7 @@ export default function MainApp({authToken,setAuthToken}) {
   //patientDrawer
 
   function makeThing(){
+    const isMobile = deviceLevel < 2 || isLandscape;
     return (
       <div className={'fillSpace'} style={{'overflowY':'hidden','width':'100%','marginLeft': isMobile? '5%':'0','marginRight':isMobile? '5%':'0','height':'100%'}}>
         <div className={'title'} style={{'height':'1.6em','width':'100%'}}>
@@ -596,6 +603,7 @@ export default function MainApp({authToken,setAuthToken}) {
   }
 
   function makeRecomendationColumn(){
+    const isMobile = deviceLevel < 2 || isLandscape;
     if(isMobile){
       return (
         <AuxillaryViews
@@ -683,21 +691,22 @@ export default function MainApp({authToken,setAuthToken}) {
           cohortEmbeddingsLoading={cohortEmbeddingsLoading}
           fixedDecisions={fixedDecisions}
           width={getColWidth(1)}
+          deviceLevel={deviceLevel}
+          isLandscape={isLandscape}
         ></OutcomeContainer>
       </div>
       )
   }
 
 
-  if(isMobile){
+
+  if(deviceLevel < 2 || isLandscape){
     return (
       <ChakraProvider style={{'height':'auto','width':'auto','overflowY':'scroll','overflowX':'scroll'}}>
         <div style={{'position':'absolute','width': '100vw','height':'100vh','opacity': .5, 'display': cursor == 'default'? 'none':'','backgroundColor':'white','zIndex':100000000000000}}>
           <Spinner size={'xl'}></Spinner>
         </div>
-        <div className={'shadow title'} style={{'fontSize': '1.5em','width': '95%','height': '2em','margin':'0px'}}>
-          {"OPC Digital Twin"}
-          <div  style={{'display': 'inline','width':'auto'}}>{" |  "}</div>
+        <div className={'shadow title'} style={{'fontSize': '1.5em','width': '95%','height': 'auto','margin':'0px'}}>
           <Tutorial style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Tutorial>
           {'  '}
           <Feedback style={{'display':'inline','height': '1em','fontSize':'.75em'}}></Feedback>
@@ -711,10 +720,10 @@ export default function MainApp({authToken,setAuthToken}) {
           <div className={'shadow'} style={{'width':'99vw','marginTop':'1em','display':'flex','height':'6em'}}>
             {hasRun? Recommendation: <div/>}
           </div>
-          <div style={{'height': '80vh','width': '99vw','margin':'0em','marginTop':'1em','display':'flex'}} className={'shadow scroll'}>
+          <div style={{'height': '80vh','minHeight':'50em','width': '99vw','margin':'0em','marginTop':'1em','display':'flex'}} className={'shadow scroll'}>
             {hasRun? makeOutcomeStuff(): <div/>}
           </div>
-          <div style={{'height': '80vh','width': '99vw','margin':'0em','marginTop':'1em','display':'flex'}} className={'shadow'}>
+          <div style={{'height': '80vh','minHeight':'30em','width': '99vw','margin':'0em','marginTop':'1em','display':'flex'}} className={'shadow'}>
           {hasRun? makeRecomendationColumn(): <div/>}
           </div>
         </div>
