@@ -205,7 +205,7 @@ dsm_model, dsm_loss, dsm_metrics = train_dsm(DTDataset(use_smote=False), k=6, di
 
 print('dsm trained')
 print(dsm_metrics)
-torch.save(dsm_loss,dsm_model_file)
+torch.save(dsm_model,'../resources/' + dsm_model_file+'.pt')
 
 def temporal_loss(timestoevents,weights=None,maxtime=48,threshold=True):
     #list of expected times to events, usualy in order of Const.temporal_outcomes
