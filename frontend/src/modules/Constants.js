@@ -22,6 +22,7 @@ export const ordinalVars = {
         'N-category': [0,1,2,3],
         'T-category': [1,2,3,4],
         'Pathological Grade': [0,1,2,3,4],
+        'smoking_status': [0.0,0.5,1.0],
         // 'hpv': [-1,0,1]
     }
 export const booleanVars = [

@@ -29,6 +29,7 @@ export default class Utils {
         'Hispanic/Latino': 'Hispanic',
         'dose_fraction': 'Dose Frac.',
         'packs_per_year': 'Packs/Year',
+        'smoking_status': 'Smoking Status',
         'time_to_event': 'OS + FDM + LRC + No Toxicity',
         'OS (Calculated)':'Overall Survival',
         'Locoregional control (Time)': 'Loco-Regional Control',
