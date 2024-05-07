@@ -22,7 +22,6 @@ export const ordinalVars = {
         'N-category': [0,1,2,3],
         'T-category': [1,2,3,4],
         'Pathological Grade': [0,1,2,3,4],
-        'smoking_status': [0.0,0.5,1.0],
         // 'hpv': [-1,0,1]
     }
 export const booleanVars = [
@@ -43,6 +42,7 @@ export const continuousVars = [
 export const censorVars = ['Overall Survival (1=alive, 0=dead)','LRC','DC']
 
 export const contVarGroups = {
+        'smoking_status': [0,0.5,1],
         'age': [20,30,40,50,60,65,70,75,80,90,100],
         'dose_fraction': [1.8,2,2.1,2.2,2.3,3],
         'total_dose': [0,66,70,72],
