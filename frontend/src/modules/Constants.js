@@ -33,6 +33,7 @@ export const booleanVars = [
 ]
 export const continuousVars = [
 'age',
+'smoking_status',
 'hpv',
 'total_dose',
 'dose_fraction',
