@@ -29,9 +29,19 @@ export default function SymptomVisD3(props){
             var line = d3.line().curve(d3.curveBumpX);
 
             function makeDataset(data,lineColor,isFirst,ids,dists){
-                const ratings = data.ratings;//lists of ratings shape (props.ids, weeks)
+                // const ratings = data.ratings;//lists of ratings shape (props.ids, weeks)
                 const means = data.means;//lists of mean ratings shape weeks
-                
+                // ratings to relative ratings(all started from 0)
+                const ratings = data.ratings.map(subArray => {
+                const firstItem = subArray[0];
+                    return subArray.map((item, index) => {
+                        if (index === 0) {
+                        return 0;
+                        }
+                        const diff = item - firstItem;
+                        return diff < 0 ? 0 : diff;
+                    });
+                });
                 var lineData = ratings.map(d=>[]);
                 var meanLine=[];
                 var textData = [];
