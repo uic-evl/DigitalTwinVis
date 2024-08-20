@@ -50,7 +50,7 @@ export default class DataService {
             return response.data;
         }
         catch(error){
-            if(error.response.status == 401){
+            if(error.response.status == 401|| error.response.status == 422){
                 this.resetToken();
             }
         }
@@ -68,7 +68,7 @@ export default class DataService {
             const response = await this.api.get(qstring);
             return response.data;
         } catch(error){
-            if(error.response.status == 401){
+            if(error.response.status == 401|| error.response.status == 422){
                 this.resetToken();
             } else{
                 console.log('error in getPatientData');
@@ -90,7 +90,7 @@ export default class DataService {
             const response = await this.api.get(qstring);
             return response.data;
         } catch(error){
-            if(error.response.status == 401){
+            if(error.response.status == 401 || error.response.status == 422){
                 this.resetToken();
             } else{
                 console.log('error in getPatientEmbeddings');
@@ -105,7 +105,7 @@ export default class DataService {
             const response = await this.api.get('/defaultPredictions');
             return response.data;
         } catch(error){
-            if(error.response.status == 401){
+            if(error.response.status == 401|| error.response.status == 422){
                 this.resetToken();
             } else{
                 console.log('error in getDefaultPredictions');
@@ -125,7 +125,7 @@ export default class DataService {
             const response = await this.api.get(qstring);
             return response.data;
         } catch(error){
-            if(error.response.status == 401){
+            if(error.response.status == 401|| error.response.status == 422){
                 this.resetToken();
             } else{
                 console.log('error in getcohortPredictions');
@@ -147,7 +147,7 @@ export default class DataService {
             response.postData = goodPostData;
             return response;
         } catch(error){
-            if(error.response.status == 401){
+            if(error.response.status == 401|| error.response.status == 422){
                 this.resetToken();
             } else{
                 console.log('error in getPatientSimulation');
@@ -176,7 +176,7 @@ export default class DataService {
             response.postData = goodPostData;
             return response;
         } catch(error){
-            if(error.response.status == 401){
+            if(error.response.status == 401|| error.response.status == 422){
                 this.resetToken();
             } else{
                 console.log('error in getPatientNeighbors');
