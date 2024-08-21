@@ -9,9 +9,14 @@ const dataText = (<p>
   Data was collected from electronic health record data, and lymph node involvement was gathered manually from CT Scans.
   Feeding Tube and Aspiration indicate patients that were hospitalized 
   for these toxicities within 6 months of radiation treatment ending.
+  <br/>
+  The paper for this tool can be found 
+  <a href="https://doi.org/10.48550/arXiv.2407.13107" target="_blank" style={{color: 'blue'}} > (Here) </a>
+  <br/>
   The original paper this system is based off of is described 
   <a href='https://www.jmir.org/2022/4/e29455/' target="_blank" style={{'color':"blue"}}> (Here) </a>
-   And the data can be found 
+  <br/>
+  The data can be found 
   <a 
     style={{'color':"blue"}}
     href='https://figshare.com/projects/Optimal_policy_determination_in_sequential_systemic_and_locoregional_therapy_of_oropharyngeal_squamous_carcinomas_A_patient-physician_digital_twin_dyad_with_deep_Q-learning/92840' target="_blank"> (Here) 

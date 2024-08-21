@@ -150,13 +150,14 @@ export default function NeighborView(props){
                 }
             }
             const noTicks = !showTicks || width < 500;
-            const headerSize = noTicks? '0px': '1.1em';
-            const viewSize = 'calc(100% - ' + headerSize + ' - 10px)';
-            const headerStyle = {'width':'100%','height':headerSize,'fontSize': width > 600? '':'2vw'};
+            const showHeader = width > 500;
+            const headerSize = showHeader? '.8em':'0px';
+            const viewSize = 'calc(100% - ' + headerSize + ' - ' + marginBottom + ' - 12pt)';
+            const headerStyle = {'width':'100%','height':headerSize,'fontSize': width > 200? '12pt':'6pt'};
             const viewStyle   = {'width':'100%','height':viewSize,'marginTop':'15px'}
             const componentStyle = w => {return {'margin':0,'width': fixWidth(w),'height':'100%','display':'inline-block','verticalAlign':'top'}}
             function makeHeader(text){
-                if(width > 500 || showTicks){
+                if(showHeader){//|| showTicks){
                     return (<div  className={'title'} style={headerStyle}>{text}</div>)
                 } 
                 return <></>
@@ -167,6 +168,7 @@ export default function NeighborView(props){
             'width': 'auto',
             'diplay': 'inline-flex',
             'justifyContent':'flex-start',
+            'flexDirection':'column',
             'marginBottom': marginBottom,
             'borderBottom': bBorder,
             }}
@@ -265,17 +267,17 @@ export default function NeighborView(props){
         }
         const nStuff = p.map((d,i) => makeN(d,i,false));
 
-            return (
-            <div className={'centerText scroll'} 
-            key={props.currState+'neighbors'}
-            style={{'width':'100%!important','height':'100%','marginTop':'1em',
-                    'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
-                {makeN(meanTreated,'n',true)}
-                {makeN(meanUntreated,'cf',true)}
-                <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
-                {nStuff}
-            </div>
-            );
+        return (
+        <div className={'centerText scroll'} 
+        key={props.currState+'neighbors'}
+        style={{'width':'100%!important','height':'100%','marginTop':'1em',
+                'display':'inline-flex','flexFlow':'row wrap','flexDirection':'row','alignItems':'flex-start'}}>
+            {makeN(meanTreated,'n',true)}
+            {makeN(meanUntreated,'cf',true)}
+            <hr style={{'width':'100%','display':'block','marginTop':'10px'}}></hr>
+            {nStuff}
+        </div>
+        );
         } 
         else{
         return <Spinner/>

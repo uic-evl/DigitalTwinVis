@@ -19,7 +19,7 @@ export function NeighborVisD3(props){
 
     const colorVar = 'similarity';
 
-    const margin = Math.max(10,height/4);
+    const margin = Math.min(5,height/4);
 
     //actually rectangle vars
     const baselineVars = Object.keys(ordinalVars)
@@ -61,7 +61,7 @@ export function NeighborVisD3(props){
 
     const radiusScale = d3.scaleLinear()
                 .domain([0,1])
-                .range([5,width/2 - margin]);
+                .range([5,Math.min(height/2,width/2) - margin]);
 
             //catch out-of-bounds values
     const rScale = v => Math.min(radiusScale.range()[1], Math.max(radiusScale.range()[0],radiusScale(v)));
@@ -212,7 +212,7 @@ export function NeighborVisD3(props){
     return (
         <div
             className={"d3-component"}
-            style={{'height':'95%','width':'95%'}}
+            style={{'height':'100%','width':'95%'}}
             ref={d3Container}
         ></div>
     );
