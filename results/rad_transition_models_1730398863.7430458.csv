@@ -1,0 +1,73 @@
+,state,outcome,metric,value
+0,1,pd,accuracy,0.440952380952381
+1,1,pd,auc_micro,0.8212389380530973
+2,1,pd,auc_mean,0.7167420901708473
+3,1,pd,auc_weighted,0.7205536168450938
+4,1,nd,accuracy,0.3333333333333333
+5,1,nd,auc_micro,0.8505229283990347
+6,1,nd,auc_mean,0.49753728320945295
+7,1,nd,auc_weighted,0.5382075471698113
+8,1,mod,accuracy,0.3333333333333333
+9,1,mod,auc_micro,0.8505229283990347
+10,1,mod,auc_mean,0.49753728320945295
+11,1,mod,auc_weighted,0.5382075471698113
+12,1,DLT_Other,accuracy,0.9464285714285714
+13,1,DLT_Dermatological,accuracy,0.8928571428571429
+14,1,DLT_Neurological,accuracy,0.9107142857142857
+15,1,DLT_Hematological,accuracy,0.7857142857142857
+16,1,DLT_Gastrointestinal,accuracy,0.8035714285714286
+17,1,dlts,accuracy_mean,0.8678571428571429
+18,1,DLT_Other,auc,0.5911949685534591
+19,1,DLT_Dermatological,auc,0.4033333333333334
+20,1,DLT_Neurological,auc,0.5176470588235293
+21,1,DLT_Hematological,auc,0.5454545454545454
+22,1,DLT_Gastrointestinal,auc,0.5474747474747474
+23,1,dlts,auc_mean,0.5210209307279229
+24,2,pd,accuracy,0.3333333333333333
+25,2,pd,auc_micro,0.8945005611672279
+26,2,pd,auc_mean,0.6426525708957221
+27,2,pd,auc_weighted,0.6018141183359428
+28,2,nd,accuracy,0.33197013956507626
+29,2,nd,auc_micro,0.755839243498818
+30,2,nd,auc_mean,0.46719472766777587
+31,2,nd,auc_weighted,0.5503252019533804
+32,2,mod,accuracy,0.33197013956507626
+33,2,mod,auc_micro,0.755839243498818
+34,2,mod,auc_mean,0.46719472766777587
+35,2,mod,auc_weighted,0.5503252019533804
+36,2,DLT_Other,accuracy,0.9795918367346939
+37,2,DLT_Dermatological,accuracy,0.9659863945578231
+38,2,DLT_Neurological,accuracy,0.9659863945578231
+39,2,DLT_Hematological,accuracy,0.9523809523809523
+40,2,DLT_Gastrointestinal,accuracy,0.9183673469387755
+41,2,dlts,accuracy_mean,0.9564625850340136
+42,2,DLT_Other,auc,0.7199074074074073
+43,2,DLT_Dermatological,auc,0.6535211267605634
+44,2,DLT_Neurological,auc,0.4971830985915493
+45,2,DLT_Hematological,auc,0.6479591836734694
+46,2,DLT_Gastrointestinal,auc,0.6012345679012345
+47,2,dlts,auc_mean,0.6239610768668449
+48,3,Overall Survival (4 Years),accuracy,0.891156462585034
+49,3,Overall Survival (4 Years),mse,0.11088117957115173
+50,3,Overall Survival (4 Years),auc,0.4227099236641222
+51,3,Overall Survival (4 Years),precision,0.891156462585034
+52,3,Overall Survival (4 Years),recall,1.0
+53,3,Overall Survival (4 Years),f1,0.9424460431654677
+54,3,FT,accuracy,0.7959183673469388
+55,3,FT,mse,0.1606636792421341
+56,3,FT,auc,0.6853260869565218
+57,3,FT,precision,0.6666666666666666
+58,3,FT,recall,0.125
+59,3,FT,f1,0.21052631578947367
+60,3,Aspiration rate Post-therapy,accuracy,0.8095238095238095
+61,3,Aspiration rate Post-therapy,mse,0.12288080900907516
+62,3,Aspiration rate Post-therapy,auc,0.8016528925619835
+63,3,Aspiration rate Post-therapy,precision,0.375
+64,3,Aspiration rate Post-therapy,recall,0.11538461538461539
+65,3,Aspiration rate Post-therapy,f1,0.17647058823529413
+66,3,LRC,accuracy,0.8979591836734694
+67,3,LRC,mse,0.09755921363830566
+68,3,LRC,auc,0.6111111111111112
+69,3,LRC,precision,0.8979591836734694
+70,3,LRC,recall,1.0
+71,3,LRC,f1,0.946236559139785
