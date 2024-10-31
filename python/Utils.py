@@ -67,23 +67,23 @@ def transition_sample(state,dataset=None):
 
 
 # +
-def load_models():
+def load_models(modifier):
     files = [
-        '../resources/decision_model.pt',
-        '../resources/transition1_model.pt',
-        '../resources/transition2_model.pt',
-        '../resources/outcome_model.pt',
-        '../resources/outcomeDSM.pt',
+        '../resources/'+modifier+'decision_model.pt',
+        '../resources/' + modifier +'transition1_model.pt',
+        '../resources/' + modifier +'transition2_model.pt',
+        '../resources/' + modifier +'outcome_model.pt',
+        '../resources/' + modifier +'outcomeDSM.pt',
     ]
     return  [torch.load(file) for file in files]
 
 
-def load_transition_models():
+def load_transition_models(modifier=''):
     files = [
-        '../resources/transition1_model.pt',
-        '../resources/transition2_model.pt',
-        '../resources/outcome_model.pt',
-         '../resources/outcomeDSM.pt'
+        '../resources/' + modifier +'transition1_model.pt',
+        '../resources/' + modifier +'transition2_model.pt',
+        '../resources/' + modifier +'outcome_model.pt',
+         '../resources/' + modifier +'outcomeDSM.pt'
     ]
     return  [torch.load(file) for file in files]
 

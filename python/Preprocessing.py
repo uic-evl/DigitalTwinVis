@@ -268,6 +268,8 @@ class DTDataset():
     def __init__(self,
                  data_file = '../data/digital_twin_data.csv',
                  ln_data_file = '../data/digital_twin_ln_monograms.csv',
+                 radiomics_cluster_file='../data/radiomics_clusters.csv',
+                 radiomics_embedding_file='../data/radiomics_embeddings.csv',
                  ids=None,
                  use_smote=False,
                  smote_columns = ['Overall Survival (4 Years)','FT','Aspiration rate Post-therapy'],#only is use_smote=True
@@ -291,8 +293,16 @@ class DTDataset():
             df = df[df.id.apply(lambda x: x in ids)]
         processed_df = preprocess_dt_data(df,self.ln_cols).fillna(0).drop(['DLT_Type'],axis=1)
         processed_df = fix_ln_laterality(processed_df)
-        self.processed_df= processed_df.drop(['laterality_L','laterality_R','laterality_Bilateral'],axis=1)
-        
+        processed_df= processed_df.drop(['laterality_L','laterality_R','laterality_Bilateral'],axis=1)
+        if radiomics_cluster_file is not None:
+            clusters = pd.read_csv(radiomics_cluster_file).set_index('id')
+            clusters = clusters + clusters.min()
+            clusters = pd.get_dummies(clusters.astype(str),prefix='rad_cluster').astype(int)
+            processed_df = processed_df.merge(clusters,on='id',how='left')
+        if radiomics_embedding_file is not None:
+            rembeddings = pd.read_csv(radiomics_embedding_file).set_index('id')
+            processed_df = processed_df.merge(rembeddings,on='id',how='left')
+        self.processed_df = processed_df
         #This upsamples and makes sure the new points have new ids so 
         #I can keep track of them later 
 #         if use_smote:
